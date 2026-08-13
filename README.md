@@ -24,6 +24,21 @@ GitHub Pages のカスタムドメインとして公開します。リポジト�
 - カスタムドメイン: `misefits.kokokikaku.com`
 - DNS側で `misefits` の CNAME を `mikan-koko.github.io` に向ける必要があります。
 
+## 公開時の注意・免責
+
+MiseFitsは、店舗・施設レイアウトの初期検討を補助するための簡易シミュレーターです。表示寸法や配置結果は、入力した図面・縮尺設定・ブラウザ環境に依存します。
+
+施工可否、建築基準法・消防法・保健所等の各種基準、避難経路、設備容量、バリアフリー、安全性、契約・見積条件などの最終判断には使用せず、必ず専門家・施工会社・関係機関へ確認してください。
+
+## SEO / 共有設定
+
+- canonical: `https://misefits.kokokikaku.com/`
+- OGP / Twitterカード: `assets/misefits-hero-vivid.png`
+- 構造化データ: `WebApplication`
+- 検索クロール: `robots.txt`
+- サイトマップ: `sitemap.xml`
+- Webアプリ表示: `manifest.webmanifest`
+
 ## 使い方
 
 1. ページを開く。

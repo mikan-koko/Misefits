@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://misefits.kokokikaku.com/sitemap.xml

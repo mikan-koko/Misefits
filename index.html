@@ -4,9 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MiseFits | かんたん店舗レイアウトシミュレーター</title>
-<meta name="description" content="MiseFitsは、店舗や小規模施設の図面に什器・設備を実寸(mm)で配置できる、かんたんなブラウザ完結レイアウトシミュレーターです。">
+<meta name="description" content="MiseFitsは、PDFや画像の図面、または白紙サイズから店舗・施設のレイアウトを実寸(mm)で検討できる、ブラウザ完結のかんたんレイアウトシミュレーターです。">
+<meta name="keywords" content="店舗レイアウト,レイアウトシミュレーター,図面,什器配置,美容室,カフェ,学習塾,クリニック,オフィス,ここ企画,MiseFits">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://misefits.kokokikaku.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MiseFits">
+<meta property="og:title" content="MiseFits | かんたん店舗レイアウトシミュレーター">
+<meta property="og:description" content="PDFや画像の図面、または白紙サイズから、店舗・施設の配置を実寸(mm)でざっくり検討できます。">
+<meta property="og:url" content="https://misefits.kokokikaku.com/">
+<meta property="og:image" content="https://misefits.kokokikaku.com/assets/misefits-hero-vivid.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MiseFits | かんたん店舗レイアウトシミュレーター">
+<meta name="twitter:description" content="店舗・施設の図面や白紙サイズから、什器・設備の配置を実寸で検討できるブラウザ完結ツール。">
+<meta name="twitter:image" content="https://misefits.kokokikaku.com/assets/misefits-hero-vivid.png">
 <meta name="theme-color" content="#0066cc">
 <link rel="icon" href="assets/misefits-favicon.png">
+<link rel="apple-touch-icon" href="assets/misefits-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "MiseFits",
+  "alternateName": "かんたん店舗レイアウトシミュレーター",
+  "url": "https://misefits.kokokikaku.com/",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "inLanguage": "ja",
+  "description": "PDFや画像の図面、または白紙サイズから店舗・施設のレイアウトを実寸(mm)で検討できるブラウザ完結のレイアウトシミュレーターです。",
+  "publisher": {
+    "@type": "Organization",
+    "name": "ここ企画",
+    "url": "https://kokokikaku.com/"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "JPY"
+  }
+}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -17,6 +56,7 @@
     --radius:8px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   html,body{height:100%;}
   html{width:100%;overflow-x:hidden;}
   body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;
@@ -49,7 +89,7 @@
   .foot-logo{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#102033;color:#fff;font-weight:900;letter-spacing:.02em;flex:0 0 auto;}
   .foot-text{min-width:0;display:grid;gap:3px;}
   .foot-text b{color:var(--ink);font-size:13px;}
-  .foot-text span{line-height:1.45;}
+  .foot-text span{line-height:1.45;overflow-wrap:anywhere;}
   .foot-company{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .page-foot a{color:var(--accent);text-decoration:none;font-weight:800;}
   .foot-share{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;}
@@ -223,6 +263,18 @@
       linear-gradient(0deg,rgba(255,255,255,.06),rgba(255,255,255,0)),
       url("assets/misefits-hero-vivid.png") center/cover no-repeat;
   }
+  .hero-slide.thinking{
+    background:
+      linear-gradient(90deg,rgba(255,255,255,.98) 0%,rgba(246,250,255,.94) 43%,rgba(246,250,255,.58) 62%,rgba(255,255,255,.06) 88%),
+      linear-gradient(135deg,rgba(0,102,204,.1),rgba(255,181,69,.08) 48%,rgba(42,157,143,.12)),
+      url("assets/misefits-slide-cafe.png") center/cover no-repeat;
+  }
+  .hero-slide.usage{
+    background:
+      linear-gradient(90deg,rgba(255,255,255,.98) 0%,rgba(244,249,255,.95) 46%,rgba(244,249,255,.64) 66%,rgba(255,255,255,.08) 92%),
+      linear-gradient(135deg,rgba(0,102,204,.09),rgba(42,157,143,.08) 55%,rgba(255,181,69,.12)),
+      url("assets/misefits-slide-salon.png") center/cover no-repeat;
+  }
   .hero-slide.active{opacity:1;transform:none;pointer-events:auto;}
   .hero-visual{min-height:270px;border:1px solid rgba(213,219,228,.9);border-radius:12px;background:#fff;position:relative;
     overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);}
@@ -269,6 +321,7 @@
   .hero-slide.usage{align-content:center;gap:9px;}
   .hero-slide.usage h2{font-size:23px;margin-bottom:6px;}
   .hero-slide.usage p{line-height:1.55;max-width:700px;}
+  .hero-slide.thinking > div,.hero-slide.usage > div{max-width:650px;}
   .workflow-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:6px;}
   .workflow-card{border:1px solid rgba(0,102,204,.16);background:#fff;border-radius:10px;padding:10px;box-shadow:0 8px 20px rgba(25,33,46,.07);}
   .workflow-card b{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);margin-bottom:7px;}
@@ -289,6 +342,8 @@
   .quick-step{display:grid;grid-template-columns:26px 1fr;gap:9px;align-items:flex-start;color:var(--ink);font-size:12.5px;}
   .quick-step b{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:12px;}
   .quick-step span{color:var(--sub);font-size:11.5px;line-height:1.5;}
+  .foot-legal{font-size:10.5px;color:#7a8494;line-height:1.5;overflow-wrap:anywhere;word-break:break-all;}
+  .foot-legal strong{color:#3d4654;}
 
   /* Properties bar */
   .props{position:absolute;left:14px;bottom:14px;background:#fff;border:1px solid var(--line);border-radius:10px;
@@ -382,6 +437,16 @@
         linear-gradient(180deg,rgba(255,255,255,.98) 0%,rgba(238,247,255,.92) 48%,rgba(255,255,255,.28) 100%),
         url("assets/misefits-hero-vivid.png") center/cover no-repeat;
     }
+    .hero-slide.thinking{
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.99) 0%,rgba(246,250,255,.95) 56%,rgba(255,255,255,.38) 100%),
+        url("assets/misefits-slide-cafe.png") 62% center/cover no-repeat;
+    }
+    .hero-slide.usage{
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.99) 0%,rgba(244,249,255,.96) 60%,rgba(255,255,255,.4) 100%),
+        url("assets/misefits-slide-salon.png") 64% center/cover no-repeat;
+    }
     .hero-copy{padding-right:0;}
     .hero-proof{grid-template-columns:1fr;gap:8px;}
     .workflow-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
@@ -389,7 +454,7 @@
     .compare-card{min-height:84px;padding:10px;}
     .hero-dots{overflow-x:auto;justify-content:flex-start;padding-bottom:2px;}
     .hero-dot{flex:0 0 auto;}
-    .page-foot{min-height:108px;grid-template-columns:1fr;padding:10px;font-size:10.5px;gap:8px;}
+    .page-foot{min-height:128px;grid-template-columns:1fr;padding:10px;font-size:10.5px;gap:8px;}
     .foot-main{align-items:flex-start;}
     .foot-logo{width:32px;height:32px;border-radius:9px;font-size:11px;}
     .foot-share{justify-content:flex-start;gap:6px;}
@@ -415,6 +480,7 @@
 </head>
 <body>
 <header class="page-top">
+  <h1 class="sr-only">MiseFits かんたん店舗レイアウトシミュレーター</h1>
   <button class="menu-btn" id="menuBtn" onclick="toggleDrawer()" aria-label="メニュー">☰</button>
   <div class="brand">
     <img class="brand-icon" src="assets/misefits-icon.png" alt="" width="50" height="50">
@@ -569,7 +635,7 @@
               </div>
             </div>
           </section>
-          <section class="hero-slide">
+          <section class="hero-slide thinking">
             <div>
               <div class="empty-kicker">LIGHT PLANNING</div>
               <h2>かんたんなレイアウト検討の入口。</h2>
@@ -671,6 +737,7 @@
         <span>Produced by ここ企画</span>
         <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
       </div>
+      <div class="foot-legal"><strong>注意・免責</strong> 概算検討用。施工・法令等は専門家へ。</div>
     </div>
   </div>
   <div class="foot-share" aria-label="SNSシェア">
