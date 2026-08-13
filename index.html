@@ -255,7 +255,7 @@
     background:radial-gradient(circle,rgba(255,181,69,.55),rgba(255,181,69,0) 68%);}
   .hero-bg-stack::after{content:"";position:absolute;right:-100px;bottom:-90px;width:360px;height:360px;border-radius:999px;
     background:radial-gradient(circle,rgba(42,157,143,.34),rgba(42,157,143,0) 66%);}
-  .hero-slide{position:absolute;inset:0;display:grid;align-items:center;gap:12px;
+  .hero-slide{position:absolute;inset:0;display:none;align-items:center;gap:12px;
     padding:24px;opacity:0;transform:translateX(18px);pointer-events:none;transition:opacity .28s ease,transform .28s ease;z-index:1;}
   .hero-slide.featured{
     background:
@@ -275,7 +275,7 @@
       linear-gradient(135deg,rgba(0,102,204,.09),rgba(42,157,143,.08) 55%,rgba(255,181,69,.12)),
       url("assets/misefits-slide-salon.png") center/cover no-repeat;
   }
-  .hero-slide.active{opacity:1;transform:none;pointer-events:auto;}
+  .hero-slide.active{display:grid;opacity:1;transform:none;pointer-events:auto;z-index:2;}
   .hero-visual{min-height:270px;border:1px solid rgba(213,219,228,.9);border-radius:12px;background:#fff;position:relative;
     overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);}
   .hero-visual::before{content:"";position:absolute;inset:0;background-image:linear-gradient(#edf1f6 1px,transparent 1px),linear-gradient(90deg,#edf1f6 1px,transparent 1px);background-size:24px 24px;}
@@ -318,11 +318,13 @@
   .proof-card:nth-child(3){border-top:4px solid #16a34a;}
   .save-note{margin-top:14px;display:flex;gap:10px;align-items:flex-start;border:1px solid #ffd99a;background:#fff8ec;border-radius:10px;padding:10px 12px;color:#7a4a00;font-size:12px;line-height:1.55;}
   .save-note b{color:#583500;white-space:nowrap;}
-  .hero-slide.usage{align-content:center;gap:9px;}
-  .hero-slide.usage h2{font-size:23px;margin-bottom:6px;}
+  .hero-slide.usage{grid-template-columns:minmax(250px,.82fr) minmax(340px,1fr);align-items:center;align-content:center;gap:24px;padding:34px 32px;}
+  .hero-slide.usage h2{font-size:23px;margin-bottom:8px;}
   .hero-slide.usage p{line-height:1.55;max-width:700px;}
   .hero-slide.thinking > div,.hero-slide.usage > div{max-width:650px;}
-  .workflow-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:6px;}
+  .usage-copy{align-self:center;}
+  .usage-panel{align-self:center;display:grid;gap:12px;max-width:480px;}
+  .workflow-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:0;}
   .workflow-card{border:1px solid rgba(0,102,204,.16);background:#fff;border-radius:10px;padding:10px;box-shadow:0 8px 20px rgba(25,33,46,.07);}
   .workflow-card b{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);margin-bottom:7px;}
   .workflow-card strong{display:block;color:var(--ink);font-size:13px;margin-bottom:5px;}
@@ -447,9 +449,18 @@
         linear-gradient(180deg,rgba(255,255,255,.99) 0%,rgba(244,249,255,.96) 60%,rgba(255,255,255,.4) 100%),
         url("assets/misefits-slide-salon.png") 64% center/cover no-repeat;
     }
+    .hero-slide.usage{grid-template-columns:1fr;align-content:flex-start;align-items:start;padding:26px 18px;gap:16px;}
+    .hero-slide.usage h2{font-size:20px;margin-bottom:8px;}
+    .hero-slide.usage p{max-width:320px;line-height:1.65;}
+    .usage-copy,.usage-panel{max-width:320px;width:100%;}
     .hero-copy{padding-right:0;}
     .hero-proof{grid-template-columns:1fr;gap:8px;}
-    .workflow-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+    .workflow-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+    .workflow-card{padding:9px;min-height:112px;}
+    .workflow-card b{width:25px;height:25px;margin-bottom:6px;}
+    .workflow-card strong{font-size:12px;line-height:1.35;}
+    .workflow-card span{font-size:10.5px;line-height:1.45;}
+    .save-note{margin-top:0;padding:9px 10px;font-size:11px;line-height:1.5;}
     .hero-compare{grid-template-columns:1fr;top:18px;bottom:18px;transform:none;overflow:auto;}
     .compare-card{min-height:84px;padding:10px;}
     .hero-dots{overflow-x:auto;justify-content:flex-start;padding-bottom:2px;}
@@ -464,6 +475,7 @@
     .brand-copy small{max-width:136px;}
     .props{max-height:56vh;}
     .hero-slider{min-height:560px;}
+    .hero-slide.usage{padding-top:28px;}
   }
 
   /* Calibration overlay banner */
@@ -652,18 +664,20 @@
             </div>
           </section>
           <section class="hero-slide usage">
-            <div>
+            <div class="usage-copy">
               <div class="empty-kicker">3 STEPS</div>
               <h2>読み込む、合わせる、置いてみる。</h2>
               <p>PCでは細かく編集、スマホでは確認やざっくり配置。必要な操作を左パネルとキャンバスにまとめています。</p>
             </div>
-            <div class="workflow-grid">
-              <div class="workflow-card"><b>1</b><strong>図面か白紙を用意</strong><span>PDF/画像、またはmm指定の白紙から始めます。</span></div>
-              <div class="workflow-card"><b>2</b><strong>縮尺を合わせる</strong><span>図面ありの場合は2点クリックで実寸(mm)に補正します。</span></div>
-              <div class="workflow-card"><b>3</b><strong>配置を試す</strong><span>ジャンル別パーツを選んでキャンバスへ置きます。</span></div>
-              <div class="workflow-card"><b>4</b><strong>JSON保存</strong><span>プロジェクトを書き出し、後日再編集できます。</span></div>
+            <div class="usage-panel">
+              <div class="workflow-grid">
+                <div class="workflow-card"><b>1</b><strong>図面か白紙を用意</strong><span>PDF/画像、またはmm指定の白紙から始めます。</span></div>
+                <div class="workflow-card"><b>2</b><strong>縮尺を合わせる</strong><span>図面ありの場合は2点クリックで実寸(mm)に補正します。</span></div>
+                <div class="workflow-card"><b>3</b><strong>配置を試す</strong><span>ジャンル別パーツを選んでキャンバスへ置きます。</span></div>
+                <div class="workflow-card"><b>4</b><strong>JSON保存</strong><span>プロジェクトを書き出し、後日再編集できます。</span></div>
+              </div>
+              <div class="save-note"><b>JSON保存</b><span>図面画像、縮尺、什器の位置・サイズ・角度をまとめて保存します。</span></div>
             </div>
-            <div class="save-note"><b>JSON保存</b><span>図面画像、縮尺、什器の位置・サイズ・角度をまとめて保存します。</span></div>
           </section>
         </div>
         <div class="hero-dots" aria-label="概要スライド">
