@@ -6,7 +6,7 @@
 
 図面（PDF/画像）を背景に、什器・設備を **実寸(mm) でドラッグ配置** できる、サーバー不要のブラウザ用ツール。飲食店等のレイアウト検討に使う。
 
-- 公開URL: https://mikan-koko.github.io/layout-simulator/ （GitHub Pages, `main` / `/` ルート）
+- 公開URL: https://misefits.kokokikaku.com/ （GitHub Pages custom domain, `main` / `/` ルート）
 - 実体は **単一の `index.html`**（バニラJS）。ビルド工程・npm依存・フレームワークなし。
 - 外部ライブラリは CDN(cdnjs) 読み込み：Fabric.js 5.3.1 / pdf.js 3.11.174 / jsPDF 2.5.1。→ **オンライン環境が必須**。
 
@@ -89,7 +89,8 @@ const { chromium, devices } = require('playwright');
 
 ## 公開（デプロイ）
 
-GitHub Pages（`main` ブランチ / ルート）。`index.html` を更新して `main` に push/commit すれば約1分で反映。
+GitHub Pages（`main` ブランチ / ルート）。`index.html` と `CNAME` を更新して `main` に push/commit すれば約1分で反映。
+カスタムドメインは `misefits.kokokikaku.com`。DNS側では `misefits` の CNAME を `mikan-koko.github.io` に向ける。
 Web UI からのアップロードで更新する場合: リポジトリの `Upload files` で `index.html` を上書きコミット → Pages が自動再ビルド。反映確認はキャッシュ回避で `?v=N` を付けて開く。
 
 ## 数値・単位の約束

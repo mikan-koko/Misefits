@@ -3,40 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>図面レイアウトシミュレーター</title>
+<title>MiseFits | かんたん店舗レイアウトシミュレーター</title>
+<meta name="description" content="MiseFitsは、店舗や小規模施設の図面に什器・設備を実寸(mm)で配置できる、かんたんなブラウザ完結レイアウトシミュレーターです。">
+<meta name="theme-color" content="#0066cc">
+<link rel="icon" href="assets/misefits-favicon.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
-    --bg:#f4f5f7; --panel:#ffffff; --line:#e2e5ea; --ink:#2b2f38; --sub:#6b7280;
-    --accent:#0066cc; --accent2:#0052a3; --danger:#e63946; --ok:#2a9d8f;
+    --bg:#eef1f5; --panel:#ffffff; --line:#dfe4ec; --ink:#242933; --sub:#667085;
+    --accent:#0066cc; --accent2:#004f9f; --accent-soft:#e8f2ff; --pop:#ff6b6b; --sun:#ffb545; --mint:#2a9d8f; --danger:#e63946; --ok:#2a9d8f;
     --radius:8px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;}
+  html{width:100%;overflow-x:hidden;}
   body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;
-       display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);color:var(--ink);overflow:hidden;}
+       display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);color:var(--ink);overflow:hidden;max-width:100vw;}
 
-  /* Header */
-  header{height:52px;flex:0 0 auto;background:#fff;border-bottom:1px solid var(--line);
-         display:flex;align-items:center;gap:14px;padding:0 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);z-index:20;}
-  header .logo{font-weight:700;font-size:15px;letter-spacing:.02em;}
-  header .logo small{color:var(--sub);font-weight:400;margin-left:6px;font-size:12px;}
+  /* Page shell */
+  .page-top{height:72px;flex:0 0 auto;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);
+         display:flex;align-items:center;gap:16px;padding:0 18px;box-shadow:0 1px 14px rgba(25,33,46,.07);z-index:20;min-width:0;}
+  .brand{display:flex;align-items:center;gap:12px;min-width:360px;position:relative;}
+  .brand-icon{width:50px;height:50px;border-radius:15px;object-fit:contain;filter:drop-shadow(0 9px 18px rgba(0,80,160,.19));flex:0 0 auto;}
+  .brand-lockup{position:relative;min-width:0;padding:3px 0;}
+  .brand-plate{position:absolute;left:-12px;top:-10px;width:242px;height:64px;object-fit:cover;opacity:.12;pointer-events:none;z-index:-1;}
+  .brand-copy{display:flex;flex-direction:column;gap:2px;position:relative;}
+  .brand-name{font-family:Arial Rounded MT Bold,Arial,"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;font-weight:900;font-size:27px;letter-spacing:.015em;color:#102033;line-height:1;}
+  .brand-name .mise{letter-spacing:.01em;}
+  .brand-name .fit{color:var(--accent);font-style:italic;letter-spacing:-.01em;}
+  .brand-name .dot{display:inline-block;width:8px;height:8px;margin-left:5px;border-radius:999px;background:var(--sun);vertical-align:top;transform:translateY(4px);}
+  .brand-copy small{display:block;color:var(--sub);font-weight:700;font-size:11.5px;letter-spacing:0;line-height:1.35;}
+  .page-nav{display:flex;align-items:center;gap:6px;color:var(--sub);font-size:12px;font-weight:700;}
+  .page-nav span{border:1px solid var(--line);background:#f8fafc;border-radius:999px;padding:5px 9px;white-space:nowrap;}
+  .page-nav span.active{background:var(--accent-soft);border-color:#cfe4ff;color:var(--accent);}
+  .top-actions{margin-left:auto;display:flex;align-items:center;gap:8px;}
   header .spacer{flex:1;}
-  header .hbtn{font-size:12.5px;}
+  .hbtn{font-size:12.5px;}
 
-  .app{flex:1;display:flex;min-height:0;}
+  .app{flex:1;display:flex;min-height:0;max-width:100vw;}
+  .page-foot{min-height:72px;flex:0 0 auto;background:#fbfcfe;border-top:1px solid var(--line);
+    display:grid;grid-template-columns:minmax(220px,1fr) auto;align-items:center;gap:14px;padding:10px 16px;color:var(--sub);font-size:11.5px;z-index:14;}
+  .foot-main{display:flex;align-items:center;gap:12px;min-width:0;}
+  .foot-logo{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#102033;color:#fff;font-weight:900;letter-spacing:.02em;flex:0 0 auto;}
+  .foot-text{min-width:0;display:grid;gap:3px;}
+  .foot-text b{color:var(--ink);font-size:13px;}
+  .foot-text span{line-height:1.45;}
+  .foot-company{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .page-foot a{color:var(--accent);text-decoration:none;font-weight:800;}
+  .foot-share{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;}
+  .foot-share .share-btn{margin:0;background:#fff;}
+  .foot-share .line-share{background:#06c755;border-color:#06c755;color:#fff;}
 
   /* Sidebar */
-  .sidebar{width:290px;flex:0 0 auto;background:var(--panel);border-right:1px solid var(--line);
+  .sidebar{width:304px;flex:0 0 auto;background:var(--panel);border-right:1px solid var(--line);
            display:flex;flex-direction:column;overflow-y:auto;}
   .section{padding:14px 16px;border-bottom:1px solid var(--line);}
   .section h3{font-size:12px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;font-weight:700;}
+  .sidebar-intro{background:linear-gradient(145deg,#f7fbff,#ffffff 70%,#fff8ec);padding-top:16px;padding-bottom:16px;}
+  .intro-label{color:var(--accent);font-size:10.5px;font-weight:900;letter-spacing:.14em;margin-bottom:7px;}
+  .sidebar-intro p{color:var(--ink);font-size:12.5px;line-height:1.65;font-weight:600;}
+  .start-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .start-card{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;cursor:pointer;text-align:left;
+    transition:transform .15s,box-shadow .15s,border-color .15s;color:var(--ink);}
+  .start-card:hover{transform:translateY(-1px);border-color:#b9d9ff;box-shadow:0 8px 20px rgba(16,76,145,.1);}
+  .start-card b{display:block;font-size:12.5px;margin-bottom:3px;}
+  .start-card span{display:block;color:var(--sub);font-size:10.5px;line-height:1.45;}
+  .industry-tags,.industry-cloud{display:flex;gap:6px;flex-wrap:wrap;}
+  .industry-tags{margin-top:10px;}
+  .industry-tags span,.industry-cloud span{border:1px solid var(--line);background:#fff;border-radius:999px;color:var(--sub);font-size:11px;font-weight:700;padding:4px 8px;white-space:nowrap;}
+  .industry-tags span:nth-child(3n+1),.industry-cloud span:nth-child(3n+1){background:var(--accent-soft);border-color:#cfe4ff;color:var(--accent);}
+  .industry-tags span:nth-child(3n+2),.industry-cloud span:nth-child(3n+2){background:#fff6e6;border-color:#ffd99a;color:#7a4a00;}
+  .industry-tags span:nth-child(3n),.industry-cloud span:nth-child(3n){background:#eaf8f4;border-color:#c9eee5;color:#157263;}
   .row{display:flex;gap:8px;flex-wrap:wrap;}
 
   .btn{padding:8px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;
        font-weight:600;font-size:12.5px;transition:background .15s;white-space:nowrap;}
+  .btn .ico{font-size:1.25em;line-height:0;display:inline-block;vertical-align:-.08em;margin-right:2px;}
+  .btn .text-ico{min-width:30px;height:18px;border-radius:5px;background:currentColor;color:inherit;position:relative;margin-right:5px;vertical-align:-.18em;}
+  .btn .text-ico::after{content:"PNG";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:8px;font-weight:900;letter-spacing:0;}
+  .btn.outline .text-ico{background:var(--accent);}
   .btn:hover{background:var(--accent2);}
   .btn:disabled{opacity:.45;cursor:not-allowed;}
   .btn.outline{background:#fff;color:var(--ink);border:1px solid #ccd1d9;}
@@ -47,6 +94,8 @@
   .btn.sm{padding:6px 9px;font-size:11.5px;}
   .btn.full{width:100%;}
   .btn.on{background:var(--ok);color:#fff;}
+  .btn.pop{background:#fff6e6;color:#7a4a00;border:1px solid #ffd99a;}
+  .btn.pop:hover{background:#ffedcc;}
 
   /* Sheets */
   .sheet-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
@@ -82,11 +131,25 @@
   .toggle input{width:16px;height:16px;}
   .inp{width:62px;padding:5px 7px;border:1px solid #ccd1d9;border-radius:5px;font-size:12.5px;}
   select.inp{width:auto;}
+  .searchbox{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;
+    color:var(--ink);font-size:12.5px;margin:0 0 10px;outline:none;}
+  .searchbox:focus{border-color:#8bc3ff;box-shadow:0 0 0 3px rgba(0,102,204,.11);background:#fff;}
+  .lib-empty{display:none;color:var(--sub);font-size:12px;line-height:1.6;background:#f8fafc;border:1px dashed var(--line);border-radius:9px;padding:10px;}
+  .lib-empty.show{display:block;}
 
   /* Workspace */
-  .workspace{flex:1;position:relative;min-width:0;background:#dfe3e8;
-             background-image:radial-gradient(#cfd4db 1px,transparent 1px);background-size:22px 22px;overflow:hidden;}
-  #c-wrap{position:absolute;inset:0;}
+  .workspace{flex:1;position:relative;min-width:0;max-width:100vw;background:#eef2f6;
+             background-image:
+               linear-gradient(135deg,rgba(255,255,255,.66),rgba(255,255,255,.18)),
+               linear-gradient(120deg,rgba(0,102,204,.08) 0 24%,transparent 24% 100%),
+               linear-gradient(300deg,transparent 0 72%,rgba(255,181,69,.13) 72% 100%),
+               radial-gradient(#cbd2dc 1px,transparent 1px);
+             background-size:auto,auto,auto,22px 22px;overflow:hidden;}
+  .workspace-watermark{position:absolute;right:-3vw;top:3vh;font-size:clamp(72px,15vw,230px);
+    opacity:.075;transform:rotate(-3deg);pointer-events:none;z-index:0;filter:saturate(1.15);}
+  .workspace::after{content:"LAYOUT  /  MEASURE  /  FIT";position:absolute;left:20px;bottom:20px;
+    color:rgba(12,45,82,.085);font-weight:900;font-size:12px;letter-spacing:.18em;pointer-events:none;z-index:0;}
+  #c-wrap{position:absolute;inset:0;z-index:1;}
   canvas{display:block;}
 
   .canvas-hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);
@@ -100,11 +163,132 @@
   .zoombar button:hover{background:#e4e8ee;}
   .zoombar .z{font-size:12px;min-width:46px;text-align:center;color:var(--sub);}
 
+  .work-status{position:absolute;left:14px;top:14px;display:none;align-items:center;gap:8px;z-index:6;
+    background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:10px;padding:7px 9px;
+    box-shadow:0 2px 10px rgba(25,33,46,.09);font-size:12px;color:var(--sub);max-width:min(560px,calc(100% - 110px));}
+  .work-status.show{display:flex;}
+  .work-status b{color:var(--ink);font-size:12.5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;background:#f2f4f7;color:var(--sub);white-space:nowrap;}
+  .status-pill.ok{background:#e6f6f2;color:#157263;}
+  .status-pill.warn{background:#fff1e8;color:#a5480d;}
+  .status-next{color:var(--accent);font-weight:700;white-space:nowrap;}
+
   /* Empty state */
-  .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:14px;color:var(--sub);text-align:center;padding:24px;z-index:5;}
-  .empty h2{font-size:18px;color:var(--ink);font-weight:700;}
-  .empty p{font-size:13px;max-width:360px;line-height:1.7;}
+  .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--sub);text-align:left;padding:28px;z-index:5;overflow:auto;
+    background:
+      linear-gradient(135deg,rgba(255,255,255,.64),rgba(255,255,255,.18)),
+      linear-gradient(120deg,rgba(0,102,204,.14) 0 28%,transparent 28% 100%),
+      linear-gradient(300deg,transparent 0 70%,rgba(255,181,69,.18) 70% 100%);
+  }
+  .empty::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(0,102,204,.06) 0 1px,transparent 1px),linear-gradient(0deg,rgba(0,102,204,.045) 0 1px,transparent 1px);
+    background-size:72px 72px;pointer-events:none;z-index:0;}
+  .empty::after{content:"MiseFits";position:absolute;right:32px;bottom:24px;color:rgba(7,23,42,.07);
+    font-family:Arial Rounded MT Bold,Arial,sans-serif;font-size:72px;font-weight:900;letter-spacing:0;pointer-events:none;z-index:0;}
+  .empty-panel{position:relative;z-index:1;width:100%;max-width:920px;background:transparent;border:none;
+    border-radius:18px;box-shadow:none;padding:0;display:grid;gap:14px;}
+  .empty-kicker{display:inline-flex;align-items:center;gap:7px;color:var(--accent);background:var(--accent-soft);
+    border:1px solid #cfe4ff;border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:800;margin-bottom:12px;}
+  .empty h2{font-size:25px;color:var(--ink);font-weight:800;line-height:1.3;letter-spacing:0;margin-bottom:10px;}
+  .empty p{font-size:13px;line-height:1.8;}
+  .industry-cloud{margin-top:14px;}
+  .intro-panel{margin-top:16px;border:1px solid #d7e7fb;background:linear-gradient(145deg,#f7fbff,#fff);
+    border-radius:14px;padding:14px;display:grid;gap:10px;}
+  .intro-panel h3{font-size:14px;color:var(--ink);line-height:1.45;}
+  .intro-panel p{font-size:12.5px;line-height:1.75;color:var(--sub);}
+  .intro-panel strong{color:var(--ink);}
+  .share-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;}
+  .share-btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:7px 11px;
+    font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s;}
+  .share-btn:hover{transform:translateY(-1px);border-color:#b9d9ff;background:#f6fbff;}
+  .share-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .hero-slider{position:relative;min-height:380px;overflow:hidden;border:1px solid rgba(0,102,204,.18);border-radius:16px;
+    background:#fff;box-shadow:0 24px 70px rgba(7,23,42,.18);}
+  .hero-slider::before{content:"";position:absolute;inset:0;background:
+    linear-gradient(90deg,rgba(0,102,204,.05) 0 1px,transparent 1px),
+    linear-gradient(0deg,rgba(255,181,69,.08) 0 1px,transparent 1px);
+    background-size:42px 42px;opacity:.22;pointer-events:none;}
+  .hero-bg-stack{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .hero-brand-watermark{position:absolute;right:14px;bottom:8px;font-size:82px;opacity:.11;transform:rotate(-3deg);mix-blend-mode:multiply;}
+  .hero-bg-stack::before{content:"";position:absolute;left:-80px;top:-110px;width:430px;height:430px;border-radius:999px;
+    background:radial-gradient(circle,rgba(255,181,69,.55),rgba(255,181,69,0) 68%);}
+  .hero-bg-stack::after{content:"";position:absolute;right:-100px;bottom:-90px;width:360px;height:360px;border-radius:999px;
+    background:radial-gradient(circle,rgba(42,157,143,.34),rgba(42,157,143,0) 66%);}
+  .hero-slide{position:absolute;inset:0;display:grid;align-items:center;gap:12px;
+    padding:24px;opacity:0;transform:translateX(18px);pointer-events:none;transition:opacity .28s ease,transform .28s ease;z-index:1;}
+  .hero-slide.featured{
+    background:
+      linear-gradient(90deg,rgba(255,255,255,.97) 0%,rgba(238,247,255,.9) 40%,rgba(238,247,255,.44) 58%,rgba(255,255,255,.04) 78%),
+      linear-gradient(0deg,rgba(255,255,255,.06),rgba(255,255,255,0)),
+      url("assets/misefits-hero-vivid.png") center/cover no-repeat;
+  }
+  .hero-slide.active{opacity:1;transform:none;pointer-events:auto;}
+  .hero-visual{min-height:270px;border:1px solid rgba(213,219,228,.9);border-radius:12px;background:#fff;position:relative;
+    overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);}
+  .hero-visual::before{content:"";position:absolute;inset:0;background-image:linear-gradient(#edf1f6 1px,transparent 1px),linear-gradient(90deg,#edf1f6 1px,transparent 1px);background-size:24px 24px;}
+  .hero-icon{position:absolute;right:20px;top:20px;width:86px;height:86px;border-radius:18px;filter:drop-shadow(0 14px 22px rgba(0,80,160,.18));}
+  .hero-block{position:absolute;border:2px solid rgba(0,102,204,.75);background:rgba(0,102,204,.08);border-radius:7px;}
+  .hero-block.a{width:38%;height:22%;left:12%;top:18%;}
+  .hero-block.b{width:22%;height:22%;left:57%;top:38%;border-radius:999px;border-color:rgba(42,157,143,.8);background:rgba(42,157,143,.1);}
+  .hero-block.c{width:46%;height:17%;left:24%;bottom:16%;border-color:rgba(255,181,69,.9);background:rgba(255,181,69,.13);}
+  .hero-ruler{position:absolute;left:18px;bottom:28px;width:62%;height:18px;background:#ffc44d;border:2px solid #1f3652;border-radius:5px;transform:rotate(-9deg);box-shadow:0 8px 18px rgba(31,54,82,.16);}
+  .hero-ruler i{display:block;height:100%;background:repeating-linear-gradient(90deg,transparent 0 13px,#1f3652 13px 15px,transparent 15px 24px);}
+  .hero-compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;position:absolute;left:18px;right:18px;top:50%;transform:translateY(-50%);}
+  .compare-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;min-height:128px;display:grid;align-content:center;gap:8px;text-align:center;box-shadow:0 8px 20px rgba(25,33,46,.08);}
+  .compare-card b{color:var(--ink);font-size:13px;}
+  .compare-card span{color:var(--sub);font-size:11px;line-height:1.5;}
+  .compare-card.best{border-color:#8bc3ff;background:#f4faff;}
+  .flow-mini{position:absolute;inset:24px;display:grid;grid-template-columns:1fr;gap:12px;align-content:center;}
+  .flow-card{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px;box-shadow:0 6px 16px rgba(25,33,46,.06);}
+  .flow-card b{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--accent-soft);color:var(--accent);}
+  .flow-card span{font-weight:800;color:var(--ink);font-size:12.5px;}
+  .hero-dots{display:flex;gap:8px;justify-content:center;}
+  .hero-dot{border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer;}
+  .hero-dot.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .hero-lede{display:grid;grid-template-columns:minmax(0,560px);gap:18px;align-items:center;}
+  .hero-copy{color:var(--ink);text-shadow:none;padding-right:8px;}
+  .hero-copy .empty-kicker{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .hero-copy h2{color:#07172a;}
+  .hero-copy p{color:#344054;font-weight:700;}
+  .scenario-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px;}
+  .scenario-tile{display:inline-flex;align-items:center;border:1px solid rgba(0,102,204,.22);background:#fff;
+    color:#07172a;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;box-shadow:0 5px 14px rgba(7,23,42,.07);}
+  .scenario-tile:nth-child(3n+2){background:#fff6d6;border-color:#ffd24a;}
+  .scenario-tile:nth-child(3n){background:#e9f9ef;border-color:#86d69a;}
+  .hero-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+  .proof-card{border:1px solid rgba(0,102,204,.16);background:#fff;border-radius:10px;padding:12px;box-shadow:0 8px 20px rgba(25,33,46,.07);}
+  .proof-card b{display:block;color:var(--ink);font-size:13px;margin-bottom:5px;}
+  .proof-card span{display:block;color:var(--sub);font-size:11.5px;line-height:1.55;}
+  .proof-card.good{border-color:#9ed9cf;background:#f1fbf8;}
+  .proof-card:nth-child(1){border-top:4px solid var(--accent);}
+  .proof-card:nth-child(2){border-top:4px solid var(--sun);}
+  .proof-card:nth-child(3){border-top:4px solid #16a34a;}
+  .save-note{margin-top:14px;display:flex;gap:10px;align-items:flex-start;border:1px solid #ffd99a;background:#fff8ec;border-radius:10px;padding:10px 12px;color:#7a4a00;font-size:12px;line-height:1.55;}
+  .save-note b{color:#583500;white-space:nowrap;}
+  .hero-slide.usage{align-content:center;gap:9px;}
+  .hero-slide.usage h2{font-size:23px;margin-bottom:6px;}
+  .hero-slide.usage p{line-height:1.55;max-width:700px;}
+  .workflow-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:6px;}
+  .workflow-card{border:1px solid rgba(0,102,204,.16);background:#fff;border-radius:10px;padding:10px;box-shadow:0 8px 20px rgba(25,33,46,.07);}
+  .workflow-card b{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);margin-bottom:7px;}
+  .workflow-card strong{display:block;color:var(--ink);font-size:13px;margin-bottom:5px;}
+  .workflow-card span{display:block;color:var(--sub);font-size:11px;line-height:1.45;}
+  .empty-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+  .empty-preview{border:1px solid var(--line);border-radius:14px;background:#f8fafc;padding:14px;min-height:230px;
+    display:grid;grid-template-rows:auto 1fr;gap:12px;}
+  .empty-preview-top{display:flex;align-items:center;justify-content:space-between;color:var(--sub);font-size:11px;font-weight:700;}
+  .mini-board{position:relative;border:1px solid #d8dee8;border-radius:10px;background:#fff;overflow:hidden;
+    background-image:linear-gradient(#edf1f6 1px,transparent 1px),linear-gradient(90deg,#edf1f6 1px,transparent 1px);
+    background-size:22px 22px;}
+  .mini-board span{position:absolute;border:2px solid rgba(0,102,204,.78);background:rgba(0,102,204,.08);border-radius:5px;}
+  .mini-board .a{width:34%;height:23%;left:12%;top:16%;}
+  .mini-board .b{width:22%;height:22%;right:13%;top:24%;border-radius:999px;border-color:rgba(42,157,143,.8);background:rgba(42,157,143,.1);}
+  .mini-board .c{width:42%;height:18%;left:28%;bottom:18%;border-color:rgba(230,57,70,.66);background:rgba(230,57,70,.08);}
+  .quick-steps{display:grid;gap:8px;margin-top:14px;}
+  .quick-step{display:grid;grid-template-columns:26px 1fr;gap:9px;align-items:flex-start;color:var(--ink);font-size:12.5px;}
+  .quick-step b{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:12px;}
+  .quick-step span{color:var(--sub);font-size:11.5px;line-height:1.5;}
 
   /* Properties bar */
   .props{position:absolute;left:14px;bottom:14px;background:#fff;border:1px solid var(--line);border-radius:10px;
@@ -146,13 +330,21 @@
   /* ===== タブレット・スマホ ===== */
   @media (max-width:860px){
     .menu-btn{display:inline-flex;align-items:center;justify-content:center;}
-    header{gap:8px;padding:0 10px;}
-    header .logo{font-size:14px;min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    header .logo small{display:none;}
-    header .spacer{display:none;}
-    header .hbtn{padding:8px 9px;font-size:12px;}
-    header .hbtn .lbl{display:none;}       /* アイコンのみ */
-    .sidebar{position:fixed;top:52px;left:0;height:calc(100% - 52px);width:min(86vw,320px);
+    .page-top{height:58px;gap:8px;padding:0 9px;}
+    .brand{min-width:0;flex:1 1 auto;gap:8px;overflow:hidden;}
+    .brand-icon{width:35px;height:35px;border-radius:10px;}
+    .brand-plate{display:none;}
+    .brand-name{font-size:19px;}
+    .brand-name .dot{width:6px;height:6px;margin-left:3px;transform:translateY(3px);}
+    .brand-copy small{display:block;font-size:10.5px;line-height:1.2;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .page-nav{display:none;}
+    .top-actions{margin-left:0;gap:5px;flex:0 0 auto;}
+    .hbtn{padding:8px 8px;font-size:12px;}
+    .hbtn .ico{font-size:1.45em;margin-right:0;}
+    .hbtn .lbl{display:none;}       /* アイコンのみ */
+    .top-actions .hbtn:nth-child(n+2){display:none;}
+    .top-actions{max-width:42px;overflow:hidden;}
+    .sidebar{position:fixed;top:58px;left:0;height:calc(100% - 58px);width:min(88vw,330px);
              transform:translateX(-100%);transition:transform .25s ease;z-index:30;
              box-shadow:4px 0 20px rgba(0,0,0,.18);}
     .sidebar.open{transform:none;}
@@ -165,16 +357,48 @@
     .zoombar{top:8px;bottom:auto;right:8px;padding:4px 6px;}
     .zoombar button{width:34px;height:34px;font-size:17px;}
     .zoombar .z{min-width:40px;font-size:11.5px;}
+    .work-status{left:8px;right:auto;top:52px;max-width:calc(100% - 16px);padding:6px 7px;gap:6px;overflow-x:auto;}
+    .work-status b{max-width:120px;}
+    .status-next{display:none;}
     /* タッチしやすいサイズ */
     .part{padding:9px 6px;}
     .btn.sm{padding:8px 11px;font-size:12.5px;}
     .rotbtns .btn{padding:8px 10px;}
     .toggle input,.pf input,.inp{min-height:32px;}
-    .empty h2{font-size:16px;} .empty p{font-size:12.5px;}
+    .empty{align-items:flex-start;padding:76px 12px 16px;}
+    .empty-panel{grid-template-columns:1fr;padding:0;border-radius:14px;gap:16px;width:calc(100vw - 24px);max-width:calc(100vw - 24px);}
+    .empty h2{font-size:20px;} .empty p{font-size:12.5px;}
+    .empty-preview{min-height:170px;}
+    .hero-slider{min-height:470px;}
+    .hero-slider{width:calc(100vw - 24px);max-width:calc(100vw - 24px);}
+    .hero-slide{width:100%;}
+    .hero-slide{grid-template-columns:1fr;padding:18px;align-content:center;gap:14px;}
+    .hero-lede{grid-template-columns:1fr;gap:14px;width:320px;max-width:calc(100vw - 60px);}
+    .hero-copy{min-width:0;width:320px;max-width:calc(100vw - 60px);}
+    .hero-copy h2,.hero-copy p{max-width:320px;overflow-wrap:anywhere;word-break:break-all;}
+    .scenario-grid{width:320px;max-width:calc(100vw - 64px);overflow:hidden;}
+    .hero-slide.featured{
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.98) 0%,rgba(238,247,255,.92) 48%,rgba(255,255,255,.28) 100%),
+        url("assets/misefits-hero-vivid.png") center/cover no-repeat;
+    }
+    .hero-copy{padding-right:0;}
+    .hero-proof{grid-template-columns:1fr;gap:8px;}
+    .workflow-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+    .hero-compare{grid-template-columns:1fr;top:18px;bottom:18px;transform:none;overflow:auto;}
+    .compare-card{min-height:84px;padding:10px;}
+    .hero-dots{overflow-x:auto;justify-content:flex-start;padding-bottom:2px;}
+    .hero-dot{flex:0 0 auto;}
+    .page-foot{min-height:108px;grid-template-columns:1fr;padding:10px;font-size:10.5px;gap:8px;}
+    .foot-main{align-items:flex-start;}
+    .foot-logo{width:32px;height:32px;border-radius:9px;font-size:11px;}
+    .foot-share{justify-content:flex-start;gap:6px;}
+    .foot-share .share-btn{padding:6px 9px;font-size:11px;}
   }
   @media (max-width:480px){
-    header .logo{font-size:13px;}
+    .brand-copy small{max-width:136px;}
     .props{max-height:56vh;}
+    .hero-slider{min-height:560px;}
   }
 
   /* Calibration overlay banner */
@@ -190,15 +414,30 @@
 </style>
 </head>
 <body>
-<header>
+<header class="page-top">
   <button class="menu-btn" id="menuBtn" onclick="toggleDrawer()" aria-label="メニュー">☰</button>
-  <div class="logo">図面レイアウトシミュレーター<small>実寸ドラッグ配置</small></div>
-  <div class="spacer"></div>
-  <button class="btn ghost hbtn" onclick="saveProject()">💾<span class="lbl"> 保存(JSON)</span></button>
-  <label class="btn ghost hbtn" style="cursor:pointer;">📂<span class="lbl"> 読込</span><input type="file" id="loadProj" accept="application/json"></label>
-  <button class="btn outline hbtn" onclick="exportPNG()">🖼<span class="lbl"> PNG</span></button>
-  <button class="btn outline hbtn" onclick="exportPDF()">📄<span class="lbl"> PDF</span></button>
-  <button class="btn hbtn" onclick="printLayout()">🖨<span class="lbl"> 印刷</span></button>
+  <div class="brand">
+    <img class="brand-icon" src="assets/misefits-icon.png" alt="" width="50" height="50">
+    <div class="brand-lockup">
+      <div class="brand-copy">
+        <div class="brand-name"><span class="mise">Mise</span><span class="fit">Fits</span><span class="dot"></span></div>
+        <small>かんたん店舗レイアウトシミュレーター</small>
+      </div>
+    </div>
+  </div>
+  <nav class="page-nav" aria-label="アプリの特長">
+    <span class="active">図面読込</span>
+    <span>縮尺設定</span>
+    <span>什器配置</span>
+    <span>出力</span>
+  </nav>
+  <div class="top-actions">
+    <button class="btn ghost hbtn" onclick="saveProject()" title="プロジェクトをJSONで保存" aria-label="プロジェクトをJSONで保存"><span class="ico">💾</span><span class="lbl"> 保存(JSON)</span></button>
+    <label class="btn ghost hbtn" style="cursor:pointer;" title="保存したJSONを読み込む" aria-label="保存したJSONを読み込む"><span class="ico">📂</span><span class="lbl"> 読込</span><input type="file" id="loadProj" accept="application/json"></label>
+    <button class="btn outline hbtn" onclick="exportPNG()" title="PNGを書き出す" aria-label="PNGを書き出す"><span class="ico text-ico"></span><span class="lbl"> PNG</span></button>
+    <button class="btn outline hbtn" onclick="exportPDF()" title="PDFを書き出す" aria-label="PDFを書き出す"><span class="ico">📄</span><span class="lbl"> PDF</span></button>
+    <button class="btn hbtn" onclick="printLayout()" title="印刷する" aria-label="印刷する"><span class="ico">🖨</span><span class="lbl"> 印刷</span></button>
+  </div>
 </header>
 
 <div id="backdrop" onclick="closeDrawer()"></div>
@@ -206,6 +445,17 @@
 <div class="app">
   <!-- Sidebar -->
   <aside class="sidebar">
+    <div class="section sidebar-intro">
+      <div class="intro-label">MISEFITS WORKSPACE</div>
+      <p>飲食店、美容室、教室、物販、クリニック、オフィスなど、小さな現場のレイアウト検討に使えます。</p>
+      <div class="start-cards">
+        <button class="start-card" onclick="pickDrawingFile()"><b>図面から</b><span>PDF/画像を読み込む</span></button>
+        <button class="start-card" onclick="createBlankSheet()"><b>白紙から</b><span>サイズ指定で作成</span></button>
+      </div>
+      <div class="industry-tags" aria-label="対応業種">
+        <span>飲食</span><span>美容</span><span>教室</span><span>物販</span><span>医療</span><span>オフィス</span>
+      </div>
+    </div>
     <!-- Sheets -->
     <div class="section">
       <h3>図面シート</h3>
@@ -213,7 +463,7 @@
       <div class="row">
         <label class="btn sm outline" style="cursor:pointer;">＋PDF<input type="file" id="addPdf" accept="application/pdf"></label>
         <label class="btn sm outline" style="cursor:pointer;">＋画像<input type="file" id="addImg" accept="image/*"></label>
-        
+        <button class="btn sm pop" onclick="createBlankSheet()">白紙作成</button>
       </div>
     </div>
 
@@ -245,8 +495,10 @@
     <!-- Library -->
     <div class="section">
       <h3>什器・設備パーツ</h3>
-      <div class="muted" style="margin-bottom:8px;">クリックで中央に追加、またはキャンバスへドラッグ＆ドロップ。</div>
+      <div class="muted" style="margin-bottom:8px;">業種カテゴリから選び、クリックで中央に追加、またはキャンバスへドラッグ＆ドロップ。</div>
+      <input class="searchbox" id="librarySearch" type="search" placeholder="パーツを検索（例: 受付、ベッド、棚）" aria-label="パーツを検索">
       <div id="library"></div>
+      <div class="lib-empty" id="libraryEmpty">該当するパーツがありません。別の言葉で検索してください。</div>
     </div>
 
     <!-- Actions -->
@@ -276,7 +528,7 @@
         <span class="muted">向きは図面に合わせ自動</span>
       </div>
       <div class="row">
-        <button class="btn sm outline" onclick="exportPNG()">🖼 PNG</button>
+        <button class="btn sm outline" onclick="exportPNG()"><span class="ico text-ico"></span>PNG</button>
         <button class="btn sm outline" onclick="exportPDF()">📄 PDF出力</button>
         <button class="btn sm" onclick="printLayout()">🖨 印刷</button>
       </div>
@@ -286,13 +538,73 @@
 
   <!-- Workspace -->
   <div class="workspace" id="workspace">
+    <div class="workspace-watermark brand-name" aria-hidden="true"><span class="mise">Mise</span><span class="fit">Fits</span><span class="dot"></span></div>
     <div id="c-wrap"><canvas id="c"></canvas></div>
+    <div class="work-status" id="workStatus" aria-live="polite"></div>
 
     <div class="empty" id="emptyState">
-      <h2>図面を読み込んでください</h2>
-      <p>「＋PDF」または「＋画像」から図面を読み込んでください（スマホでは左上の ☰ メニュー内）。読み込んだら「縮尺を設定」で実寸を合わせ、什器をドラッグして配置します。図面データはブラウザ内だけで処理され、外部に送信されません。</p>
-      <div class="row" style="justify-content:center;">
-        <button class="btn" onclick="openDrawer()">☰ 図面を読み込む</button>
+      <div class="empty-panel">
+        <div class="hero-slider" aria-label="MiseFitsの概要">
+          <div class="hero-bg-stack" aria-hidden="true">
+            <div class="hero-brand-watermark brand-name"><span class="mise">Mise</span><span class="fit">Fits</span><span class="dot"></span></div>
+          </div>
+          <section class="hero-slide featured active">
+            <div class="hero-lede">
+              <div class="hero-copy">
+                <div class="empty-kicker">MiseFitsで始める</div>
+                <h2>お店や施設のレイアウトを、実寸で考える。</h2>
+                <p>PDFや画像の図面を読み込み、分かっている寸法から縮尺を合わせるだけ。図面がまだ無い時は、白紙サイズから配置を先に検討できます。</p>
+                <div class="scenario-grid" aria-label="利用シーン">
+                  <span class="scenario-tile">美容室</span>
+                  <span class="scenario-tile">学習塾</span>
+                  <span class="scenario-tile">花・物販</span>
+                  <span class="scenario-tile">クリニック</span>
+                  <span class="scenario-tile">ジム</span>
+                  <span class="scenario-tile">ランドリー</span>
+                </div>
+                <div class="empty-actions">
+                  <button class="btn" onclick="openDrawer()">図面を読み込む</button>
+                  <button class="btn pop" onclick="createBlankSheet()">白紙から作る</button>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="hero-slide">
+            <div>
+              <div class="empty-kicker">LIGHT PLANNING</div>
+              <h2>かんたんなレイアウト検討の入口。</h2>
+              <p><strong>ExcelやWordでセルや図形を並べるのはしんどい。</strong>でも、建築図面を本格的に引くほどでもない。MiseFitsは、自分のイメージでざっくりした配置を組んでみたい人向けの軽いシミュレーターです。</p>
+              <div class="hero-proof">
+                <div class="proof-card"><b>表計算より直感的</b><span>セル幅や図形位置の調整に時間を取られません。</span></div>
+                <div class="proof-card"><b>CADより軽い</b><span>本格図面の前に、配置の当たりを試せます。</span></div>
+                <div class="proof-card good"><b>実寸で確認</b><span>mm単位の什器を図面上で動かして検討できます。</span></div>
+              </div>
+              <div class="empty-actions">
+                <button class="btn" onclick="openDrawer()">パーツを見る</button>
+                <button class="btn outline" onclick="showHint('図面がある場合はPDF/画像、ない場合は白紙作成から始められます')">操作のヒント</button>
+              </div>
+            </div>
+          </section>
+          <section class="hero-slide usage">
+            <div>
+              <div class="empty-kicker">3 STEPS</div>
+              <h2>読み込む、合わせる、置いてみる。</h2>
+              <p>PCでは細かく編集、スマホでは確認やざっくり配置。必要な操作を左パネルとキャンバスにまとめています。</p>
+            </div>
+            <div class="workflow-grid">
+              <div class="workflow-card"><b>1</b><strong>図面か白紙を用意</strong><span>PDF/画像、またはmm指定の白紙から始めます。</span></div>
+              <div class="workflow-card"><b>2</b><strong>縮尺を合わせる</strong><span>図面ありの場合は2点クリックで実寸(mm)に補正します。</span></div>
+              <div class="workflow-card"><b>3</b><strong>配置を試す</strong><span>ジャンル別パーツを選んでキャンバスへ置きます。</span></div>
+              <div class="workflow-card"><b>4</b><strong>JSON保存</strong><span>プロジェクトを書き出し、後日再編集できます。</span></div>
+            </div>
+            <div class="save-note"><b>JSON保存</b><span>図面画像、縮尺、什器の位置・サイズ・角度をまとめて保存します。</span></div>
+          </section>
+        </div>
+        <div class="hero-dots" aria-label="概要スライド">
+          <button class="hero-dot active" type="button" onclick="showHeroSlide(0)">概要</button>
+          <button class="hero-dot" type="button" onclick="showHeroSlide(1)">考え方</button>
+          <button class="hero-dot" type="button" onclick="showHeroSlide(2)">使い方</button>
+          </div>
       </div>
     </div>
 
@@ -349,6 +661,25 @@
     </div>
   </div>
 </div>
+<footer class="page-foot">
+  <div class="foot-main">
+    <div class="foot-logo">MF</div>
+    <div class="foot-text">
+      <b>MiseFits</b>
+      <span>店舗・施設の図面データはブラウザ内だけで処理されます</span>
+      <div class="foot-company">
+        <span>Produced by ここ企画</span>
+        <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-share" aria-label="SNSシェア">
+    <button class="share-btn primary" type="button" onclick="shareApp()">シェア</button>
+    <button class="share-btn" type="button" onclick="shareToX()">X</button>
+    <button class="share-btn line-share" type="button" onclick="shareToLine()">LINE</button>
+    <button class="share-btn" type="button" onclick="copyShareLink()">リンク</button>
+  </div>
+</footer>
 
 <script>
 /* ================= サンプル図面データ（100DPI, 実寸 6.35 mm/px = 1:25） ================= */
@@ -358,34 +689,75 @@ const SAMPLE_MMPP = 6.35; // 25.4/100*25
 /* ================= 什器ライブラリ ================= */
 // w,d は実寸(mm)。shape: rect|circle。circleは w を直径として使用。
 const LIBRARY = [
-  { cat:"客席", color:"#cfe3d8", items:[
-    { key:"chair_round", name:"丸イス", shape:"circle", w:450, d:450, color:"#8fb6a3" },
-    { key:"chair_sq",    name:"角イス", shape:"rect",   w:450, d:450, color:"#8fb6a3" },
-    { key:"table2",      name:"2人テーブル", shape:"rect", w:600, d:700, color:"#e9c46a" },
-    { key:"table4",      name:"4人テーブル", shape:"rect", w:1200, d:700, color:"#e9c46a" },
-    { key:"rtable2",     name:"丸テーブル2人", shape:"circle", w:600, d:600, color:"#e9c46a" },
-    { key:"rtable4",     name:"丸テーブル4人", shape:"circle", w:900, d:900, color:"#e9c46a" },
-    { key:"counter",     name:"カウンター天板", shape:"rect", w:1800, d:400, color:"#d9a066" },
-    { key:"sofa",        name:"ソファ席", shape:"rect", w:1200, d:600, color:"#b7a4c9" },
-    { key:"stool",       name:"スツール", shape:"circle", w:380, d:380, color:"#8fb6a3" },
+  { cat:"共通・受付", color:"#dbeafe", items:[
+    { key:"reception", name:"受付カウンター", shape:"rect", w:1500, d:600, color:"#7db7ee" },
+    { key:"cashier", name:"レジ台", shape:"rect", w:900, d:600, color:"#ffb545" },
+    { key:"bench", name:"待合ベンチ", shape:"rect", w:1500, d:500, color:"#9fb3c8" },
+    { key:"chair_round", name:"丸イス", shape:"circle", w:450, d:450, color:"#78b59d" },
+    { key:"chair_sq", name:"角イス", shape:"rect", w:450, d:450, color:"#78b59d" },
+    { key:"sofa", name:"ソファ", shape:"rect", w:1400, d:700, color:"#b7a4c9" },
+    { key:"partition", name:"間仕切り", shape:"rect", w:1800, d:80, color:"#9ca3af" },
+    { key:"storage", name:"収納棚", shape:"rect", w:900, d:450, color:"#d8c9a3" },
   ]},
-  { cat:"厨房設備", color:"#cfe0e8", items:[
+  { cat:"飲食店", color:"#fce7b2", items:[
+    { key:"table2", name:"2人テーブル", shape:"rect", w:600, d:700, color:"#e9c46a" },
+    { key:"table4", name:"4人テーブル", shape:"rect", w:1200, d:700, color:"#e9c46a" },
+    { key:"rtable2", name:"丸テーブル2人", shape:"circle", w:600, d:600, color:"#e9c46a" },
+    { key:"rtable4", name:"丸テーブル4人", shape:"circle", w:900, d:900, color:"#e9c46a" },
+    { key:"counter", name:"カウンター席", shape:"rect", w:1800, d:450, color:"#d9a066" },
+    { key:"drinkbar", name:"ドリンク台", shape:"rect", w:1200, d:600, color:"#f4a261" },
+  ]},
+  { cat:"物販・花・食料品", color:"#dcfce7", items:[
+    { key:"display_table", name:"陳列テーブル", shape:"rect", w:1200, d:800, color:"#8fcf9a" },
+    { key:"wall_shelf", name:"壁面棚", shape:"rect", w:1800, d:350, color:"#9ac2a6" },
+    { key:"rack", name:"ハンガーラック", shape:"rect", w:1200, d:500, color:"#7eb6d9" },
+    { key:"showcase", name:"ショーケース", shape:"rect", w:1200, d:600, color:"#a9c3d6" },
+    { key:"flower_bucket", name:"花桶台", shape:"circle", w:500, d:500, color:"#ff8fab" },
+    { key:"cold_case", name:"冷蔵ケース", shape:"rect", w:1800, d:800, color:"#8ecae6" },
+    { key:"basket_stand", name:"カゴ置き", shape:"rect", w:700, d:500, color:"#c7b299" },
+  ]},
+  { cat:"美容・サロン", color:"#fde2e7", items:[
+    { key:"salon_chair", name:"セット椅子", shape:"circle", w:700, d:700, color:"#f4a7b9" },
+    { key:"mirror", name:"ミラー面", shape:"rect", w:900, d:80, color:"#b7c8d6" },
+    { key:"shampoo", name:"シャンプー台", shape:"rect", w:800, d:1700, color:"#b7a4c9" },
+    { key:"treatment_bed", name:"施術ベッド", shape:"rect", w:700, d:1900, color:"#e7b6c8" },
+    { key:"wagon", name:"ワゴン", shape:"rect", w:450, d:350, color:"#c8cdd6" },
+    { key:"dryer", name:"ドライヤー席", shape:"circle", w:650, d:650, color:"#f7c6a3" },
+  ]},
+  { cat:"教室・オフィス", color:"#e0e7ff", items:[
+    { key:"desk_single", name:"1人デスク", shape:"rect", w:1000, d:600, color:"#a5b4fc" },
+    { key:"desk_pair", name:"2人机", shape:"rect", w:1800, d:600, color:"#a5b4fc" },
+    { key:"meeting_table", name:"会議テーブル", shape:"rect", w:2400, d:1000, color:"#93c5fd" },
+    { key:"whiteboard", name:"ホワイトボード", shape:"rect", w:1800, d:80, color:"#dbeafe" },
+    { key:"locker", name:"ロッカー", shape:"rect", w:900, d:500, color:"#94a3b8" },
+    { key:"copy_machine", name:"複合機", shape:"rect", w:700, d:700, color:"#cbd5e1" },
+  ]},
+  { cat:"クリニック・ケア", color:"#ccfbf1", items:[
+    { key:"exam_bed", name:"診察ベッド", shape:"rect", w:700, d:1900, color:"#67d5c2" },
+    { key:"doctor_desk", name:"診察デスク", shape:"rect", w:1400, d:700, color:"#8ecae6" },
+    { key:"medical_cart", name:"医療ワゴン", shape:"rect", w:500, d:450, color:"#a7f3d0" },
+    { key:"privacy_screen", name:"衝立", shape:"rect", w:1600, d:80, color:"#99c2c8" },
+    { key:"waiting_chair3", name:"待合3席", shape:"rect", w:1650, d:550, color:"#90b4ce" },
+    { key:"washbasin_med", name:"手洗い", shape:"rect", w:500, d:450, color:"#8fc0d0" },
+  ]},
+  { cat:"ジム・宿泊・ランドリー", color:"#ede9fe", items:[
+    { key:"treadmill", name:"ランニングマシン", shape:"rect", w:850, d:1900, color:"#a78bfa" },
+    { key:"training_mat", name:"マット", shape:"rect", w:900, d:1800, color:"#86efac" },
+    { key:"locker_room", name:"更衣ロッカー", shape:"rect", w:1200, d:550, color:"#94a3b8" },
+    { key:"single_bed", name:"シングルベッド", shape:"rect", w:1000, d:2000, color:"#c4b5fd" },
+    { key:"laundry_washer", name:"洗濯機", shape:"rect", w:650, d:650, color:"#7dd3fc" },
+    { key:"dryer_unit", name:"乾燥機", shape:"rect", w:650, d:650, color:"#38bdf8" },
+    { key:"folding_table", name:"作業/たたみ台", shape:"rect", w:1500, d:800, color:"#d9a066" },
+  ]},
+  { cat:"厨房・水回り", color:"#dbeafe", items:[
     { key:"sink1", name:"シンク", shape:"rect", w:600, d:600, color:"#8fc0d0" },
     { key:"sink2", name:"二槽シンク", shape:"rect", w:1200, d:600, color:"#8fc0d0" },
     { key:"stove", name:"コンロ台", shape:"rect", w:600, d:600, color:"#d98a8a" },
     { key:"fridge", name:"冷蔵庫", shape:"rect", w:700, d:700, color:"#9db4d6" },
     { key:"freezer", name:"冷凍庫", shape:"rect", w:700, d:700, color:"#7f97c4" },
     { key:"worktop", name:"作業台", shape:"rect", w:900, d:600, color:"#c9cdd4" },
-    { key:"underfridge", name:"台下冷蔵庫", shape:"rect", w:1200, d:600, color:"#9db4d6" },
-    { key:"dishwasher", name:"食洗機", shape:"rect", w:600, d:600, color:"#c9cdd4" },
-    { key:"prep", name:"下ごしらえ台", shape:"rect", w:750, d:600, color:"#c9cdd4" },
-  ]},
-  { cat:"水回り・その他", color:"#e6dfcf", items:[
-    { key:"toilet", name:"洋式トイレ", shape:"rect", w:400, d:700, color:"#cfd4db" },
+    { key:"toilet", name:"トイレ", shape:"rect", w:500, d:800, color:"#cfd4db" },
     { key:"washbasin", name:"手洗い器", shape:"rect", w:400, d:350, color:"#8fc0d0" },
-    { key:"shelf", name:"収納棚", shape:"rect", w:900, d:450, color:"#d8c9a3" },
-    { key:"register", name:"レジカウンター", shape:"rect", w:900, d:600, color:"#d9a066" },
-    { key:"showcase", name:"ショーケース", shape:"rect", w:1200, d:600, color:"#a9c3d6" },
   ]},
   { cat:"自由図形", color:"#e0e0e0", items:[
     { key:"free_rect", name:"四角", shape:"rect", w:500, d:500, color:"#b8bec8" },
@@ -428,9 +800,8 @@ window.addEventListener('load', ()=>{
   buildLibrary();
   bindEvents();
   wireCanvas();
+  showHeroSlide(0);
   tryRestore();
-  // モバイルで図面が無ければメニュー（ドロワー）を開いて操作を促す
-  if(isMobile() && project.sheets.length===0) openDrawer();
 });
 
 function resizeCanvas(){
@@ -465,12 +836,37 @@ function buildLibrary(){
         sw=`<span class="sw" style="width:${pw}px;height:${ph}px;background:${it.color};${radius}"></span>`;
       }
       p.innerHTML=`<span class="swbox">${sw}</span>${it.name}<br><span class="dim">${dim}</span>`;
+      p.dataset.search=`${c.cat} ${it.name} ${dim}`.toLowerCase();
       p.onclick=()=>addFixture(it.key);
       p.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/fx', it.key); });
       parts.appendChild(p);
     });
     cat.appendChild(h); cat.appendChild(parts); wrap.appendChild(cat);
   });
+  filterLibrary();
+}
+
+function pickDrawingFile(){
+  const usePdf=confirm('PDFを読み込みますか？\nOK: PDF / キャンセル: 画像');
+  document.getElementById(usePdf?'addPdf':'addImg').click();
+}
+
+function filterLibrary(){
+  const input=document.getElementById('librarySearch');
+  const empty=document.getElementById('libraryEmpty');
+  const q=(input&&input.value||'').trim().toLowerCase();
+  let shown=0;
+  document.querySelectorAll('#library .cat').forEach(cat=>{
+    let catShown=0;
+    cat.querySelectorAll('.part').forEach(part=>{
+      const hit=!q || part.dataset.search.includes(q);
+      part.style.display=hit?'':'none';
+      if(hit){ catShown++; shown++; }
+    });
+    cat.style.display=catShown?'':'none';
+    cat.classList.toggle('collapsed', !!q ? false : cat.classList.contains('collapsed'));
+  });
+  if(empty) empty.classList.toggle('show', !!q && shown===0);
 }
 
 /* ================= シート管理 ================= */
@@ -484,6 +880,23 @@ function renderSheetList(){
     el.appendChild(d);
   });
   document.getElementById('emptyState').style.display = project.sheets.length? 'none':'flex';
+  updateWorkStatus();
+}
+
+function updateWorkStatus(){
+  const box=document.getElementById('workStatus');
+  if(!box) return;
+  const s=activeSheet();
+  if(!s){ box.classList.remove('show'); box.innerHTML=''; return; }
+  const count=canvas ? canvas.getObjects().filter(o=>o.data && o.data.shape!=='text').length : ((s.objects||[]).filter(o=>o.data && o.data.shape!=='text').length);
+  const scaleLabel=s.calibrated ? `${s.mmPerPixel.toFixed(3)}mm/px` : '未校正';
+  const next=s.calibrated ? (count ? '配置を調整できます' : '次: パーツを追加') : '次: 縮尺を設定';
+  box.innerHTML=`<b title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</b><span class="status-pill ${s.calibrated?'ok':'warn'}">${scaleLabel}</span><span class="status-pill">パーツ ${count}</span><span class="status-next">${next}</span>`;
+  box.classList.add('show');
+}
+
+function escapeHtml(v){
+  return String(v).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
 function addSheet(sheet, switchTo=true){
@@ -512,6 +925,7 @@ function switchSheet(i){
     });
   });
   renderSheetList(); updateScaleBox(); updateProps();
+  setTimeout(updateWorkStatus,0);
 }
 
 function removeSheet(i){
@@ -521,7 +935,7 @@ function removeSheet(i){
   if(project.active>=project.sheets.length) project.active=project.sheets.length-1;
   if(project.active<0){ canvas.clear(); canvas.backgroundColor='#fff'; canvas.setBackgroundImage(null,canvas.renderAll.bind(canvas)); }
   else { const t=project.active; project.active=-1; switchSheet(t); }
-  renderSheetList(); updateScaleBox(); autosave();
+  renderSheetList(); updateScaleBox(); updateWorkStatus(); autosave();
 }
 
 function syncActiveObjects(){
@@ -560,6 +974,44 @@ async function handlePdfFile(file){
   addSheet({ name:file.name.replace(/\.pdf$/i,''), image:cv.toDataURL('image/png'),
              mmPerPixel:SAMPLE_MMPP, calibrated:false, objects:[] });
   showHint('PDFを読み込みました。「縮尺を設定」で実寸を合わせてください');
+}
+
+function createBlankSheet(){
+  const wmm=askPositiveNumber('白紙レイアウトの横幅(mm)を入力してください', 9000);
+  if(!wmm) return;
+  const hmm=askPositiveNumber('白紙レイアウトの奥行(mm)を入力してください', 6000);
+  if(!hmm) return;
+  const blankMmpp=10;
+  const pxW=Math.max(240, Math.round(wmm/blankMmpp));
+  const pxH=Math.max(180, Math.round(hmm/blankMmpp));
+  const cv=document.createElement('canvas');
+  cv.width=pxW; cv.height=pxH;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,pxW,pxH);
+  ctx.strokeStyle='#d7deea'; ctx.lineWidth=2; ctx.strokeRect(1,1,pxW-2,pxH-2);
+  ctx.strokeStyle='#eef2f7'; ctx.lineWidth=1;
+  const major=Math.max(20, Math.round(1000/blankMmpp));
+  for(let x=major;x<pxW;x+=major){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,pxH); ctx.stroke(); }
+  for(let y=major;y<pxH;y+=major){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(pxW,y); ctx.stroke(); }
+  addSheet({
+    name:`白紙 ${wmm}×${hmm}mm`,
+    image:cv.toDataURL('image/png'),
+    mmPerPixel:blankMmpp,
+    calibrated:true,
+    blank:true,
+    realW:wmm,
+    realH:hmm,
+    objects:[]
+  });
+  showHint(`白紙レイアウトを作成しました：${wmm} × ${hmm} mm`);
+}
+
+function askPositiveNumber(message, fallback){
+  const raw=prompt(message, String(fallback));
+  if(raw===null) return null;
+  const n=Math.round(Number(String(raw).replace(/[^\d.]/g,'')));
+  if(!Number.isFinite(n) || n<=0){ showHint('1以上の数値(mm)を入力してください'); return null; }
+  return n;
 }
 
 /* ================= 什器の追加 ================= */
@@ -601,6 +1053,7 @@ function addFixture(key, pos){
   applyObjMode(obj);
   canvas.add(obj); canvas.setActiveObject(obj); canvas.requestRenderAll();
   if(!pos && isMobile()) closeDrawer(); // クリック追加時はドロワーを閉じてキャンバスを表示
+  updateWorkStatus();
   autosave();
 }
 
@@ -783,6 +1236,7 @@ function applyCalibration(newMmpp){
     o.setCoords();
   });
   updateScaleBox(); canvas.requestRenderAll(); autosave();
+  updateWorkStatus();
   showHint('縮尺を設定しました：1px = '+newMmpp.toFixed(3)+' mm');
 }
 
@@ -791,6 +1245,10 @@ function updateScaleBox(){
   if(!s){ box.innerHTML='図面が未選択です'; return; }
   const mppv=s.mmPerPixel;
   const gpx=(+document.getElementById('gridMM').value)/mppv;
+  if(s.blank){
+    box.innerHTML = `白紙サイズ <b>${s.realW} × ${s.realH} mm</b><br><span class="muted">1px = ${mppv.toFixed(1)} mm / グリッド1マス ≈ ${gpx.toFixed(1)}px</span>`;
+    return;
+  }
   box.innerHTML = s.calibrated
     ? `1px = <b>${mppv.toFixed(3)} mm</b><br><span class="muted">グリッド1マス ≈ ${gpx.toFixed(1)}px</span>`
     : `<span class="warn">未校正</span> 仮に 1px=${mppv.toFixed(2)}mm<br><span class="muted">「縮尺を設定」で実寸を合わせてください</span>`;
@@ -921,8 +1379,8 @@ function wireCanvas(){
     const ang=Math.round(o.angle);
     document.getElementById('pA').value=ang; document.getElementById('pASlider').value=ang;
   });
-  canvas.on('object:scaling', ()=>{ updateProps(); });
-  canvas.on('object:modified', ()=>{ document.getElementById('props').classList.remove('dragging'); syncRealSize(); updateProps(); autosave(); });
+  canvas.on('object:scaling', ()=>{ updateProps(); updateWorkStatus(); });
+  canvas.on('object:modified', ()=>{ document.getElementById('props').classList.remove('dragging'); syncRealSize(); updateProps(); updateWorkStatus(); autosave(); });
   canvas.on('selection:created', updateProps);
   canvas.on('selection:updated', updateProps);
   canvas.on('selection:cleared', ()=>document.getElementById('props').classList.remove('show'));
@@ -960,11 +1418,11 @@ function fitView(){
 
 /* ================= 操作 ================= */
 function deleteSel(){ const objs=canvas.getActiveObjects(); if(!objs.length) return;
-  objs.forEach(o=>canvas.remove(o)); canvas.discardActiveObject(); canvas.requestRenderAll(); autosave(); }
+  objs.forEach(o=>canvas.remove(o)); canvas.discardActiveObject(); canvas.requestRenderAll(); updateWorkStatus(); autosave(); }
 function duplicateSel(){ const o=canvas.getActiveObject(); if(!o) return;
   o.clone(cl=>{ cl.set({left:o.left+20/canvas.getZoom(), top:o.top+20/canvas.getZoom()});
     if(o.data) cl.data=JSON.parse(JSON.stringify(o.data));
-    canvas.add(cl); canvas.setActiveObject(cl); canvas.requestRenderAll(); autosave(); },['data']); }
+    canvas.add(cl); canvas.setActiveObject(cl); canvas.requestRenderAll(); updateWorkStatus(); autosave(); },['data']); }
 function rotate90(){ const o=canvas.getActiveObject(); if(!o) return; o.rotate((Math.round(o.angle/90)*90+90)%360);
   o.setCoords(); canvas.requestRenderAll(); updateProps(); autosave(); }
 function setAngle(a){ const o=canvas.getActiveObject(); if(!o) return;
@@ -977,7 +1435,8 @@ function sendBwd(){ const o=canvas.getActiveObject(); if(o){ canvas.sendBackward
 function saveProject(){
   syncActiveObjects();
   const data={ version:1, active:project.active, sheets:project.sheets.map(s=>({
-    name:s.name, image:s.image, mmPerPixel:s.mmPerPixel, calibrated:s.calibrated, objects:s.objects||[] })) };
+    name:s.name, image:s.image, mmPerPixel:s.mmPerPixel, calibrated:s.calibrated,
+    blank:!!s.blank, realW:s.realW, realH:s.realH, objects:s.objects||[] })) };
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   triggerDownload(URL.createObjectURL(blob), 'layout_'+new Date().toISOString().slice(0,10)+'.json');
   showHint('プロジェクトを保存しました');
@@ -986,6 +1445,7 @@ function loadProjectData(data){
   project.sheets = (data.sheets||[]).map(s=>({...s}));
   project.active=-1; renderSheetList();
   if(project.sheets.length){ const t=(data.active>=0&&data.active<project.sheets.length)?data.active:0; switchSheet(t); }
+  updateWorkStatus();
   showHint('プロジェクトを読み込みました');
 }
 // 現在のシート（図面＋什器、グリッド無し）を合成してPNGのdataURLを生成
@@ -1089,6 +1549,52 @@ function showHint(msg){
   clearTimeout(hintTimer); hintTimer=setTimeout(()=>h.classList.remove('show'),2600);
 }
 
+function showHeroSlide(index){
+  document.querySelectorAll('.hero-slide').forEach((slide,i)=>{
+    slide.classList.toggle('active', i===index);
+  });
+  document.querySelectorAll('.hero-dot').forEach((dot,i)=>{
+    dot.classList.toggle('active', i===index);
+  });
+}
+
+function sharePayload(){
+  return {
+    title:'MiseFits | かんたん店舗レイアウトシミュレーター',
+    text:'ExcelやWordより気軽に、お店や施設のレイアウトを実寸で試せるMiseFits。',
+    url:location.origin.includes('127.0.0.1') || location.origin.includes('localhost')
+      ? 'https://misefits.kokokikaku.com/'
+      : location.href
+  };
+}
+async function shareApp(){
+  const payload=sharePayload();
+  if(navigator.share){
+    try{ await navigator.share(payload); showHint('共有メニューを開きました'); return; }
+    catch(e){ if(e.name==='AbortError') return; }
+  }
+  copyShareLink();
+}
+function shareToX(){
+  const p=sharePayload();
+  const u='https://twitter.com/intent/tweet?text='+encodeURIComponent(p.text)+'&url='+encodeURIComponent(p.url);
+  window.open(u,'_blank','noopener,noreferrer');
+}
+function shareToLine(){
+  const p=sharePayload();
+  const u='https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(p.url);
+  window.open(u,'_blank','noopener,noreferrer');
+}
+async function copyShareLink(){
+  const p=sharePayload();
+  try{
+    await navigator.clipboard.writeText(p.url);
+    showHint('共有リンクをコピーしました');
+  }catch(e){
+    prompt('このURLをコピーしてください', p.url);
+  }
+}
+
 function bindEvents(){
   document.getElementById('addPdf').addEventListener('change',e=>{ if(e.target.files[0]) handlePdfFile(e.target.files[0]); e.target.value=''; });
   document.getElementById('addImg').addEventListener('change',e=>{ if(e.target.files[0]) handleImageFile(e.target.files[0]); e.target.value=''; });
@@ -1100,6 +1606,8 @@ function bindEvents(){
   document.getElementById('pColor').addEventListener('input',applyProps);
   document.getElementById('gridOn').addEventListener('change',()=>canvas.requestRenderAll());
   document.getElementById('gridMM').addEventListener('change',()=>{ updateScaleBox(); canvas.requestRenderAll(); });
+  const librarySearch=document.getElementById('librarySearch');
+  if(librarySearch) librarySearch.addEventListener('input',filterLibrary);
 
   window.addEventListener('keydown',e=>{
     if(e.key==='Escape'&&calMode){ endCalibration(); return; }

@@ -3,7 +3,9 @@
 図面（PDF / 画像）を背景に、什器・設備を **実寸（mm）でドラッグ＆ドロップ配置** できるブラウザ用ツールです。
 サーバー不要・単一の `index.html` だけで動作します。図面データはブラウザ内だけで処理され、外部に送信されません。
 
-**公開URL**: Settings → Pages を有効化すると `https://<ユーザー名>.github.io/<リポジトリ名>/` で開けます。
+**公開URL**: `https://misefits.kokokikaku.com/`
+
+GitHub Pages のカスタムドメインとして公開します。リポジトリ直下の `CNAME` は `misefits.kokokikaku.com` です。
 
 ## 主な機能
 
@@ -15,6 +17,12 @@
 - **複数シート**：階ごとに切り替え、配置と縮尺を個別保持。
 - **保存・復元**：JSONで保存/読込。ブラウザに自動保存。
 - **PNG書き出し**。
+
+## 公開設定
+
+- GitHub Pages: `main` ブランチ / `/` ルート
+- カスタムドメイン: `misefits.kokokikaku.com`
+- DNS側で `misefits` の CNAME を `mikan-koko.github.io` に向ける必要があります。
 
 ## 使い方
 

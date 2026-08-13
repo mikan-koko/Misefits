@@ -2,6 +2,8 @@
 
 `index.html`（単一ファイル・バニラJS）の内部構造メモ。行番号は目安（編集で前後する）。
 
+公開URLは `https://misefits.kokokikaku.com/`。GitHub Pages のカスタムドメインとして、リポジトリ直下に `CNAME`（`misefits.kokokikaku.com`）を置く。DNS側では `misefits` の CNAME を `mikan-koko.github.io` に向ける。
+
 ## 全体構成
 
 - `<head>`: CDN スクリプト（Fabric 5.3.1 / pdf.js 3.11.174 / jsPDF 2.5.1）とインライン CSS。
