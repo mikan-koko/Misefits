@@ -498,8 +498,8 @@
     .hbtn{padding:8px 8px;font-size:12px;}
     .hbtn .ico{font-size:1.45em;margin-right:0;}
     .hbtn .lbl{display:none;}       /* アイコンのみ */
-    .top-actions .hbtn:nth-child(n+2){display:none;}
-    .top-actions{max-width:42px;overflow:hidden;}
+    .top-actions .hbtn:nth-child(n+3){display:none;}
+    .top-actions{max-width:96px;overflow:hidden;}
     .sidebar{position:fixed;top:58px;left:0;height:calc(100% - 58px);width:min(88vw,330px);
              transform:translateX(-100%);transition:transform .25s ease;z-index:30;
              box-shadow:4px 0 20px rgba(0,0,0,.18);}
@@ -626,6 +626,7 @@
     <a class="guide" href="guide.html">使い方ガイド</a>
   </nav>
   <div class="top-actions">
+    <button class="btn hbtn share-file-btn" onclick="shareLayoutImage()" title="図面を画像で共有（写真・ドライブ・AirDrop など）" aria-label="図面を画像で共有"><span class="ico">📤</span><span class="lbl"> 共有</span></button>
     <button class="btn ghost hbtn" onclick="saveProject()" title="プロジェクトをJSONで保存" aria-label="プロジェクトをJSONで保存"><span class="ico">💾</span><span class="lbl"> 保存(JSON)</span></button>
     <label class="btn ghost hbtn" style="cursor:pointer;" title="保存したJSONを読み込む" aria-label="保存したJSONを読み込む"><span class="ico">📂</span><span class="lbl"> 読込</span><input type="file" id="loadProj" accept="application/json"></label>
     <button class="btn outline hbtn" onclick="exportPNG()" title="PNGを書き出す" aria-label="PNGを書き出す"><span class="ico text-ico"></span><span class="lbl"> PNG</span></button>
@@ -751,6 +752,11 @@
         <button class="btn sm outline" onclick="exportPDF()">📄 PDF出力</button>
         <button class="btn sm" onclick="printLayout()">🖨 印刷</button>
       </div>
+      <div class="row share-file-row" style="margin-top:7px;">
+        <button class="btn sm pop share-file-btn" onclick="shareLayoutImage()">📤 画像を共有</button>
+        <button class="btn sm outline share-file-btn" onclick="shareLayoutPDF()">📤 PDFを共有</button>
+      </div>
+      <div class="muted share-file-note" style="margin-top:7px;">写真・ファイル・ドライブへの保存や、AirDrop・LINE・メールへの送信など、端末の共有メニューが開きます。</div>
       <div class="muted" style="margin-top:7px;">現在表示中のシート（図面＋配置）を用紙に収めて出力します。グリッドは印刷されません。</div>
     </div>
   </aside>
@@ -1043,6 +1049,7 @@ window.addEventListener('load', ()=>{
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
   buildLibrary();
+  applyShareSupport();
   renderQuickParts();
   updateSummary();
   bindEvents();
@@ -2013,6 +2020,59 @@ function renderComposite(cb, multiplier){
   });
 }
 
+/* ================= 端末の共有メニューへ書き出す ================= */
+// ファイル共有に対応しているか（iOS Safari / Android Chrome など）
+function canShareFiles(){
+  try{
+    if(!navigator.share || !navigator.canShare) return false;
+    return navigator.canShare({ files:[ new File([new Blob(['t'],{type:'text/plain'})], 't.txt', {type:'text/plain'}) ] });
+  }catch(e){ return false; }
+}
+function dataURLtoBlob(url){
+  const i=url.indexOf(','), head=url.slice(0,i), b64=url.slice(i+1);
+  const mime=(head.match(/:(.*?);/)||[,'application/octet-stream'])[1];
+  const bin=atob(b64), arr=new Uint8Array(bin.length);
+  for(let k=0;k<bin.length;k++) arr[k]=bin.charCodeAt(k);
+  return new Blob([arr],{type:mime});
+}
+async function shareFile(file, title, fallback){
+  try{
+    await navigator.share({ files:[file], title:title, text:'MiseFitsで作成したレイアウト図' });
+    showHint('共有メニューを開きました');
+  }catch(e){
+    if(e && e.name==='AbortError') return;           // ユーザーが閉じただけ
+    showHint('共有できなかったため、ファイルとして保存します', 4000);
+    fallback();
+  }
+}
+// 図面＋配置をPNGにして共有（写真・ファイル・ドライブ・AirDrop など）
+function shareLayoutImage(){
+  if(project.active<0){ showHint('先に図面シートを読み込んでください'); return; }
+  if(!canShareFiles()){ showHint('この端末は共有に未対応のため、PNGとして保存します', 4000); exportPNG(); return; }
+  renderComposite((url,w,h,s)=>{
+    const name=(s.name||'layout')+'.png';
+    const file=new File([dataURLtoBlob(url)], name, {type:'image/png'});
+    shareFile(file, s.name||'MiseFits レイアウト', ()=>triggerDownload(url, name));
+  }, 2);
+}
+// 同じ内容をPDFにして共有
+function shareLayoutPDF(){
+  if(project.active<0){ showHint('先に図面シートを読み込んでください'); return; }
+  if(!canShareFiles()){ showHint('この端末は共有に未対応のため、PDFとして保存します', 4000); exportPDF(); return; }
+  buildPDF((blob,name)=>{
+    const file=new File([blob], name, {type:'application/pdf'});
+    shareFile(file, name.replace(/\.pdf$/,''), ()=>triggerDownload(URL.createObjectURL(blob), name));
+  });
+}
+// 対応していない環境では共有ボタンを出さない
+function applyShareSupport(){
+  const ok=canShareFiles();
+  document.querySelectorAll('.share-file-btn').forEach(b=>{ b.style.display = ok ? '' : 'none'; });
+  const row=document.querySelector('.share-file-row'), note=document.querySelector('.share-file-note');
+  if(row) row.style.display = ok ? '' : 'none';
+  if(note) note.style.display = ok ? '' : 'none';
+}
+
 function exportPNG(){
   renderComposite((url,w,h,s)=>{
     triggerDownload(url, (s.name||'layout')+'.png');
@@ -2021,6 +2081,13 @@ function exportPNG(){
 }
 
 function exportPDF(){
+  buildPDF((blob,name)=>{
+    triggerDownload(URL.createObjectURL(blob), name);
+    showHint('PDFを書き出しました');
+  });
+}
+// PDFを組み立てて cb(blob, filename) に渡す（出力と共有で共通）
+function buildPDF(cb){
   if(!window.jspdf || !window.jspdf.jsPDF){ showHint('PDFライブラリの読み込みに失敗しました（オンライン環境が必要）'); return; }
   const fmt=(document.getElementById('paperSize')||{}).value || 'a4';
   renderComposite((url,w,h,s)=>{
@@ -2038,8 +2105,7 @@ function exportPDF(){
     const note=(s.calibrated ? `Scale: 1px = ${s.mmPerPixel.toFixed(3)} mm` : 'Scale: not calibrated')
       + `   |   Fixtures: ${sm.items}   Seats: ${sm.seats}   Fixture area: ${m2(sm.areaMm2).toFixed(2)} m2`;
     try{ pdf.text(note, margin, ph-3); }catch(e){}
-    triggerDownload(URL.createObjectURL(pdf.output('blob')), (s.name||'layout')+'.pdf');
-    showHint('PDFを書き出しました');
+    cb(pdf.output('blob'), (s.name||'layout')+'.pdf');
   }, 2);
 }
 
