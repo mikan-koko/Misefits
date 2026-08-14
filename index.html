@@ -19,6 +19,8 @@
 <meta name="twitter:title" content="MiseFits | かんたん店舗レイアウトシミュレーター">
 <meta name="twitter:description" content="店舗・施設の図面や白紙サイズから、什器・設備の配置を実寸で検討できるブラウザ完結ツール。">
 <meta name="twitter:image" content="https://misefits.kokokikaku.com/assets/misefits-hero-vivid.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://cdnjs.cloudflare.com blob: data:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0066cc">
 <link rel="icon" href="assets/misefits-favicon.png">
 <link rel="apple-touch-icon" href="assets/misefits-icon.png">
@@ -46,9 +48,15 @@
   }
 }
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"
+  integrity="sha384-sLpuECXYCB5TUyTbC06pftm/rgurDambREZmV4eRHwEqJzCQtU6lxI2Ve00z4XW5"
+  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+  integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e"
+  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+  integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk"
+  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
   :root{
     --bg:#eef1f5; --panel:#ffffff; --line:#dfe4ec; --ink:#242933; --sub:#667085;
@@ -177,6 +185,25 @@
   .lib-empty{display:none;color:var(--sub);font-size:12px;line-height:1.6;background:#f8fafc;border:1px dashed var(--line);border-radius:9px;padding:10px;}
   .lib-empty.show{display:block;}
 
+  /* Summary */
+  .summary{background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:10px 11px;font-size:12px;color:var(--sub);}
+  .sum-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px;}
+  .sum-kpi div{background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 8px;}
+  .sum-kpi b{display:block;color:var(--accent);font-size:17px;line-height:1.2;font-weight:800;}
+  .sum-kpi span{font-size:10.5px;letter-spacing:.02em;}
+  .sum-row{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px dashed #dbe2ec;}
+  .sum-row:first-of-type{border-top:none;}
+  .sum-row b{color:var(--ink);font-weight:700;}
+  .sum-list{margin-top:8px;display:grid;gap:3px;max-height:132px;overflow:auto;}
+  .sum-list div{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;}
+  .sum-list span{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sum-list i{color:var(--sub);font-style:normal;flex:0 0 auto;}
+  .sum-note{margin-top:8px;font-size:10.5px;line-height:1.5;color:#7a8494;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px;font-size:11px;color:var(--sub);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .legend i{width:12px;height:4px;border-radius:2px;display:inline-block;}
+
   /* Workspace */
   .workspace{flex:1;position:relative;min-width:0;max-width:100vw;background:#eef2f6;
              background-image:
@@ -202,6 +229,30 @@
   .zoombar button{width:30px;height:30px;border:none;background:#f1f3f6;border-radius:6px;cursor:pointer;font-size:16px;color:var(--ink);}
   .zoombar button:hover{background:#e4e8ee;}
   .zoombar .z{font-size:12px;min-width:46px;text-align:center;color:var(--sub);}
+
+  /* Action bar (undo/redo etc.) */
+  .actionbar{position:absolute;right:14px;bottom:56px;display:none;align-items:center;gap:6px;
+    background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:10px;padding:5px 7px;
+    box-shadow:0 3px 14px rgba(25,33,46,.13);z-index:6;max-width:calc(100% - 28px);}
+  .actionbar.show{display:flex;}
+  .abtn{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:32px;padding:0 10px;
+    border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink);
+    font-size:12.5px;font-weight:700;line-height:1;white-space:nowrap;}
+  .abtn:hover:not(:disabled){background:#f2f8ff;border-color:#9fcbff;}
+  .abtn:disabled{opacity:.36;cursor:default;}
+  .abtn.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .abtn .ab-ico{font-size:14px;}
+  .ab-sep{width:1px;height:20px;background:var(--line);margin:0 2px;flex:0 0 auto;}
+  .quickparts{display:none;gap:6px;overflow-x:auto;flex:1 1 auto;min-width:0;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;padding:1px 0;}
+  .quickparts::-webkit-scrollbar{display:none;}
+  .quick-sep{display:none;}
+  .qchip{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 11px;flex:0 0 auto;
+    border:1px solid var(--line);background:#fff;border-radius:999px;font-size:12px;font-weight:700;
+    color:var(--ink);white-space:nowrap;cursor:pointer;line-height:1;}
+  .qchip:active{background:#eef5ff;}
+  .qchip i{width:13px;height:11px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.2);}
+  .qchip.more{color:var(--accent);border-color:#bfdcff;background:#f4f9ff;}
 
   .work-status{position:absolute;left:14px;top:14px;display:none;align-items:center;gap:8px;z-index:6;
     background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:10px;padding:7px 9px;
@@ -411,6 +462,13 @@
     /* コンパクト時は名前＋移動/サイズ切替のみ表示（画面を広く保つ） */
     .props.collapsed{max-height:none;}
     /* ズームバーは上部右へ（下部のプロパティパネルに隠れず、ブラウザUIで見切れない） */
+    .actionbar{left:8px;right:8px;bottom:8px;transform:none;max-width:none;padding:5px 6px;border-radius:12px;}
+    .abtn{height:38px;padding:0 11px;}
+    .abtn .ab-lbl{display:none;}
+    .abtn .ab-ico{font-size:17px;}
+    .quickparts{display:flex;}
+    .quick-sep{display:block;}
+    .props{bottom:64px;}
     .zoombar{top:8px;bottom:auto;right:8px;padding:4px 6px;}
     .zoombar button{width:34px;height:34px;font-size:17px;}
     .zoombar .z{min-width:40px;font-size:11.5px;}
@@ -558,6 +616,7 @@
       <h3>グリッド / 吸着</h3>
       <div class="toggle"><input type="checkbox" id="gridOn" checked><label for="gridOn">グリッドを表示</label></div>
       <div class="toggle"><input type="checkbox" id="snapOn" checked><label for="snapOn">グリッドに吸着</label></div>
+      <div class="toggle"><input type="checkbox" id="alignOn" checked><label for="alignOn">什器・壁に吸着（ガイド表示）</label></div>
       <div class="toggle" style="margin-bottom:0;">
         <label for="gridMM">間隔</label>
         <select id="gridMM" class="inp">
@@ -568,6 +627,21 @@
           <option value="1000">1000mm</option>
         </select>
       </div>
+    </div>
+
+    <!-- Measure -->
+    <div class="section">
+      <h3>計測（通路幅チェック）</h3>
+      <div class="row">
+        <button class="btn sm outline" id="measBtnSide" onclick="toggleMeasure()">📐 距離を測る</button>
+        <button class="btn sm ghost" onclick="clearMeasures()">計測をクリア</button>
+      </div>
+      <div class="legend" aria-label="通路幅の目安">
+        <span><i style="background:#e63946"></i>600mm未満</span>
+        <span><i style="background:#f0900f"></i>900mm未満</span>
+        <span><i style="background:#1f8f7d"></i>900mm以上</span>
+      </div>
+      <div class="muted" style="margin-top:7px;">2点をクリック（タップ）すると実寸の距離を表示します。通路や什器間の余裕を確認できます。計測線は保存・出力には含まれません。</div>
     </div>
 
     <!-- Library -->
@@ -589,7 +663,13 @@
         <button class="btn sm ghost" onclick="sendBwd()">背面へ</button>
         <button class="btn sm danger" onclick="deleteSel()">削除</button>
       </div>
-      <div class="muted" style="margin-top:8px;">ショートカット: R=15°回転 / Shift+R=逆回転 / [ ]=±15° / Delete=削除 / Ctrl+D=複製 / Space+ドラッグ=画面移動 / ホイール=拡大縮小</div>
+      <div class="muted" style="margin-top:8px;">ショートカット: M=計測 / Ctrl+Z=元に戻す / Ctrl+Shift+Z=やり直す / R=15°回転 / Shift+R=逆回転 / [ ]=±15° / Delete=削除 / Ctrl+D=複製 / Space+ドラッグ=画面移動 / ホイール=拡大縮小</div>
+    </div>
+
+    <!-- Summary -->
+    <div class="section">
+      <h3>集計</h3>
+      <div class="summary" id="summaryBox"></div>
     </div>
 
     <!-- Output -->
@@ -730,6 +810,16 @@
         <button class="btn sm danger" onclick="deleteSel()">削除</button>
       </div>
       </div><!-- /props-details -->
+    </div>
+
+    <!-- Action bar -->
+    <div class="actionbar" id="actionBar">
+      <button class="abtn" id="undoBtn" onclick="undo()" title="元に戻す (Ctrl+Z)" aria-label="元に戻す" disabled><span class="ab-ico">↶</span><span class="ab-lbl">戻す</span></button>
+      <button class="abtn" id="redoBtn" onclick="redo()" title="やり直す (Ctrl+Shift+Z)" aria-label="やり直す" disabled><span class="ab-ico">↷</span><span class="ab-lbl">進む</span></button>
+      <span class="ab-sep" aria-hidden="true"></span>
+      <button class="abtn" id="measBtn" onclick="toggleMeasure()" title="2点間の距離を測る" aria-label="距離を測る"><span class="ab-ico">📐</span><span class="ab-lbl">計測</span></button>
+      <span class="ab-sep quick-sep" aria-hidden="true"></span>
+      <div class="quickparts" id="quickParts" aria-label="よく使うパーツ"></div>
     </div>
 
     <!-- Zoom -->
@@ -879,6 +969,8 @@ window.addEventListener('load', ()=>{
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
   buildLibrary();
+  renderQuickParts();
+  updateSummary();
   bindEvents();
   wireCanvas();
   showHeroSlide(0);
@@ -955,7 +1047,7 @@ function renderSheetList(){
   const el=document.getElementById('sheetList'); el.innerHTML='';
   project.sheets.forEach((s,i)=>{
     const d=document.createElement('div'); d.className='sheet-item'+(i===project.active?' active':'');
-    d.innerHTML=`<span class="nm">${s.name}</span><span class="x" title="削除">✕</span>`;
+    d.innerHTML=`<span class="nm" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span><span class="x" title="削除">✕</span>`;
     d.querySelector('.nm').onclick=()=>switchSheet(i);
     d.querySelector('.x').onclick=(e)=>{e.stopPropagation();removeSheet(i);};
     el.appendChild(d);
@@ -968,12 +1060,16 @@ function updateWorkStatus(){
   const box=document.getElementById('workStatus');
   if(!box) return;
   const s=activeSheet();
-  if(!s){ box.classList.remove('show'); box.innerHTML=''; return; }
+  updateHistoryBtns();
+  if(!s){ box.classList.remove('show'); box.innerHTML=''; updateSummary(); return; }
   const count=canvas ? canvas.getObjects().filter(o=>o.data && o.data.shape!=='text').length : ((s.objects||[]).filter(o=>o.data && o.data.shape!=='text').length);
   const scaleLabel=s.calibrated ? `${s.mmPerPixel.toFixed(3)}mm/px` : '未校正';
   const next=s.calibrated ? (count ? '配置を調整できます' : '次: パーツを追加') : '次: 縮尺を設定';
-  box.innerHTML=`<b title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</b><span class="status-pill ${s.calibrated?'ok':'warn'}">${scaleLabel}</span><span class="status-pill">パーツ ${count}</span><span class="status-next">${next}</span>`;
+  const seats=computeSummary().seats;
+  const seatPill=seats? `<span class="status-pill">席 ${seats}</span>` : '';
+  box.innerHTML=`<b title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</b><span class="status-pill ${s.calibrated?'ok':'warn'}">${scaleLabel}</span><span class="status-pill">パーツ ${count}</span>${seatPill}<span class="status-next">${next}</span>`;
   box.classList.add('show');
+  updateSummary();
 }
 
 function escapeHtml(v){
@@ -1003,6 +1099,7 @@ function switchSheet(i){
         });
       } else canvas.renderAll();
       fitView();
+      historyInit();
     });
   });
   renderSheetList(); updateScaleBox(); updateProps();
@@ -1016,7 +1113,7 @@ function removeSheet(i){
   if(project.active>=project.sheets.length) project.active=project.sheets.length-1;
   if(project.active<0){ canvas.clear(); canvas.backgroundColor='#fff'; canvas.setBackgroundImage(null,canvas.renderAll.bind(canvas)); }
   else { const t=project.active; project.active=-1; switchSheet(t); }
-  renderSheetList(); updateScaleBox(); updateWorkStatus(); autosave();
+  renderSheetList(); updateScaleBox(); updateWorkStatus(); updateHistoryBtns(); autosave();
 }
 
 function syncActiveObjects(){
@@ -1134,8 +1231,9 @@ function addFixture(key, pos){
   applyObjMode(obj);
   canvas.add(obj); canvas.setActiveObject(obj); canvas.requestRenderAll();
   if(!pos && isMobile()) closeDrawer(); // クリック追加時はドロワーを閉じてキャンバスを表示
+  pushRecent(key);                      // よく使うパーツバーを更新
   updateWorkStatus();
-  autosave();
+  autosave(); historyMark();
 }
 
 // 操作モードを1オブジェクトへ適用（ハンドル表示/非表示）
@@ -1260,17 +1358,20 @@ function applyProps(){
 /* ================= 縮尺キャリブレーション ================= */
 function startCalibration(){
   if(project.active<0){ showHint('先に図面を読み込んでください'); return; }
+  if(measMode) endMeasure();
   calMode=true; calP1=null; clearCalMarks();
   document.getElementById('calBtn').classList.add('on');
   document.getElementById('calBanner').textContent='📏 縮尺設定モード：1点目をクリック（キャンセルはEsc）';
   document.getElementById('calBanner').classList.add('show');
-  canvas.discardActiveObject(); canvas.selection=false; canvas.defaultCursor='crosshair'; canvas.requestRenderAll();
+  canvas.discardActiveObject(); canvas.selection=false; setObjectsInteractive(false);
+  canvas.defaultCursor='crosshair'; canvas.requestRenderAll();
 }
 function endCalibration(){
   calMode=false; calP1=null; clearCalMarks();
   document.getElementById('calBtn').classList.remove('on');
   document.getElementById('calBanner').classList.remove('show');
-  canvas.selection=true; canvas.defaultCursor='default'; canvas.requestRenderAll();
+  canvas.selection=!IS_TOUCH; setObjectsInteractive(true);
+  canvas.defaultCursor='default'; canvas.requestRenderAll();
 }
 function clearCalMarks(){
   if(calLine){ canvas.remove(calLine); calLine=null; }
@@ -1316,7 +1417,7 @@ function applyCalibration(newMmpp){
     }
     o.setCoords();
   });
-  updateScaleBox(); canvas.requestRenderAll(); autosave();
+  updateScaleBox(); canvas.requestRenderAll(); autosave(); historyMark();
   updateWorkStatus();
   showHint('縮尺を設定しました：1px = '+newMmpp.toFixed(3)+' mm');
 }
@@ -1333,6 +1434,221 @@ function updateScaleBox(){
   box.innerHTML = s.calibrated
     ? `1px = <b>${mppv.toFixed(3)} mm</b><br><span class="muted">グリッド1マス ≈ ${gpx.toFixed(1)}px</span>`
     : `<span class="warn">未校正</span> 仮に 1px=${mppv.toFixed(2)}mm<br><span class="muted">「縮尺を設定」で実寸を合わせてください</span>`;
+}
+
+/* ================= クイックパーツ（スマホ用の追加バー） ================= */
+const RECENT_KEY='misefitsRecentParts';
+const DEFAULT_QUICK=['table4','chair_round','counter','desk_single','storage','free_rect'];
+
+function recentKeys(){
+  let list=[];
+  try{ list=JSON.parse(localStorage.getItem(RECENT_KEY)||'[]'); }catch(e){}
+  if(!Array.isArray(list)) list=[];
+  const merged=list.concat(DEFAULT_QUICK.filter(k=>!list.includes(k)));
+  return merged.filter(k=>ITEM_INDEX[k]).slice(0,8);
+}
+function pushRecent(key){
+  if(!ITEM_INDEX[key]) return;
+  let list=[];
+  try{ list=JSON.parse(localStorage.getItem(RECENT_KEY)||'[]'); }catch(e){}
+  if(!Array.isArray(list)) list=[];
+  list=[key].concat(list.filter(k=>k!==key)).slice(0,8);
+  try{ localStorage.setItem(RECENT_KEY, JSON.stringify(list)); }catch(e){}
+  renderQuickParts();
+}
+function renderQuickParts(){
+  const bar=document.getElementById('quickParts'); if(!bar) return;
+  bar.innerHTML='';
+  recentKeys().forEach(k=>{
+    const it=ITEM_INDEX[k];
+    const b=document.createElement('button');
+    b.type='button'; b.className='qchip'; b.title=`${it.name} を追加`;
+    const round=it.shape==='circle'?'border-radius:50%;':'';
+    b.innerHTML=`<i style="background:${it.color};${round}"></i>${escapeHtml(it.name)}`;
+    b.onclick=()=>addFixture(k);
+    bar.appendChild(b);
+  });
+  const more=document.createElement('button');
+  more.type='button'; more.className='qchip more'; more.textContent='＋ 一覧';
+  more.title='パーツ一覧を開く';
+  more.onclick=()=>{ openDrawer(); const el=document.getElementById('librarySearch'); if(el) el.scrollIntoView({block:'center'}); };
+  bar.appendChild(more);
+}
+
+/* ================= 集計（席数・面積） ================= */
+/* 席・人数の目安。カウンター席は幅600mmごとに1席として数える */
+const SEAT_COUNT = { bench:3, chair_round:1, chair_sq:1, sofa:3,
+  table2:2, table4:4, rtable2:2, rtable4:4,
+  salon_chair:1, shampoo:1, treatment_bed:1, dryer:1,
+  desk_single:1, desk_pair:2, meeting_table:6,
+  exam_bed:1, doctor_desk:1, waiting_chair3:3,
+  treadmill:1, training_mat:1, single_bed:1 };
+const SEAT_PER_MM = { counter:600 };
+
+function computeSummary(){
+  const res={ items:0, seats:0, areaMm2:0, list:[], sheetArea:0, sheetLabel:'', ratio:null };
+  const s=activeSheet(); if(!s||!canvas) return res;
+  const counts={};
+  canvas.getObjects().forEach(o=>{
+    const d=o.data; if(!d||d.shape==='text') return;
+    const sz=objRealSize(o);
+    res.items++;
+    res.areaMm2 += sz.circle ? Math.PI*Math.pow(sz.w/2,2) : sz.w*sz.d;
+    const per=SEAT_PER_MM[d.key];
+    res.seats += per ? Math.max(0, Math.floor(sz.w/per)) : (SEAT_COUNT[d.key]||0);
+    const key=d.name||d.key; counts[key]=(counts[key]||0)+1;
+  });
+  res.list=Object.entries(counts).sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]));
+  if(s.blank && s.realW){ res.sheetArea=s.realW*s.realH; res.sheetLabel='白紙サイズ'; }
+  else if(s.calibrated && s._imgW){ res.sheetArea=(s._imgW*s.mmPerPixel)*(s._imgH*s.mmPerPixel); res.sheetLabel='図面範囲（余白含む）'; }
+  if(res.sheetArea>0) res.ratio=res.areaMm2/res.sheetArea;
+  return res;
+}
+function m2(mm2){ return (mm2/1e6); }
+function updateSummary(){
+  const box=document.getElementById('summaryBox'); if(!box) return;
+  const s=activeSheet();
+  if(!s){ box.innerHTML='<span class="muted">図面シートを読み込むと、席数と面積を自動で集計します。</span>'; return; }
+  const r=computeSummary();
+  let html=`<div class="sum-kpi">
+      <div><b>${r.seats}</b><span>席・人数の目安</span></div>
+      <div><b>${r.items}</b><span>配置パーツ数</span></div>
+    </div>
+    <div class="sum-row"><span>什器の合計面積</span><b>${m2(r.areaMm2).toFixed(2)} m²</b></div>`;
+  if(r.sheetArea>0){
+    html+=`<div class="sum-row"><span>${r.sheetLabel}</span><b>${m2(r.sheetArea).toFixed(2)} m²</b></div>`;
+    html+=`<div class="sum-row"><span>占有率</span><b>${Math.round(r.ratio*100)} %</b></div>`;
+  }
+  if(r.list.length){
+    html+='<div class="sum-list">'+r.list.map(([n,c])=>`<div><span>${escapeHtml(n)}</span><i>×${c}</i></div>`).join('')+'</div>';
+  }
+  html+='<div class="sum-note">席数は什器ごとの標準的な人数から自動計算した目安です（カウンター席は幅600mmで1席換算）。テキストは集計に含みません。</div>';
+  box.innerHTML=html;
+}
+
+/* ================= 計測（通路幅チェック） ================= */
+let measMode=false, measP1=null, measHover=null;
+const AISLE_TIGHT=600, AISLE_OK=900;   // 通路幅の目安(mm)
+
+function sheetMeasures(){ const s=activeSheet(); if(!s) return []; if(!s._meas) s._meas=[]; return s._meas; }
+function setObjectsInteractive(v){
+  canvas.getObjects().forEach(o=>{ o.evented=v; o.selectable=v; });
+}
+function toggleMeasure(){ measMode? endMeasure() : startMeasure(); }
+function startMeasure(){
+  if(project.active<0){ showHint('先に図面シートを読み込んでください'); return; }
+  if(calMode) endCalibration();
+  measMode=true; measP1=null; measHover=null;
+  canvas.discardActiveObject(); canvas.selection=false; setObjectsInteractive(false);
+  canvas.defaultCursor='crosshair';
+  updateMeasureUI();
+  document.getElementById('calBanner').textContent='📐 計測モード：1点目をクリック（終了はEsc）';
+  document.getElementById('calBanner').classList.add('show');
+  canvas.requestRenderAll();
+}
+function endMeasure(){
+  measMode=false; measP1=null; measHover=null;
+  canvas.selection=!IS_TOUCH; setObjectsInteractive(true);
+  canvas.defaultCursor='default';
+  updateMeasureUI();
+  document.getElementById('calBanner').classList.remove('show');
+  canvas.requestRenderAll();
+}
+function updateMeasureUI(){
+  const b=document.getElementById('measBtn'); if(b) b.classList.toggle('on', measMode);
+  const s=document.getElementById('measBtnSide');
+  if(s){ s.classList.toggle('on', measMode); s.textContent = measMode? '📐 計測を終了' : '📐 距離を測る'; }
+}
+function measClick(p){
+  if(!measP1){
+    measP1={x:p.x,y:p.y}; measHover={x:p.x,y:p.y};
+    document.getElementById('calBanner').textContent='📐 2点目をクリック（終了はEsc）';
+  } else {
+    sheetMeasures().push({x1:measP1.x,y1:measP1.y,x2:p.x,y2:p.y});
+    const mm=Math.round(Math.hypot(p.x-measP1.x,p.y-measP1.y)*mmpp());
+    measP1=null; measHover=null;
+    document.getElementById('calBanner').textContent='📐 計測モード：1点目をクリック（終了はEsc）';
+    showHint(`計測：${mm.toLocaleString()} mm` + (mm<AISLE_TIGHT?'（通路としては狭めです）':''));
+  }
+  canvas.requestRenderAll();
+}
+function clearMeasures(){
+  const s=activeSheet(); if(!s) return;
+  s._meas=[]; measP1=null; measHover=null; canvas.requestRenderAll();
+  showHint('計測線をクリアしました');
+}
+function measColor(mm){ return mm<AISLE_TIGHT? '#e63946' : (mm<AISLE_OK? '#e07c0a' : '#1f8f7d'); }
+function drawMeasures(){
+  const list=sheetMeasures().slice();
+  if(measMode && measP1 && measHover) list.push({x1:measP1.x,y1:measP1.y,x2:measHover.x,y2:measHover.y,live:true});
+  if(!list.length) return;
+  const ctx=canvas.getContext(), vpt=canvas.viewportTransform, z=canvas.getZoom(), scale=mmpp();
+  ctx.save();
+  ctx.lineCap='butt';
+  list.forEach(m=>{
+    const x1=m.x1*z+vpt[4], y1=m.y1*z+vpt[5], x2=m.x2*z+vpt[4], y2=m.y2*z+vpt[5];
+    const mm=Math.round(Math.hypot(m.x2-m.x1,m.y2-m.y1)*scale);
+    const col=measColor(mm);
+    const ang=Math.atan2(y2-y1,x2-x1), nx=-Math.sin(ang)*7, ny=Math.cos(ang)*7;
+    ctx.strokeStyle=col; ctx.lineWidth=m.live?1.5:2; ctx.setLineDash(m.live?[6,4]:[]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x1-nx,y1-ny); ctx.lineTo(x1+nx,y1+ny);
+    ctx.moveTo(x2-nx,y2-ny); ctx.lineTo(x2+nx,y2+ny); ctx.stroke();
+    const txt=mm>=1000? `${mm.toLocaleString()} mm (${(mm/1000).toFixed(2)} m)` : `${mm} mm`;
+    ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    const w=ctx.measureText(txt).width+14;
+    const cx=(x1+x2)/2, cy=(y1+y2)/2;
+    ctx.fillStyle=col; roundRect(ctx, cx-w/2, cy-11, w, 20, 5); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.fillText(txt, cx, cy);
+  });
+  ctx.restore();
+}
+
+/* ================= 吸着ガイド ================= */
+let snapGuides=[];
+function computeSnap(o){
+  snapGuides=[];
+  const s=activeSheet(); if(!s) return {x:false,y:false};
+  const el=document.getElementById('alignOn');
+  if(!el || !el.checked) return {x:false,y:false};
+  const tol=9/canvas.getZoom();
+  o.setCoords();
+  const br=o.getBoundingRect(true,true);
+  const xs=[], ys=[];
+  if(s._imgW){ xs.push(0, s._imgW); ys.push(0, s._imgH); }   // 図面の外周（壁）
+  canvas.getObjects().forEach(t=>{
+    if(t===o||!t.data) return;
+    const b=t.getBoundingRect(true,true);
+    xs.push(b.left, b.left+b.width, b.left+b.width/2);
+    ys.push(b.top, b.top+b.height, b.top+b.height/2);
+  });
+  const mineX=[br.left, br.left+br.width/2, br.left+br.width];
+  const mineY=[br.top, br.top+br.height/2, br.top+br.height];
+  const pick=(mine,cands)=>{
+    let best=null;
+    mine.forEach(mv=>cands.forEach(cv=>{ const d=cv-mv;
+      if(Math.abs(d)<=tol && (!best||Math.abs(d)<Math.abs(best.d))) best={d,v:cv}; }));
+    return best;
+  };
+  const bx=pick(mineX,xs), by=pick(mineY,ys);
+  if(bx){ o.set('left', o.left+bx.d); snapGuides.push({axis:'x', v:bx.v}); }
+  if(by){ o.set('top', o.top+by.d); snapGuides.push({axis:'y', v:by.v}); }
+  return {x:!!bx, y:!!by};
+}
+function clearSnapGuides(){ if(snapGuides.length){ snapGuides=[]; canvas.requestRenderAll(); } }
+function drawSnapGuides(){
+  if(!snapGuides.length) return;
+  const ctx=canvas.getContext(), vpt=canvas.viewportTransform, z=canvas.getZoom();
+  ctx.save();
+  ctx.strokeStyle='rgba(255,60,140,.85)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+  snapGuides.forEach(g=>{
+    ctx.beginPath();
+    if(g.axis==='x'){ const x=g.v*z+vpt[4]; ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); }
+    else { const y=g.v*z+vpt[5]; ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); }
+    ctx.stroke();
+  });
+  ctx.restore();
 }
 
 /* ================= グリッド描画 ================= */
@@ -1414,22 +1730,25 @@ function isMobile(){ return window.matchMedia('(max-width:860px)').matches; }
 
 /* ================= キャンバスイベント ================= */
 function wireCanvas(){
-  canvas.on('after:render', ()=>{ drawGrid(); drawDimBadge(); });
+  canvas.on('after:render', ()=>{ drawGrid(); drawSnapGuides(); drawMeasures(); drawDimBadge(); });
 
   canvas.on('mouse:down', opt=>{
     if(pinch.active) return;
     if(calMode){ const p=canvas.getPointer(opt.e); calClick(p); return; }
+    if(measMode){ const p=canvas.getPointer(opt.e); measClick(p); return; }
     // PC: Space+ドラッグ / タッチ: 何もない所を1本指ドラッグで画面移動
     const emptyTouchPan = IS_TOUCH && !opt.target;
     if(spaceDown || emptyTouchPan){ const c=clientXY(opt.e); isPanning=true; lastPan=c;
       canvas.selection=false; canvas.setCursor('grabbing'); }
   });
   canvas.on('mouse:move', opt=>{
+    if(measMode && measP1){ measHover=canvas.getPointer(opt.e); canvas.requestRenderAll(); return; }
     if(isPanning && lastPan && !pinch.active){ const c=clientXY(opt.e); const vpt=canvas.viewportTransform;
       vpt[4]+=c.x-lastPan.x; vpt[5]+=c.y-lastPan.y; lastPan=c;
       canvas.requestRenderAll(); }
   });
-  canvas.on('mouse:up', ()=>{ isPanning=false; lastPan=null; if(!calMode && !IS_TOUCH) canvas.selection=true;
+  canvas.on('mouse:up', ()=>{ isPanning=false; lastPan=null; if(!calMode && !measMode && !IS_TOUCH) canvas.selection=true;
+    clearSnapGuides();
     document.getElementById('props').classList.remove('dragging'); });
 
   // ピンチでズーム＋2本指パン（タッチ）
@@ -1446,11 +1765,14 @@ function wireCanvas(){
   // snapping
   canvas.on('object:moving', opt=>{
     document.getElementById('props').classList.add('dragging'); // 移動中はパネルを一時的に隠す
-    if(!document.getElementById('snapOn').checked) return;
     const s=activeSheet(); if(!s) return;
-    const step=(+document.getElementById('gridMM').value)/s.mmPerPixel;
     const o=opt.target;
-    o.set({ left:Math.round(o.left/step)*step, top:Math.round(o.top/step)*step });
+    const snapped=computeSnap(o);          // 什器の辺・中心・図面外周へ吸着（ガイド表示）
+    if(document.getElementById('snapOn').checked){
+      const step=(+document.getElementById('gridMM').value)/s.mmPerPixel;
+      if(!snapped.x) o.set('left', Math.round(o.left/step)*step);
+      if(!snapped.y) o.set('top',  Math.round(o.top/step)*step);
+    }
   });
   canvas.on('object:rotating', opt=>{
     const o=opt.target; const snap=15;
@@ -1461,7 +1783,9 @@ function wireCanvas(){
     document.getElementById('pA').value=ang; document.getElementById('pASlider').value=ang;
   });
   canvas.on('object:scaling', ()=>{ updateProps(); updateWorkStatus(); });
-  canvas.on('object:modified', ()=>{ document.getElementById('props').classList.remove('dragging'); syncRealSize(); updateProps(); updateWorkStatus(); autosave(); });
+  canvas.on('object:added', ()=>{ if(!historyLock) updateWorkStatus(); });
+  canvas.on('object:removed', ()=>{ if(!historyLock) updateWorkStatus(); });
+  canvas.on('object:modified', ()=>{ clearSnapGuides(); document.getElementById('props').classList.remove('dragging'); syncRealSize(); updateProps(); updateWorkStatus(); autosave(); historyMark(); });
   canvas.on('selection:created', updateProps);
   canvas.on('selection:updated', updateProps);
   canvas.on('selection:cleared', ()=>document.getElementById('props').classList.remove('show'));
@@ -1499,35 +1823,57 @@ function fitView(){
 
 /* ================= 操作 ================= */
 function deleteSel(){ const objs=canvas.getActiveObjects(); if(!objs.length) return;
-  objs.forEach(o=>canvas.remove(o)); canvas.discardActiveObject(); canvas.requestRenderAll(); updateWorkStatus(); autosave(); }
+  objs.forEach(o=>canvas.remove(o)); canvas.discardActiveObject(); canvas.requestRenderAll(); updateWorkStatus(); autosave(); historyMark(); }
 function duplicateSel(){ const o=canvas.getActiveObject(); if(!o) return;
   o.clone(cl=>{ cl.set({left:o.left+20/canvas.getZoom(), top:o.top+20/canvas.getZoom()});
     if(o.data) cl.data=JSON.parse(JSON.stringify(o.data));
-    canvas.add(cl); canvas.setActiveObject(cl); canvas.requestRenderAll(); updateWorkStatus(); autosave(); },['data']); }
+    canvas.add(cl); canvas.setActiveObject(cl); canvas.requestRenderAll(); updateWorkStatus(); autosave(); historyMark(); },['data']); }
 function rotate90(){ const o=canvas.getActiveObject(); if(!o) return; o.rotate((Math.round(o.angle/90)*90+90)%360);
-  o.setCoords(); canvas.requestRenderAll(); updateProps(); autosave(); }
+  o.setCoords(); canvas.requestRenderAll(); updateProps(); autosave(); historyMark(); }
 function setAngle(a){ const o=canvas.getActiveObject(); if(!o) return;
   a=((a%360)+360)%360; o.rotate(a); o.setCoords(); canvas.requestRenderAll(); updateProps(); autosave(); }
 function rotateBy(delta){ const o=canvas.getActiveObject(); if(!o) return; setAngle(Math.round(o.angle)+delta); }
-function bringFwd(){ const o=canvas.getActiveObject(); if(o){ canvas.bringForward(o); autosave(); } }
-function sendBwd(){ const o=canvas.getActiveObject(); if(o){ canvas.sendBackwards(o); autosave(); } }
+function bringFwd(){ const o=canvas.getActiveObject(); if(o){ canvas.bringForward(o); autosave(); historyMark(); } }
+function sendBwd(){ const o=canvas.getActiveObject(); if(o){ canvas.sendBackwards(o); autosave(); historyMark(); } }
 
 /* ================= 保存・読込・書出し ================= */
 function saveProject(){
-  syncActiveObjects();
-  const data={ version:1, active:project.active, sheets:project.sheets.map(s=>({
-    name:s.name, image:s.image, mmPerPixel:s.mmPerPixel, calibrated:s.calibrated,
-    blank:!!s.blank, realW:s.realW, realH:s.realH, objects:s.objects||[] })) };
+  const data=serializeProject();
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   triggerDownload(URL.createObjectURL(blob), 'layout_'+new Date().toISOString().slice(0,10)+'.json');
   showHint('プロジェクトを保存しました');
 }
+// 外部JSONは信用せず、型と値域を整えてから取り込む
+function sanitizeSheet(s){
+  s = s || {};
+  const img = typeof s.image==='string' ? s.image : '';
+  const mpp = Number(s.mmPerPixel);
+  return {
+    name: String(s.name==null?'シート':s.name).slice(0,120),
+    image: /^data:image\//.test(img) ? img : '',   // 埋め込み画像のみ許可（外部URLは読み込まない）
+    mmPerPixel: (Number.isFinite(mpp)&&mpp>0) ? mpp : SAMPLE_MMPP,
+    calibrated: !!s.calibrated,
+    blank: !!s.blank,
+    realW: Number(s.realW)||0,
+    realH: Number(s.realH)||0,
+    objects: Array.isArray(s.objects) ? s.objects : []
+  };
+}
 function loadProjectData(data){
-  project.sheets = (data.sheets||[]).map(s=>({...s}));
+  const raw = (data && Array.isArray(data.sheets)) ? data.sheets : [];
+  const sheets = raw.map(sanitizeSheet).filter(s=>s.image);
+  const dropped = raw.length - sheets.length;
+  project.sheets = sheets;
   project.active=-1; renderSheetList();
-  if(project.sheets.length){ const t=(data.active>=0&&data.active<project.sheets.length)?data.active:0; switchSheet(t); }
-  updateWorkStatus();
-  showHint('プロジェクトを読み込みました');
+  if(project.sheets.length){
+    const a=Number(data.active);
+    const t=(Number.isInteger(a)&&a>=0&&a<project.sheets.length)?a:0;
+    switchSheet(t);
+  } else {
+    canvas.clear(); canvas.backgroundColor='#fff'; canvas.setBackgroundImage(null,canvas.renderAll.bind(canvas));
+  }
+  updateWorkStatus(); updateScaleBox();
+  showHint(dropped ? `プロジェクトを読み込みました（${dropped}件のシートは形式が不正なため除外）` : 'プロジェクトを読み込みました');
 }
 // 現在のシート（図面＋什器、グリッド無し）を合成してPNGのdataURLを生成
 function renderComposite(cb, multiplier){
@@ -1567,7 +1913,9 @@ function exportPDF(){
     pdf.addImage(url,'PNG',x,y,dw,dh,undefined,'FAST');
     // フッター：縮尺情報（jsPDF標準フォントは日本語非対応のためASCIIのみ）
     pdf.setFontSize(8); pdf.setTextColor(120);
-    const note=s.calibrated ? `Scale: 1px = ${s.mmPerPixel.toFixed(3)} mm` : 'Scale: not calibrated';
+    const sm=computeSummary();
+    const note=(s.calibrated ? `Scale: 1px = ${s.mmPerPixel.toFixed(3)} mm` : 'Scale: not calibrated')
+      + `   |   Fixtures: ${sm.items}   Seats: ${sm.seats}   Fixture area: ${m2(sm.areaMm2).toFixed(2)} m2`;
     try{ pdf.text(note, margin, ph-3); }catch(e){}
     triggerDownload(URL.createObjectURL(pdf.output('blob')), (s.name||'layout')+'.pdf');
     showHint('PDFを書き出しました');
@@ -1582,7 +1930,7 @@ function printLayout(){
     document.body.appendChild(f);
     const orient = w>=h ? 'landscape':'portrait';
     const doc=f.contentWindow.document; doc.open();
-    doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+(s.name||'layout')+
+    doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+escapeHtml(s.name||'layout')+
       '</title><style>@page{size:'+orient+';margin:8mm}html,body{margin:0;padding:0}'+
       'img{max-width:100%;max-height:100vh;display:block;margin:0 auto}</style></head><body>'+
       '<img src="'+url+'"></body></html>');
@@ -1594,17 +1942,95 @@ function printLayout(){
   }, 2);
 }
 
+/* ================= 編集履歴（Undo / Redo） ================= */
+const HISTORY_LIMIT = 50;
+let historyLock = false, historyTimer = null;
+
+function historySnapshot(){
+  const s=activeSheet(); if(!s||!canvas) return null;
+  return JSON.stringify({ mmPerPixel:s.mmPerPixel, calibrated:!!s.calibrated,
+    objects:canvas.toJSON(['data']).objects });
+}
+// 連続した操作（スライダー等）は少し待ってから1件にまとめる
+function historyPush(){
+  if(historyLock) return;
+  clearTimeout(historyTimer);
+  historyTimer=setTimeout(historyCommit, 350);
+}
+function historyCommit(){
+  clearTimeout(historyTimer); historyTimer=null;
+  if(historyLock) return;
+  const s=activeSheet(); if(!s) return;
+  const snap=historySnapshot(); if(snap===null) return;
+  if(!s._hist){ s._hist=[snap]; s._histIdx=0; updateHistoryBtns(); return; }
+  if(s._hist[s._histIdx]===snap) return;      // 変化なし
+  s._hist=s._hist.slice(0, s._histIdx+1);
+  s._hist.push(snap);
+  if(s._hist.length>HISTORY_LIMIT){ s._hist.shift(); }
+  s._histIdx=s._hist.length-1;
+  updateHistoryBtns();
+}
+// 確定した1操作（追加・削除・回転など）は待たずに履歴へ積む
+function historyMark(){ historyCommit(); }
+function historyInit(){
+  const s=activeSheet(); if(!s) return;
+  if(!s._hist){ const snap=historySnapshot(); if(snap!==null){ s._hist=[snap]; s._histIdx=0; } }
+  updateHistoryBtns();
+}
+function undo(){ historyGo(-1); }
+function redo(){ historyGo(1); }
+function historyGo(dir){
+  historyCommit();                               // 保留中の変更を確定してから移動
+  const s=activeSheet();
+  if(!s||!s._hist){ showHint('先に図面シートを読み込んでください'); return; }
+  const i=s._histIdx+dir;
+  if(i<0){ showHint('これ以上は戻せません'); return; }
+  if(i>=s._hist.length){ showHint('これ以上は進めません'); return; }
+  s._histIdx=i;
+  historyApply(JSON.parse(s._hist[i]), dir<0?'元に戻しました':'やり直しました');
+}
+function historyApply(state, msg){
+  const s=activeSheet(); if(!s) return;
+  historyLock=true;
+  canvas.discardActiveObject();
+  canvas.getObjects().slice().forEach(o=>canvas.remove(o));
+  s.mmPerPixel=state.mmPerPixel; s.calibrated=state.calibrated;
+  fabric.util.enlivenObjects(state.objects||[], objs=>{
+    objs.forEach(o=>{ applyObjMode(o); canvas.add(o); });
+    if(measMode||calMode) setObjectsInteractive(false);   // 計測/縮尺モード中は触れないまま維持
+    canvas.requestRenderAll();
+    updateScaleBox(); updateProps(); updateWorkStatus(); updateHistoryBtns();
+    autosave();                                  // historyLock 中なので履歴には積まれない
+    historyLock=false;
+    if(msg) showHint(msg);
+  });
+}
+function updateHistoryBtns(){
+  const s=activeSheet();
+  const u=document.getElementById('undoBtn'), r=document.getElementById('redoBtn');
+  const bar=document.getElementById('actionBar');
+  if(bar) bar.classList.toggle('show', !!s);
+  if(u) u.disabled=!(s&&s._hist&&s._histIdx>0);
+  if(r) r.disabled=!(s&&s._hist&&s._histIdx<s._hist.length-1);
+}
+
 /* ================= autosave (localStorage) ================= */
 let saveTimer=null;
 function autosave(){
   if(suppressAutosave) return;
+  historyPush();                    // 変更のたびに編集履歴も更新
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
-    try{ syncActiveObjects();
-      const data={version:1,active:project.active,sheets:project.sheets};
-      localStorage.setItem('layoutSim', JSON.stringify(data));
-    }catch(e){/* quota */}
+    try{ localStorage.setItem('layoutSim', JSON.stringify(serializeProject())); }
+    catch(e){/* quota */}
   },600);
+}
+// 保存用の素データ（_hist などの内部プロパティは保存しない）
+function serializeProject(){
+  syncActiveObjects();
+  return { version:1, active:project.active, sheets:project.sheets.map(s=>({
+    name:s.name, image:s.image, mmPerPixel:s.mmPerPixel, calibrated:!!s.calibrated,
+    blank:!!s.blank, realW:s.realW, realH:s.realH, objects:s.objects||[] })) };
 }
 function tryRestore(){
   let raw=null; try{ raw=localStorage.getItem('layoutSim'); }catch(e){}
@@ -1692,11 +2118,15 @@ function bindEvents(){
 
   window.addEventListener('keydown',e=>{
     if(e.key==='Escape'&&calMode){ endCalibration(); return; }
+    if(e.key==='Escape'&&measMode){ endMeasure(); return; }
     const tag=document.activeElement.tagName;
     if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA') return;
     if(e.code==='Space'){ spaceDown=true; canvas.defaultCursor='grab'; canvas.setCursor('grab'); e.preventDefault(); }
     if(e.key==='Delete'||e.key==='Backspace'){ deleteSel(); e.preventDefault(); }
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='d'){ e.preventDefault(); duplicateSel(); }
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){ e.preventDefault(); redo(); return; }
+    if(!e.ctrlKey&&!e.metaKey&&(e.key==='m'||e.key==='M')){ toggleMeasure(); e.preventDefault(); return; }
     if(e.key==='r'||e.key==='R'){ if(canvas.getActiveObject()){ rotateBy(e.shiftKey?-15:15); e.preventDefault(); } }
     if(e.key==='['){ if(canvas.getActiveObject()){ rotateBy(-15); e.preventDefault(); } }
     if(e.key===']'){ if(canvas.getActiveObject()){ rotateBy(15); e.preventDefault(); } }

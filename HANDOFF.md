@@ -7,7 +7,7 @@
 ## 全体構成
 
 - `<head>`: CDN スクリプト（Fabric 5.3.1 / pdf.js 3.11.174 / jsPDF 2.5.1）とインライン CSS。
-- `<body>`: ヘッダー（保存/読込/PNG/PDF/印刷、モバイルは ☰）、サイドバー（シート・縮尺・グリッド・什器ライブラリ・操作・出力）、ワークスペース（`#c` キャンバス＋空状態＋ヒント＋校正バナー＋プロパティパネル＋ズームバー）。
+- `<body>`: ヘッダー（保存/読込/PNG/PDF/印刷、モバイルは ☰）、サイドバー（シート・縮尺・グリッド/吸着・計測・什器ライブラリ・操作・集計・出力）、ワークスペース（`#c` キャンバス＋空状態＋ヒント＋校正バナー＋プロパティパネル＋アクションバー＋ズームバー）。
 - `<script>`: 状態・ライブラリ定義・全ロジック（インライン）。
 
 ## 状態モデル
@@ -37,6 +37,32 @@ const project = {
 - `objRealSize(o)`: `data.baseW * |scaleX| * mmPerPixel`, `data.baseH * |scaleY| * mmPerPixel`。circle は φ（`w` を直径として使用）。text は寸法なし。
 - 逆変換（数値入力→サイズ）: `applyProps()` が `scaleX = (wmm/mmPerPixel)/baseW` を設定。→ 入力と表示が往復一致（1200→表示1200）。
 - 縮尺変更時（`applyCalibration`）は各 `data.realW/realD` を保って px を再計算（実寸を保存）。
+
+## 編集履歴（Undo / Redo）
+
+- スナップショット方式。`historySnapshot()` が `{mmPerPixel, calibrated, objects}` を JSON 文字列化し、**シートごと**に `sheet._hist` / `sheet._histIdx` として保持（上限 `HISTORY_LIMIT=50`）。
+- `autosave()` の先頭で `historyPush()` を呼ぶため、**変更を伴う操作は自動的に履歴へ乗る**（autosave を呼ぶのが実質的な「変更あり」のマーカー）。
+- `historyPush()` は 350ms の debounce（スライダー等の連続操作を1件にまとめる）。追加・削除・複製・回転・重ね順・移動完了(`object:modified`)・縮尺変更のような**確定操作は `historyMark()` で即座にコミット**する。
+- `historyApply()` は `historyLock=true` の間にオブジェクトを差し替えるので、復元中の `autosave()` は履歴に積まれない。計測/縮尺モード中は `setObjectsInteractive(false)` を維持する。
+- `_hist` / `_meas` は内部プロパティ。保存は `serializeProject()` を通し、localStorage / JSON には出さない（履歴でストレージが膨らむのを防ぐ）。
+- UI: ワークスペース右下のアクションバー（`#actionBar`）の ↶ / ↷、`Ctrl+Z` / `Ctrl+Shift+Z` / `Ctrl+Y`。
+
+## 吸着（スナップ）と計測
+
+- `computeSnap(o)`（`object:moving` から呼ぶ）: 移動中オブジェクトの AABB の 左/中心/右・上/中心/下 を、他オブジェクトの同じ6値と図面外周（`0..(_imgW/_imgH)`）に照合し、`9/zoom`（シーン座標）以内で最も近いものへ吸着。`snapGuides` に記録し `drawSnapGuides()` がピンクの破線を描く。軸ごとに、吸着しなかった側だけグリッド吸着を適用。
+- 計測ツール: `startMeasure()/measClick()/clearMeasures()`。2点クリックで線分を `sheet._meas` に積み、`drawMeasures()` が実寸ラベル付きで描画。**通路幅の目安で色分け**（<600mm 赤 / <900mm 橙 / それ以上 緑, `AISLE_TIGHT`・`AISLE_OK`）。計測線はオーバーレイ描画なので保存・PNG/PDF出力には含まれない。
+- 計測/縮尺モード中は `setObjectsInteractive(false)` で什器を掴めないようにする（誤移動防止）。`Esc` または `M` キーで解除。
+
+## 集計（席数・面積）
+
+- `computeSummary()` が席数・パーツ数・什器の合計面積(mm²)・シート面積・占有率・内訳を返す。`updateSummary()` がサイドバー `#summaryBox` に描画し、`updateWorkStatus()` から毎回呼ばれる。
+- 席数は `SEAT_COUNT`（key→席数）と `SEAT_PER_MM`（カウンター席＝幅600mmごとに1席）から算出。ここを直せば席数の定義を調整できる。
+- 面積は円は πr²、矩形は W×D。シート面積は白紙シートなら `realW×realH`、図面なら `_imgW×_imgH×mmPerPixel²`（余白込みなのでUI上もそう表記）。
+- PDF フッターにも ASCII で `Fixtures / Seats / Fixture area` を追記している。
+
+## クイックパーツ（モバイル）
+
+- アクションバー内の `#quickParts`（モバイルのみ表示）。`recentKeys()` が localStorage `misefitsRecentParts` の使用履歴＋`DEFAULT_QUICK` を混ぜて最大8件を返し、`addFixture()` のたびに `pushRecent()` で更新。末尾の「＋ 一覧」はドロワーを開く。
 
 ## 縮尺キャリブレーション
 
@@ -86,6 +112,8 @@ const project = {
 5. 丸テーブル（2人φ600 / 4人φ900）追加、ライブラリのプレビューを実寸比に。
 6. スマホのズームバー右上化・見切れ対策。什器寸法をタップ時のみ表示。
 7. モバイルの移動/サイズ切替モード・タップ判定拡大。プロパティパネルのコンパクト化＋移動中の一時非表示。
+8. MiseFits としてリリース準備（ブランド・カスタムドメイン・OGP/構造化データ・ヒーロースライダー・フッター）。
+9. Undo/Redo、什器・壁への吸着ガイド、通路幅の計測ツール、席数・面積の自動集計、モバイルのクイックパーツバーを追加。
 
 ## テスト観点（回帰で壊れやすい所）
 
@@ -95,3 +123,6 @@ const project = {
 - モバイル：移動モードで `hasControls=false`、ピンチでズーム値が増減、パネルがコンパクト/移動中非表示
 - PDF が有効（先頭が `%PDF-`）で図面＋配置が用紙にフィット
 - どの操作でも `pageerror` が出ない
+- Undo/Redo：追加を3回 → 3回戻せる（1回1操作）、シートごとに履歴が独立、localStorage に `_hist` が入らない
+- 吸着：什器の辺どうしが揃い、ガイド線が出る／計測：2点クリックで mm が出て 600・900mm で色が変わる
+- 集計：4人テーブル=4席、カウンター席1800mm=3席、占有率が出る
