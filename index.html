@@ -94,7 +94,11 @@
   /* Page shell */
   .page-top{height:72px;flex:0 0 auto;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);
          display:flex;align-items:center;gap:16px;padding:0 18px;box-shadow:0 1px 14px rgba(25,33,46,.07);z-index:20;min-width:0;}
-  .brand{display:flex;align-items:center;gap:12px;min-width:360px;position:relative;}
+  .brand{display:flex;align-items:center;gap:12px;min-width:360px;position:relative;
+    background:none;border:none;padding:0;margin:0;font:inherit;text-align:left;cursor:pointer;
+    border-radius:10px;transition:opacity .12s;}
+  .brand:hover{opacity:.82;}
+  .brand:focus-visible{outline:2px solid var(--accent);outline-offset:4px;}
   .brand-icon{width:50px;height:50px;border-radius:15px;object-fit:contain;filter:drop-shadow(0 9px 18px rgba(0,80,160,.19));flex:0 0 auto;}
   .brand-lockup{position:relative;min-width:0;padding:3px 0;}
   .brand-plate{position:absolute;left:-12px;top:-10px;width:242px;height:64px;object-fit:cover;opacity:.12;pointer-events:none;z-index:-1;}
@@ -609,7 +613,7 @@
 <header class="page-top">
   <h1 class="sr-only">MiseFits かんたん店舗レイアウトシミュレーター</h1>
   <button class="menu-btn" id="menuBtn" onclick="toggleDrawer()" aria-label="メニュー">☰</button>
-  <div class="brand">
+  <button class="brand" type="button" onclick="goHome()" title="ホームに戻る（作業中のシートは保持されます）" aria-label="ホームに戻る">
     <img class="brand-icon" src="assets/misefits-icon.png" alt="" width="50" height="50">
     <div class="brand-lockup">
       <div class="brand-copy">
@@ -617,7 +621,7 @@
         <small>かんたん店舗レイアウトシミュレーター</small>
       </div>
     </div>
-  </div>
+  </button>
   <nav class="page-nav" aria-label="使い方ガイド">
     <a href="guide.html#drawing">図面読込</a>
     <a href="guide.html#scale">縮尺設定</a>
@@ -1133,7 +1137,7 @@ function renderSheetList(){
     d.querySelector('.x').onclick=(e)=>{e.stopPropagation();removeSheet(i);};
     el.appendChild(d);
   });
-  document.getElementById('emptyState').style.display = project.sheets.length? 'none':'flex';
+  document.getElementById('emptyState').style.display = project.active<0 ? 'flex':'none';
   updateWorkStatus();
 }
 
@@ -1203,6 +1207,28 @@ function syncActiveObjects(){
   s.objects = canvas.toJSON(['data']).objects;
 }
 
+// ロゴ／タイトルから呼ばれる「ホームに戻る」。シートは削除せず、ようこそ画面へ戻るだけ。
+function goHome(){
+  if(project.active<0) return;           // 既にホーム画面
+  if(measMode) endMeasure();
+  if(calMode) endCalibration();
+  syncActiveObjects();                   // 作業中の内容を保存してから離れる
+  canvas.discardActiveObject();
+  project.active=-1;
+  canvas.clear(); canvas.backgroundColor='#ffffff';
+  canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas));
+  document.getElementById('props').classList.remove('show','dragging');
+  renderSheetList(); updateScaleBox(); updateProps(); updateHistoryBtns();
+  showHeroSlide(0);
+  if(isMobile()) closeDrawer();
+  // 遅延保存（autosave）は使わない：直前の編集で仕込まれた保留中のタイマーが
+  // 残っていると、600ms後にシート切替の非同期読み込み中と競合して
+  // project.sheets[i].objects を空配列で上書きしてしまう（実際に再現した不具合）。
+  // 保留タイマーを止めたうえで、その場で1回だけ保存する。
+  clearTimeout(saveTimer);
+  try{ localStorage.setItem('layoutSim', JSON.stringify(serializeProject())); }catch(e){}
+}
+
 /* ================= サンプル・アップロード ================= */
 function loadSamples(){
   const keys=Object.keys(SAMPLES);
@@ -1218,14 +1244,16 @@ function loadSamples(){
 document.addEventListener('DOMContentLoaded',()=>{});
 
 function handleImageFile(file, name){
+  const hadExisting = project.sheets.length>0;   // 既に図面がある状態への追加か
   const r=new FileReader();
   r.onload=f=>{ addSheet({ name:name||file.name, image:f.target.result, mmPerPixel:SAMPLE_MMPP, calibrated:false, objects:[] });
-    showHint('画像を読み込みました。「縮尺を設定」で実寸を合わせてください'); };
+    showHint('画像を読み込みました'+keepNote(hadExisting)+'。「縮尺を設定」で実寸を合わせてください', hadExisting?4200:2600); };
   r.readAsDataURL(file);
 }
 
 async function handlePdfFile(file){
   if(!window.pdfjsLib){ showHint('PDFの読み込みに必要なライブラリを読み込めませんでした（オンライン環境が必要です）', 5000); return; }
+  const hadExisting = project.sheets.length>0;     // 既に図面がある状態への追加か
   try{
     const buf=await file.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:buf}).promise;
@@ -1235,7 +1263,7 @@ async function handlePdfFile(file){
     await page.render({canvasContext:cv.getContext('2d'), viewport:vp}).promise;
     addSheet({ name:file.name.replace(/\.pdf$/i,''), image:cv.toDataURL('image/png'),
                mmPerPixel:SAMPLE_MMPP, calibrated:false, objects:[] });
-    showHint('PDFを読み込みました。「縮尺を設定」で実寸を合わせてください');
+    showHint('PDFを読み込みました'+keepNote(hadExisting)+'。「縮尺を設定」で実寸を合わせてください', hadExisting?4200:2600);
   }catch(e){
     showHint('PDFを読み込めませんでした。別のPDF、または画像として書き出したものをお試しください', 5000);
   }
@@ -1258,6 +1286,7 @@ function createBlankSheet(){
   const major=Math.max(20, Math.round(1000/blankMmpp));
   for(let x=major;x<pxW;x+=major){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,pxH); ctx.stroke(); }
   for(let y=major;y<pxH;y+=major){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(pxW,y); ctx.stroke(); }
+  const hadExisting = project.sheets.length>0;   // 既に図面がある状態への追加か
   addSheet({
     name:`白紙 ${wmm}×${hmm}mm`,
     image:cv.toDataURL('image/png'),
@@ -1268,8 +1297,10 @@ function createBlankSheet(){
     realH:hmm,
     objects:[]
   });
-  showHint(`白紙レイアウトを作成しました：${wmm} × ${hmm} mm`);
+  showHint(`白紙レイアウトを作成しました：${wmm} × ${hmm} mm`+keepNote(hadExisting), hadExisting?4200:2600);
 }
+// 既存シートがある状態で追加した場合に添える一言（消えたのではなく一覧に残ることを明示）
+function keepNote(hadExisting){ return hadExisting ? '（元の図面はシート一覧に残っています）' : ''; }
 
 function askPositiveNumber(message, fallback){
   const raw=prompt(message, String(fallback));
