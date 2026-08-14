@@ -98,7 +98,7 @@
 /* アクセス解析（GA4）。測定IDが未設定のあいだは、外部への通信は一切発生しません。
    オプトアウト設定と Do Not Track を尊重します。 */
 (function(){
-  var GA_ID = '';   /* ← 発行された測定ID（G-XXXXXXXXXX）を入れると有効になります */
+  var GA_ID = 'G-W0Y7GMPVRK';   /* MiseFits プロパティの測定ID */
   if(!GA_ID) return;
   try{ if(localStorage.getItem('misefitsAnalyticsOptOut')==='1'){ window['ga-disable-'+GA_ID]=true; return; } }catch(e){}
   if(navigator.doNotTrack==='1'||window.doNotTrack==='1') return;
