@@ -115,6 +115,17 @@ const project = {
 8. MiseFits としてリリース準備（ブランド・カスタムドメイン・OGP/構造化データ・ヒーロースライダー・フッター）。
 9. Undo/Redo、什器・壁への吸着ガイド、通路幅の計測ツール、席数・面積の自動集計、モバイルのクイックパーツバーを追加。
 
+## 静的ページとアクセス解析
+
+- `guide.html`（使い方）・`privacy.html`（プライバシー/免責）・`404.html` は、それぞれ単体で完結した静的HTML。CSSはインライン、外部スクリプトはGAローダーのみ。
+- GAローダーは4ファイルに同一のものを配置。`GA_ID` が空なら何も読み込まない。`misefitsAnalyticsOptOut`（localStorage）と Do Not Track を尊重し、`privacy.html` に切り替えUIがある。CSPは `www.googletagmanager.com` / `*.google-analytics.com` を許可済み（テスト用IDで読み込み・collect ともに違反ゼロを確認済み）。
+- アプリのフッターはシェルの一部として常時表示。スマホでは1行（約45px）に圧縮し、説明文と免責文は `privacy.html` に集約している。
+
+## 削除まわり
+
+- パーツ: `deleteSel()`（選択削除）と `clearFixtures()`（シート内を一括削除・確認あり）。どちらも `historyMark()` を呼ぶので Ctrl+Z で戻せる。
+- 計測: 計測モード中のクリックで `measureHitTest()` がヒットすれば、その線だけ削除（`distToSegment` で判定、閾値 12/zoom）。`undoLastMeasure()` は最後の1本、`clearMeasures()` は全消し（2本以上なら確認）。計測は編集履歴の対象外なので Undo では戻らない。
+
 ## テスト観点（回帰で壊れやすい所）
 
 - 実寸の往復一致（入力1200 → 表示1200, φ含む）

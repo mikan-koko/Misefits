@@ -23,7 +23,7 @@
 <meta name="twitter:title" content="MiseFits | かんたん店舗レイアウトシミュレーター">
 <meta name="twitter:description" content="店舗・施設の図面や白紙サイズから、什器・設備の配置を実寸で検討できるブラウザ完結ツール。">
 <meta name="twitter:image" content="https://misefits.kokokikaku.com/assets/misefits-ogp.jpg">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://cdnjs.cloudflare.com blob: data:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.googletagmanager.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com; font-src 'self' data:; connect-src 'self' https://cdnjs.cloudflare.com blob: data: https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0066cc">
 <link rel="icon" href="assets/misefits-favicon.png">
@@ -51,6 +51,23 @@
     "priceCurrency": "JPY"
   }
 }
+</script>
+<script>
+/* アクセス解析（GA4）。測定IDが未設定のあいだは、外部への通信は一切発生しません。
+   オプトアウト設定（privacy.html）と Do Not Track を尊重します。 */
+(function(){
+  var GA_ID = '';   /* ← 発行された測定ID（G-XXXXXXXXXX）を入れると有効になります */
+  if(!GA_ID) return;
+  try{ if(localStorage.getItem('misefitsAnalyticsOptOut')==='1'){ window['ga-disable-'+GA_ID]=true; return; } }catch(e){}
+  if(navigator.doNotTrack==='1'||window.doNotTrack==='1') return;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){window.dataLayer.push(arguments);};
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID, {anonymize_ip:true});
+  var s=document.createElement('script');
+  s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);
+  document.head.appendChild(s);
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"
   integrity="sha384-sLpuECXYCB5TUyTbC06pftm/rgurDambREZmV4eRHwEqJzCQtU6lxI2Ve00z4XW5"
@@ -554,8 +571,17 @@
     .compare-card{min-height:84px;padding:10px;}
     .hero-dots{overflow-x:auto;justify-content:flex-start;padding-bottom:2px;}
     .hero-dot{flex:0 0 auto;}
-    .page-foot{min-height:128px;grid-template-columns:1fr;padding:10px;font-size:10.5px;gap:8px;}
-    .foot-main{align-items:flex-start;}
+    /* スマホではフッターを1行に圧縮し、キャンバスを広く保つ */
+    .page-foot{min-height:0;grid-template-columns:1fr auto;align-items:center;padding:6px 9px;font-size:10.5px;gap:8px;}
+    .foot-main{align-items:center;gap:8px;min-width:0;}
+    .foot-logo{width:26px;height:26px;font-size:11px;border-radius:8px;}
+    .foot-text{min-width:0;}
+    .foot-text > b{font-size:11.5px;}
+    .foot-text > span,.foot-legal{display:none;}      /* 説明と免責文はプライバシーページへ集約 */
+    .foot-company{gap:9px;flex-wrap:nowrap;overflow:hidden;}
+    .foot-company span{display:none;}
+    .foot-share .share-btn:not(.primary){display:none;} /* スマホは端末の共有メニューに集約 */
+    .foot-share .share-btn.primary{padding:6px 12px;}
     .foot-logo{width:32px;height:32px;border-radius:9px;font-size:11px;}
     .foot-share{justify-content:flex-start;gap:6px;}
     .foot-share .share-btn{padding:6px 9px;font-size:11px;}
@@ -667,14 +693,15 @@
       <h3>計測（通路幅チェック）</h3>
       <div class="row">
         <button class="btn sm outline" id="measBtnSide" onclick="toggleMeasure()">📐 距離を測る</button>
-        <button class="btn sm ghost" onclick="clearMeasures()">計測をクリア</button>
+        <button class="btn sm ghost" onclick="undoLastMeasure()">最後の1本を取消</button>
+        <button class="btn sm ghost" onclick="clearMeasures()">すべてクリア</button>
       </div>
       <div class="legend" aria-label="通路幅の目安">
         <span><i style="background:#e63946"></i>600mm未満</span>
         <span><i style="background:#f0900f"></i>900mm未満</span>
         <span><i style="background:#1f8f7d"></i>900mm以上</span>
       </div>
-      <div class="muted" style="margin-top:7px;">2点をクリック（タップ）すると実寸の距離を表示します。通路や什器間の余裕を確認できます。計測線は保存・出力には含まれません。</div>
+      <div class="muted" style="margin-top:7px;">2点をクリック（タップ）すると実寸の距離を表示します。<b>計測モード中に線をクリックすると、その1本だけ削除</b>できます。計測線は保存・出力には含まれません。</div>
     </div>
 
     <!-- Library -->
@@ -695,6 +722,7 @@
         <button class="btn sm ghost" onclick="bringFwd()">前面へ</button>
         <button class="btn sm ghost" onclick="sendBwd()">背面へ</button>
         <button class="btn sm danger" onclick="deleteSel()">削除</button>
+        <button class="btn sm danger" onclick="clearFixtures()">すべて削除</button>
       </div>
       <div class="muted" style="margin-top:8px;">ショートカット: M=計測 / Ctrl+Z=元に戻す / Ctrl+Shift+Z=やり直す / R=15°回転 / Shift+R=逆回転 / [ ]=±15° / Delete=削除 / Ctrl+D=複製 / Space+ドラッグ=画面移動 / ホイール=拡大縮小</div>
     </div>
@@ -882,6 +910,7 @@
       <span>店舗・施設の図面データはブラウザ内だけで処理されます</span>
       <div class="foot-company">
         <a href="guide.html">使い方ガイド</a>
+        <a href="privacy.html">プライバシー・免責</a>
         <span>Produced by ここ企画</span>
         <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
       </div>
@@ -1593,7 +1622,7 @@ function startMeasure(){
   canvas.discardActiveObject(); canvas.selection=false; setObjectsInteractive(false);
   canvas.defaultCursor='crosshair';
   updateMeasureUI();
-  document.getElementById('calBanner').textContent='📐 計測モード：1点目をクリック（終了はEsc）';
+  document.getElementById('calBanner').textContent='📐 計測モード：1点目をクリック／既存の線をクリックで削除（終了はEsc）';
   document.getElementById('calBanner').classList.add('show');
   canvas.requestRenderAll();
 }
@@ -1610,8 +1639,33 @@ function updateMeasureUI(){
   const s=document.getElementById('measBtnSide');
   if(s){ s.classList.toggle('on', measMode); s.textContent = measMode? '📐 計測を終了' : '📐 距離を測る'; }
 }
+// 点と線分の距離（シーン座標）
+function distToSegment(p, m){
+  const dx=m.x2-m.x1, dy=m.y2-m.y1, len2=dx*dx+dy*dy;
+  let t = len2 ? ((p.x-m.x1)*dx + (p.y-m.y1)*dy)/len2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x-(m.x1+t*dx), p.y-(m.y1+t*dy));
+}
+function measureHitTest(p){
+  const list=sheetMeasures(), tol=12/canvas.getZoom();
+  for(let i=list.length-1; i>=0; i--){ if(distToSegment(p, list[i])<=tol) return i; }
+  return -1;
+}
+function undoLastMeasure(){
+  const list=sheetMeasures();
+  if(!list.length){ showHint('取り消す計測線がありません'); return; }
+  list.pop(); measP1=null; measHover=null;
+  canvas.requestRenderAll(); showHint('計測線を1本取り消しました');
+}
 function measClick(p){
   if(!measP1){
+    const hit=measureHitTest(p);          // 既存の線をクリックしたら、その1本を削除
+    if(hit>=0){
+      sheetMeasures().splice(hit,1);
+      canvas.requestRenderAll();
+      showHint('計測線を削除しました');
+      return;
+    }
     measP1={x:p.x,y:p.y}; measHover={x:p.x,y:p.y};
     document.getElementById('calBanner').textContent='📐 2点目をクリック（終了はEsc）';
   } else {
@@ -1625,6 +1679,9 @@ function measClick(p){
 }
 function clearMeasures(){
   const s=activeSheet(); if(!s) return;
+  const n=(s._meas||[]).length;
+  if(!n){ showHint('計測線はありません'); return; }
+  if(n>1 && !confirm(`計測線 ${n} 本をすべて消しますか？`)) return;
   s._meas=[]; measP1=null; measHover=null; canvas.requestRenderAll();
   showHint('計測線をクリアしました');
 }
@@ -1875,6 +1932,19 @@ function fitView(){
 /* ================= 操作 ================= */
 function deleteSel(){ const objs=canvas.getActiveObjects(); if(!objs.length) return;
   objs.forEach(o=>canvas.remove(o)); canvas.discardActiveObject(); canvas.requestRenderAll(); updateWorkStatus(); autosave(); historyMark(); }
+// このシートに置いたパーツをすべて削除（Undoで戻せる）
+function clearFixtures(){
+  if(project.active<0){ showHint('先に図面シートを読み込んでください'); return; }
+  const objs=canvas.getObjects();
+  if(!objs.length){ showHint('削除するパーツがありません'); return; }
+  if(!confirm(`このシートに配置した ${objs.length} 個のパーツをすべて削除しますか？\n（Ctrl+Z で元に戻せます）`)) return;
+  canvas.discardActiveObject();
+  objs.slice().forEach(o=>canvas.remove(o));
+  canvas.requestRenderAll();
+  updateWorkStatus(); autosave(); historyMark();
+  if(isMobile()) closeDrawer();
+  showHint('配置をすべて削除しました（Ctrl+Z で戻せます）', 4000);
+}
 function duplicateSel(){ const o=canvas.getActiveObject(); if(!o) return;
   o.clone(cl=>{ cl.set({left:o.left+20/canvas.getZoom(), top:o.top+20/canvas.getZoom()});
     if(o.data) cl.data=JSON.parse(JSON.stringify(o.data));

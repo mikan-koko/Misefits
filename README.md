@@ -33,6 +33,8 @@ MiseFitsは、店舗・施設レイアウトの初期検討を補助するため
 ## SEO / 共有設定
 
 - canonical: `https://misefits.kokokikaku.com/`
+- プライバシー・免責: `privacy.html`（アクセス解析のオプトアウトUI付き）
+- 404ページ: `404.html`
 - 使い方ページ: `guide.html`（手順・ショートカット・FAQ。HowTo/FAQPage の構造化データ入り）
 - OGP / Twitterカード: `assets/misefits-ogp.jpg`（1200×630）
 - 画面内の写真素材: `assets/misefits-*.webp`（幅1400pxに最適化）

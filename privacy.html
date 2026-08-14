@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プライバシーポリシー・免責事項 | MiseFits</title>
+<meta name="description" content="MiseFitsのプライバシーポリシーと免責事項。読み込んだ図面の取り扱い、自動保存の仕組み、アクセス解析とCookie、外部サービスの利用、免責の範囲について記載しています。">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://misefits.kokokikaku.com/privacy.html">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com; font-src 'self' data:; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="MiseFits">
+<meta property="og:title" content="プライバシーポリシー・免責事項 | MiseFits">
+<meta property="og:description" content="読み込んだ図面の取り扱い、自動保存、アクセス解析とCookie、免責の範囲について記載しています。">
+<meta property="og:url" content="https://misefits.kokokikaku.com/privacy.html">
+<meta property="og:image" content="https://misefits.kokokikaku.com/assets/misefits-ogp.jpg">
+<meta property="og:locale" content="ja_JP">
+<meta name="theme-color" content="#0066cc">
+<link rel="icon" href="assets/misefits-favicon.png">
+<link rel="apple-touch-icon" href="assets/misefits-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root{ --bg:#eef1f5; --line:#dfe4ec; --ink:#242933; --sub:#667085; --accent:#0066cc; --accent2:#004f9f;
+    --accent-soft:#e8f2ff; --sun:#ffb545; --ok:#1f8f7d; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;scroll-padding-top:86px;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;background:var(--bg);color:var(--ink);
+    line-height:1.85;-webkit-text-size-adjust:100%;}
+  a{color:var(--accent);}
+  .page-top{position:sticky;top:0;z-index:20;height:72px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:0 18px;box-shadow:0 1px 14px rgba(25,33,46,.07);}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;}
+  .brand img{width:46px;height:46px;border-radius:14px;flex:0 0 auto;filter:drop-shadow(0 9px 18px rgba(0,80,160,.19));}
+  .brand-name{font-family:Arial Rounded MT Bold,Arial,"Hiragino Kaku Gothic ProN",sans-serif;font-weight:900;
+    font-size:25px;color:#102033;line-height:1;}
+  .brand-name .fit{color:var(--accent);font-style:italic;}
+  .brand-name .dot{display:inline-block;width:8px;height:8px;margin-left:5px;border-radius:999px;background:var(--sun);
+    vertical-align:top;transform:translateY(4px);}
+  .brand small{display:block;color:var(--sub);font-weight:700;font-size:11.5px;line-height:1.35;margin-top:3px;}
+  .top-sp{flex:1;}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:1px solid var(--accent);
+    border-radius:9px;padding:10px 16px;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer;font-family:inherit;}
+  .btn:hover{background:var(--accent2);border-color:var(--accent2);}
+  .btn.outline{background:#fff;color:var(--accent);}
+  .btn.outline:hover{background:var(--accent-soft);}
+
+  main{max-width:860px;margin:0 auto;padding:26px 18px 60px;}
+  .crumb{font-size:11.5px;color:var(--sub);margin-bottom:16px;}
+  .crumb a{text-decoration:none;font-weight:700;}
+  .head{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 24px;box-shadow:0 10px 26px rgba(25,33,46,.06);}
+  h1{font-size:26px;line-height:1.4;margin-bottom:10px;}
+  .head p{font-size:13.5px;color:#3d4654;}
+  .meta{margin-top:14px;font-size:11.5px;color:var(--sub);border-top:1px dashed #dbe2ec;padding-top:11px;}
+
+  section{margin-top:22px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;
+    box-shadow:0 6px 18px rgba(25,33,46,.05);}
+  h2{font-size:18px;line-height:1.45;margin-bottom:10px;padding-left:12px;border-left:4px solid var(--accent);}
+  h3{font-size:14.5px;margin:18px 0 6px;}
+  p{font-size:13.5px;color:#3d4654;margin-bottom:8px;}
+  ul{margin:8px 0 8px 22px;font-size:13.5px;color:#3d4654;}
+  li{margin-bottom:6px;}
+  strong{color:var(--ink);}
+  .good{background:#eefaf6;border:1px solid #c9eee5;border-radius:12px;padding:13px 15px;margin-top:12px;}
+  .good b{color:#14705f;display:block;margin-bottom:4px;font-size:13.5px;}
+  .good p{margin:0;font-size:12.5px;color:#2f5c54;}
+  .warn{background:#fff8ee;border:1px solid #ffe0b0;border-radius:12px;padding:13px 15px;margin-top:12px;}
+  .warn b{color:#8a5200;display:block;margin-bottom:4px;font-size:13.5px;}
+  .warn p{margin:0;font-size:12.5px;color:#6b4a1c;}
+
+  .optout{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:15px;background:#fbfcfe;}
+  .optout .state{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;margin-bottom:10px;}
+  .optout .state i{width:9px;height:9px;border-radius:999px;background:var(--ok);display:inline-block;}
+  .optout .state.off i{background:var(--sub);}
+
+  .tablewrap{overflow-x:auto;margin-top:10px;}
+  table{border-collapse:collapse;width:100%;min-width:440px;font-size:12.5px;}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+  th{background:#f4f7fb;color:var(--sub);font-size:12px;white-space:nowrap;}
+
+  footer{background:#fbfcfe;border-top:1px solid var(--line);padding:20px 18px 28px;margin-top:30px;}
+  .foot-in{max-width:860px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;font-size:11.5px;color:var(--sub);}
+  .foot-in b{color:var(--ink);font-size:13px;}
+  .foot-in a{font-weight:800;text-decoration:none;}
+  .foot-in .sp{flex:1;}
+
+  @media (max-width:720px){
+    .page-top{height:60px;padding:0 12px;gap:9px;}
+    .brand img{width:36px;height:36px;border-radius:11px;}
+    .brand-name{font-size:20px;}
+    .brand small{display:none;}
+    main{padding:18px 12px 44px;}
+    .head,section{padding:18px 16px;border-radius:14px;}
+    h1{font-size:21px;} h2{font-size:16px;}
+  }
+</style>
+<script>
+/* アクセス解析（GA4）。測定IDが未設定のあいだは、外部への通信は一切発生しません。
+   オプトアウト設定と Do Not Track を尊重します。 */
+(function(){
+  var GA_ID = '';   /* ← 発行された測定ID（G-XXXXXXXXXX）を入れると有効になります */
+  if(!GA_ID) return;
+  try{ if(localStorage.getItem('misefitsAnalyticsOptOut')==='1'){ window['ga-disable-'+GA_ID]=true; return; } }catch(e){}
+  if(navigator.doNotTrack==='1'||window.doNotTrack==='1') return;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){window.dataLayer.push(arguments);};
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID, {anonymize_ip:true});
+  var s=document.createElement('script');
+  s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);
+  document.head.appendChild(s);
+})();
+</script>
+</head>
+<body>
+<header class="page-top">
+  <a class="brand" href="./" aria-label="MiseFits トップへ">
+    <img src="assets/misefits-icon.png" alt="" width="46" height="46">
+    <span>
+      <span class="brand-name"><span>Mise</span><span class="fit">Fits</span><span class="dot"></span></span>
+      <small>かんたん店舗レイアウトシミュレーター</small>
+    </span>
+  </a>
+  <span class="top-sp"></span>
+  <a class="btn" href="./">アプリを開く</a>
+</header>
+
+<main>
+  <nav class="crumb" aria-label="パンくず"><a href="./">MiseFits</a> ／ プライバシーポリシー・免責事項</nav>
+
+  <div class="head">
+    <h1>プライバシーポリシー・免責事項</h1>
+    <p>MiseFits（以下「本サービス」）は、ここ企画が提供する、店舗・施設のレイアウトを実寸で検討するためのブラウザツールです。本サービスにおける情報の取り扱いと、ご利用にあたっての免責事項を以下のとおり定めます。</p>
+    <div class="meta">制定日：2026年8月14日 ／ 提供：ここ企画（<a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>）</div>
+  </div>
+
+  <section id="drawing-data">
+    <h2>1. 図面・レイアウトデータの取り扱い</h2>
+    <p>本サービスに読み込んだ図面（PDF・画像）、配置した什器の情報、設定した縮尺などのデータは、<strong>すべてお使いの端末のブラウザ内だけで処理されます</strong>。当方のサーバーへ送信されることも、当方が取得・保存することもありません。</p>
+    <ul>
+      <li><strong>自動保存</strong>：作業中の内容は、ブラウザの保存領域（localStorage）に自動的に保存されます。保存先はお使いの端末内であり、外部には送信されません。</li>
+      <li><strong>保存データの削除</strong>：ブラウザの閲覧データ（サイトデータ）を削除すると、自動保存された内容も消去されます。残しておきたい内容は「保存(JSON)」でファイルとして書き出してください。</li>
+      <li><strong>書き出したファイル</strong>：JSON・PNG・PDFはお使いの端末にダウンロードされます。その後の管理・共有はご自身の責任で行ってください。</li>
+      <li><strong>共有端末での利用</strong>：共用のパソコンなどで機密性の高い図面を扱った場合は、作業後にブラウザのサイトデータを削除することを推奨します。</li>
+    </ul>
+    <div class="good">
+      <b>要約</b>
+      <p>図面は外部に出ません。ただし「自動保存はあなたの端末の中にある」ため、共有端末では消し忘れにご注意ください。</p>
+    </div>
+  </section>
+
+  <section id="analytics">
+    <h2>2. アクセス解析とCookieについて</h2>
+    <p>本サービスでは、サイトの利用状況を把握し改善するために、Googleが提供するアクセス解析ツール「Googleアナリティクス（GA4）」を使用する場合があります。</p>
+    <ul>
+      <li>Googleアナリティクスは、閲覧されたページ、参照元、おおまかな地域、ブラウザや端末の種類などの情報を、<strong>Cookieを用いて匿名で収集</strong>します。</li>
+      <li>収集される情報に、氏名・住所・電話番号・メールアドレスなど、<strong>個人を特定できる情報は含まれません</strong>。IPアドレスは匿名化した状態で扱います。</li>
+      <li><strong>読み込んだ図面や配置したレイアウトの内容は、解析の対象外です</strong>。これらが送信されることは一切ありません。</li>
+      <li>ブラウザの「Do Not Track（トラッキング拒否）」設定が有効な場合、解析は読み込まれません。</li>
+      <li>収集された情報はGoogleのプライバシーポリシーに基づいて管理されます。詳細は <a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleのプライバシーポリシー</a> および <a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener">Googleのサービスを使用するサイトやアプリから収集した情報のGoogleによる使用</a> をご確認ください。</li>
+    </ul>
+
+    <h3>アクセス解析を無効にする</h3>
+    <p>下のボタンから、この端末のこのブラウザについて解析を無効にできます。設定はお使いのブラウザ内に保存されます。</p>
+    <div class="optout">
+      <div class="state" id="optState"><i></i><span id="optLabel">状態を確認しています…</span></div>
+      <div><button class="btn outline" id="optBtn" type="button">切り替え</button></div>
+    </div>
+    <p style="margin-top:10px;font-size:12px;color:#667085;">ブラウザのアドオン「<a href="https://tools.google.com/dlpage/gaoptout?hl=ja" target="_blank" rel="noopener">Google アナリティクス オプトアウト アドオン</a>」を使う方法もあります。</p>
+  </section>
+
+  <section id="third-party">
+    <h2>3. 外部サービスの利用</h2>
+    <p>本サービスの提供にあたり、以下の外部サービスを利用しています。これらのサービスへは、通信の性質上、IPアドレスやブラウザの情報が送信されます。</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>サービス</th><th>用途</th><th>送信される主な情報</th></tr></thead>
+        <tbody>
+          <tr><td>GitHub Pages</td><td>本サイトの配信（ホスティング）</td><td>IPアドレス、ブラウザ情報などのアクセスログ</td></tr>
+          <tr><td>cdnjs（Cloudflare）</td><td>図面表示・PDF処理に使うライブラリの配信</td><td>IPアドレス、ブラウザ情報</td></tr>
+          <tr><td>Googleアナリティクス</td><td>アクセス解析</td><td>閲覧ページ、参照元、地域、端末情報（Cookie利用）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:10px;">読み込んだ図面やレイアウトデータが、これらのサービスへ送信されることはありません。</p>
+  </section>
+
+  <section id="disclaimer">
+    <h2>4. 免責事項</h2>
+    <p>本サービスは、レイアウトの<strong>概算検討を目的としたツール</strong>です。ご利用にあたっては、以下の点をご了承ください。</p>
+    <ul>
+      <li>表示される寸法・面積・席数・通路幅などの数値は、入力された縮尺にもとづく<strong>計算上の目安</strong>です。実測値や設計値としての正確性を保証するものではありません。</li>
+      <li>本サービスの出力は、<strong>建築基準法・消防法・バリアフリー関連法規その他の法令への適合を判断するものではありません</strong>。実際の設計・施工・届出にあたっては、建築士・施工会社・所轄の窓口へ必ずご確認ください。</li>
+      <li>什器・設備パーツの寸法は一般的な参考値です。実際に導入する製品の寸法は、メーカーの仕様をご確認ください。</li>
+      <li>本サービスの利用によって生じた損害について、当方は責任を負いかねます。</li>
+      <li>ブラウザの仕様変更、外部ライブラリの提供状況、その他の事情により、予告なく内容の変更・提供の停止を行う場合があります。</li>
+      <li>自動保存されたデータの消失について、当方は責任を負いかねます。重要な内容は「保存(JSON)」でのファイル保存をお願いします。</li>
+    </ul>
+    <div class="warn">
+      <b>とくにご注意ください</b>
+      <p>通路幅の色分け（600mm／900mm）は、検討の目安として表示しているものです。用途・規模・席数によって必要な寸法は法令で定められている場合があります。最終的な判断は専門家へご相談ください。</p>
+    </div>
+  </section>
+
+  <section id="rights">
+    <h2>5. 著作権について</h2>
+    <ul>
+      <li>本サービスおよび掲載内容（デザイン・文章・ロゴ等）の権利は、ここ企画に帰属します。</li>
+      <li>利用者が読み込んだ図面や作成したレイアウトの権利は、<strong>利用者ご自身または正当な権利者に帰属します</strong>。当方がこれらを取得・利用することはありません。</li>
+      <li>権利を有しない図面の読み込みや、その二次利用は行わないでください。</li>
+    </ul>
+  </section>
+
+  <section id="contact">
+    <h2>6. お問い合わせ・改定</h2>
+    <p>本サービスに関するお問い合わせは、提供元である<a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画のウェブサイト</a>よりお願いいたします。</p>
+    <p>本ポリシーの内容は、法令の変更やサービス内容の変更に応じて、予告なく改定する場合があります。改定後の内容は本ページに掲載した時点から適用されます。</p>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <b>MiseFits</b>
+    <span class="sp"></span>
+    <a href="./">アプリ</a>
+    <a href="guide.html">使い方</a>
+    <a href="privacy.html">プライバシー・免責</a>
+    <span>Produced by ここ企画</span>
+    <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var KEY='misefitsAnalyticsOptOut';
+  var state=document.getElementById('optState');
+  var label=document.getElementById('optLabel');
+  var btn=document.getElementById('optBtn');
+  function read(){ try{ return localStorage.getItem(KEY)==='1'; }catch(e){ return false; } }
+  function render(){
+    var off=read();
+    state.classList.toggle('off', off);
+    label.textContent = off ? 'このブラウザではアクセス解析を無効にしています'
+                            : 'このブラウザではアクセス解析が有効です';
+    btn.textContent = off ? '解析を有効に戻す' : '解析を無効にする';
+  }
+  btn.addEventListener('click', function(){
+    try{
+      if(read()) localStorage.removeItem(KEY); else localStorage.setItem(KEY,'1');
+    }catch(e){
+      label.textContent='この設定はブラウザの制限により保存できませんでした';
+      return;
+    }
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@
 <title>ページが見つかりません | MiseFits</title>
 <meta name="description" content="お探しのページは見つかりませんでした。MiseFitsのトップページまたは使い方ガイドからお進みください。">
 <meta name="robots" content="noindex,follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com; font-src 'self' data:; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="theme-color" content="#0066cc">
 <link rel="icon" href="assets/misefits-favicon.png">
 <link rel="apple-touch-icon" href="assets/misefits-icon.png">
@@ -44,6 +44,23 @@
   .foot a{color:var(--accent);text-decoration:none;font-weight:800;}
   @media (max-width:600px){ .box{padding:26px 20px;} h1{font-size:19px;} }
 </style>
+<script>
+/* アクセス解析（GA4）。測定IDが未設定のあいだは、外部への通信は一切発生しません。
+   オプトアウト設定（privacy.html）と Do Not Track を尊重します。 */
+(function(){
+  var GA_ID = '';   /* ← 発行された測定ID（G-XXXXXXXXXX）を入れると有効になります */
+  if(!GA_ID) return;
+  try{ if(localStorage.getItem('misefitsAnalyticsOptOut')==='1'){ window['ga-disable-'+GA_ID]=true; return; } }catch(e){}
+  if(navigator.doNotTrack==='1'||window.doNotTrack==='1') return;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){window.dataLayer.push(arguments);};
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID, {anonymize_ip:true});
+  var s=document.createElement('script');
+  s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);
+  document.head.appendChild(s);
+})();
+</script>
 </head>
 <body>
   <div class="box">
@@ -58,6 +75,7 @@
     <div class="actions">
       <a class="btn" href="/">MiseFitsを開く</a>
       <a class="btn outline" href="/guide.html">使い方ガイド</a>
+      <a class="btn outline" href="/privacy.html">プライバシー・免責</a>
     </div>
     <div class="foot">Produced by <a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画</a></div>
   </div>
