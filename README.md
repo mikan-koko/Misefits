@@ -33,7 +33,8 @@ MiseFitsは、店舗・施設レイアウトの初期検討を補助するため
 ## SEO / 共有設定
 
 - canonical: `https://misefits.kokokikaku.com/`
-- OGP / Twitterカード: `assets/misefits-hero-vivid.png`
+- OGP / Twitterカード: `assets/misefits-ogp.jpg`（1200×630）
+- 画面内の写真素材: `assets/misefits-*.webp`（幅1400pxに最適化）
 - 構造化データ: `WebApplication`
 - 検索クロール: `robots.txt`
 - サイトマップ: `sitemap.xml`
