@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiseFitsの使い方 | かんたん店舗レイアウトシミュレーター</title>
+<meta name="description" content="MiseFitsの使い方ガイド。図面(PDF/画像)の読み込みや白紙からの作成、2点クリックでの縮尺合わせ、什器の実寸配置、通路幅の計測、席数・面積の集計、PNG/PDF出力までを手順で解説します。">
+<meta name="keywords" content="MiseFits,使い方,店舗レイアウト,レイアウトシミュレーター,縮尺,通路幅,什器配置,席数,図面">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://misefits.kokokikaku.com/guide.html">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="MiseFits">
+<meta property="og:title" content="MiseFitsの使い方 | かんたん店舗レイアウトシミュレーター">
+<meta property="og:description" content="図面の読み込みから縮尺合わせ、什器の実寸配置、通路幅の計測、出力までを手順で解説します。">
+<meta property="og:url" content="https://misefits.kokokikaku.com/guide.html">
+<meta property="og:image" content="https://misefits.kokokikaku.com/assets/misefits-ogp.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MiseFitsの使い方">
+<meta name="twitter:description" content="図面の読み込みから縮尺合わせ、什器の実寸配置、通路幅の計測、出力までを手順で解説します。">
+<meta name="twitter:image" content="https://misefits.kokokikaku.com/assets/misefits-ogp.jpg">
+<meta name="theme-color" content="#0066cc">
+<link rel="icon" href="assets/misefits-favicon.png">
+<link rel="apple-touch-icon" href="assets/misefits-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "HowTo",
+      "name": "MiseFitsで店舗レイアウトを検討する手順",
+      "description": "図面または白紙から、店舗・施設のレイアウトを実寸(mm)で検討する手順です。",
+      "inLanguage": "ja",
+      "totalTime": "PT10M",
+      "tool": [{ "@type": "HowToTool", "name": "MiseFits（ブラウザ）" }],
+      "step": [
+        { "@type": "HowToStep", "name": "図面を用意する", "text": "PDFまたは画像の図面を読み込みます。図面が無い場合は、幅と奥行をmmで指定して白紙シートを作成します。", "url": "https://misefits.kokokikaku.com/guide.html#drawing" },
+        { "@type": "HowToStep", "name": "縮尺を合わせる", "text": "図面上で長さの分かる2点をクリックし、その実寸をmmで入力すると、以降の配置がすべて実寸になります。", "url": "https://misefits.kokokikaku.com/guide.html#scale" },
+        { "@type": "HowToStep", "name": "什器を配置する", "text": "業種別のパーツを選んでキャンバスに置き、幅・奥行・角度・色を調整します。", "url": "https://misefits.kokokikaku.com/guide.html#place" },
+        { "@type": "HowToStep", "name": "通路幅を測って確認する", "text": "計測ツールで2点間の距離を測り、通路や什器間の余裕を確認します。席数と面積も自動で集計されます。", "url": "https://misefits.kokokikaku.com/guide.html#check" },
+        { "@type": "HowToStep", "name": "保存・出力する", "text": "プロジェクトをJSONで保存し、PNG・PDF・印刷で共有します。", "url": "https://misefits.kokokikaku.com/guide.html#export" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "図面データはどこかにアップロードされますか？", "acceptedAnswer": { "@type": "Answer", "text": "いいえ。読み込んだ図面も配置データもブラウザの中だけで処理され、サーバーには送信されません。自動保存はお使いの端末のブラウザ内（localStorage）に保存されます。" } },
+        { "@type": "Question", "name": "図面が手元にない場合でも使えますか？", "acceptedAnswer": { "@type": "Answer", "text": "使えます。幅と奥行をmmで指定して白紙シートを作成すれば、縮尺の設定なしでそのまま実寸で配置を検討できます。" } },
+        { "@type": "Question", "name": "施工用の図面として使えますか？", "acceptedAnswer": { "@type": "Answer", "text": "MiseFitsは検討用のツールです。実際の施工や、消防・バリアフリーなどの法令要件の判断は、建築士や施工会社、所轄の窓口にご確認ください。" } },
+        { "@type": "Question", "name": "料金はかかりますか？", "acceptedAnswer": { "@type": "Answer", "text": "無料です。登録やログインも不要で、ブラウザで開けばすぐに使えます。" } },
+        { "@type": "Question", "name": "スマホでも使えますか？", "acceptedAnswer": { "@type": "Answer", "text": "使えます。ピンチで拡大縮小、1本指で画面移動、画面下のバーからよく使うパーツを追加できます。細かい編集はPCのほうが快適です。" } }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "MiseFits", "item": "https://misefits.kokokikaku.com/" },
+        { "@type": "ListItem", "position": 2, "name": "使い方", "item": "https://misefits.kokokikaku.com/guide.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  :root{
+    --bg:#eef1f5; --panel:#ffffff; --line:#dfe4ec; --ink:#242933; --sub:#667085;
+    --accent:#0066cc; --accent2:#004f9f; --accent-soft:#e8f2ff; --sun:#ffb545; --mint:#2a9d8f; --danger:#e63946;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;scroll-padding-top:86px;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;background:var(--bg);color:var(--ink);
+    line-height:1.75;-webkit-text-size-adjust:100%;}
+  a{color:var(--accent);}
+
+  /* Header */
+  .page-top{position:sticky;top:0;z-index:20;height:72px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:0 18px;box-shadow:0 1px 14px rgba(25,33,46,.07);}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;}
+  .brand-icon{width:46px;height:46px;border-radius:14px;object-fit:contain;flex:0 0 auto;
+    filter:drop-shadow(0 9px 18px rgba(0,80,160,.19));}
+  .brand-name{font-family:Arial Rounded MT Bold,Arial,"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;
+    font-weight:900;font-size:25px;letter-spacing:.015em;color:#102033;line-height:1;}
+  .brand-name .fit{color:var(--accent);font-style:italic;letter-spacing:-.01em;}
+  .brand-name .dot{display:inline-block;width:8px;height:8px;margin-left:5px;border-radius:999px;background:var(--sun);
+    vertical-align:top;transform:translateY(4px);}
+  .brand small{display:block;color:var(--sub);font-weight:700;font-size:11.5px;line-height:1.35;margin-top:3px;}
+  .top-sp{flex:1;}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:1px solid var(--accent);
+    border-radius:9px;padding:10px 16px;font-size:13px;font-weight:800;text-decoration:none;white-space:nowrap;}
+  .btn:hover{background:var(--accent2);border-color:var(--accent2);}
+  .btn.outline{background:#fff;color:var(--accent);}
+  .btn.outline:hover{background:var(--accent-soft);}
+
+  /* Layout */
+  main{max-width:980px;margin:0 auto;padding:26px 18px 60px;}
+  .crumb{font-size:11.5px;color:var(--sub);margin-bottom:16px;}
+  .crumb a{text-decoration:none;font-weight:700;}
+  .hero{background:linear-gradient(145deg,#ffffff,#f6faff 60%,#fff8ec);border:1px solid var(--line);border-radius:18px;
+    padding:28px 26px;box-shadow:0 12px 30px rgba(25,33,46,.07);}
+  .kicker{display:inline-flex;align-items:center;gap:7px;color:var(--accent);background:var(--accent-soft);
+    border:1px solid #cfe4ff;border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:800;margin-bottom:13px;}
+  h1{font-size:29px;line-height:1.35;letter-spacing:0;margin-bottom:12px;}
+  .lead{font-size:14px;color:#3d4654;}
+  .lead strong{color:var(--ink);}
+
+  .toc{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .toc h2{font-size:12px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+  .toc ol{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;counter-reset:t;}
+  .toc a{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);font-size:13px;font-weight:700;
+    border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fbfcfe;}
+  .toc a:hover{border-color:#9fcbff;background:#f4f9ff;}
+  .toc a::before{counter-increment:t;content:counter(t);display:grid;place-items:center;width:22px;height:22px;flex:0 0 auto;
+    border-radius:7px;background:var(--accent-soft);color:var(--accent);font-size:11.5px;}
+
+  section.step{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 24px 22px;
+    box-shadow:0 6px 18px rgba(25,33,46,.05);}
+  section.step > h2{font-size:20px;line-height:1.4;display:flex;align-items:center;gap:11px;margin-bottom:6px;}
+  section.step > h2 .no{display:grid;place-items:center;width:32px;height:32px;flex:0 0 auto;border-radius:10px;
+    background:var(--accent);color:#fff;font-size:15px;font-weight:900;}
+  section.step > p{font-size:13.5px;color:#3d4654;margin-top:8px;}
+  h3{font-size:14.5px;margin:20px 0 7px;padding-left:11px;border-left:3px solid var(--accent);}
+  ul,ol.list{margin:8px 0 0 22px;font-size:13.5px;color:#3d4654;}
+  li{margin-bottom:5px;}
+  li strong{color:var(--ink);}
+  .note{margin-top:14px;background:#f7f9fc;border:1px solid var(--line);border-left:3px solid var(--sun);
+    border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#3d4654;}
+  .note b{color:var(--ink);}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px;margin-top:14px;}
+  .card{border:1px solid var(--line);border-radius:12px;padding:13px 14px;background:#fbfcfe;}
+  .card b{display:block;font-size:13.5px;margin-bottom:5px;}
+  .card span{display:block;font-size:12.5px;color:var(--sub);line-height:1.65;}
+  kbd{display:inline-block;border:1px solid #ccd3de;border-bottom-width:2px;border-radius:5px;background:#fff;
+    padding:1px 7px;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;}
+
+  .tablewrap{overflow-x:auto;margin-top:12px;}
+  table{border-collapse:collapse;width:100%;min-width:420px;font-size:13px;}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top;}
+  th{background:#f4f7fb;color:var(--sub);font-size:12px;white-space:nowrap;}
+
+  .aisle{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px;}
+  .aisle div{border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#fff;}
+  .aisle b{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:4px;}
+  .aisle i{width:16px;height:5px;border-radius:3px;display:inline-block;}
+  .aisle span{font-size:12.5px;color:var(--sub);line-height:1.6;}
+
+  details{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 15px;}
+  details[open]{padding-bottom:13px;}
+  summary{cursor:pointer;padding:13px 0;font-size:14px;font-weight:800;list-style:none;}
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:"＋";color:var(--accent);margin-right:9px;font-weight:900;}
+  details[open] summary::before{content:"−";}
+  details p{font-size:13.5px;color:#3d4654;}
+
+  .cta{margin-top:30px;background:linear-gradient(145deg,#e9f3ff,#ffffff 65%,#fff6e6);border:1px solid #cfe4ff;
+    border-radius:18px;padding:26px 24px;text-align:center;}
+  .cta h2{font-size:20px;margin-bottom:8px;}
+  .cta p{font-size:13.5px;color:#3d4654;margin-bottom:16px;}
+
+  footer{background:#fbfcfe;border-top:1px solid var(--line);padding:20px 18px 28px;}
+  .foot-in{max-width:980px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;
+    font-size:11.5px;color:var(--sub);}
+  .foot-in b{color:var(--ink);font-size:13px;}
+  .foot-in a{font-weight:800;text-decoration:none;}
+  .foot-in .sp{flex:1;}
+  .legalnote{max-width:980px;margin:10px auto 0;font-size:10.5px;color:#7a8494;line-height:1.6;}
+
+  @media (max-width:720px){
+    .page-top{height:60px;padding:0 12px;gap:9px;}
+    .brand-icon{width:36px;height:36px;border-radius:11px;}
+    .brand-name{font-size:20px;}
+    .brand small{display:none;}
+    .btn{padding:9px 12px;font-size:12.5px;}
+    main{padding:18px 12px 44px;}
+    .hero{padding:20px 17px;border-radius:15px;}
+    h1{font-size:22px;}
+    section.step{padding:19px 16px;border-radius:14px;}
+    section.step > h2{font-size:17px;}
+    .cta{padding:20px 16px;}
+  }
+</style>
+</head>
+<body>
+<header class="page-top">
+  <a class="brand" href="./" aria-label="MiseFits トップへ">
+    <img class="brand-icon" src="assets/misefits-icon.png" alt="" width="46" height="46">
+    <span>
+      <span class="brand-name"><span class="mise">Mise</span><span class="fit">Fits</span><span class="dot"></span></span>
+      <small>かんたん店舗レイアウトシミュレーター</small>
+    </span>
+  </a>
+  <span class="top-sp"></span>
+  <a class="btn" href="./">アプリを開く</a>
+</header>
+
+<main>
+  <nav class="crumb" aria-label="パンくず"><a href="./">MiseFits</a> ／ 使い方</nav>
+
+  <div class="hero">
+    <div class="kicker">使い方ガイド</div>
+    <h1>図面を読み込んで、縮尺を合わせて、置いてみる。</h1>
+    <p class="lead">MiseFitsは、<strong>お店や施設のレイアウトを実寸(mm)でざっくり検討する</strong>ためのブラウザツールです。ExcelやWordで図形を並べるより直感的に、CADより軽く使えます。インストールも登録も不要で、<strong>読み込んだ図面はブラウザの中だけで処理されます</strong>。このページでは、最初の1枚を作るまでの流れと、通路幅の確認や出力までをまとめています。</p>
+  </div>
+
+  <nav class="toc" aria-label="目次">
+    <h2>このページの内容</h2>
+    <ol>
+      <li><a href="#drawing">図面を用意する</a></li>
+      <li><a href="#scale">縮尺を合わせる</a></li>
+      <li><a href="#place">什器を配置する</a></li>
+      <li><a href="#check">通路幅と席数を確認する</a></li>
+      <li><a href="#export">保存・出力する</a></li>
+      <li><a href="#mobile">スマホでの操作</a></li>
+      <li><a href="#shortcuts">ショートカット一覧</a></li>
+      <li><a href="#faq">よくある質問</a></li>
+    </ol>
+  </nav>
+
+  <section class="step" id="drawing">
+    <h2><span class="no">1</span>図面を用意する</h2>
+    <p>左パネルの「図面シート」から始めます。手元に図面があるかどうかで、2つの入り口があります。</p>
+
+    <h3>図面がある場合</h3>
+    <ul>
+      <li><strong>＋PDF</strong>：PDFを読み込みます。<strong>1ページ目</strong>が背景として取り込まれます。</li>
+      <li><strong>＋画像</strong>：JPEG・PNGなどの画像を読み込みます。図面を写真で撮ったものでも構いません。</li>
+    </ul>
+    <div class="note"><b>きれいに取り込むコツ：</b>寸法線や寸法の数字が読める解像度のものを使ってください。あとで縮尺を合わせるとき、長さの分かる箇所が写っていることが重要です。写真の場合は、できるだけ真上から、傾かないように撮ると精度が上がります。</div>
+
+    <h3>図面がない場合</h3>
+    <ul>
+      <li><strong>白紙作成</strong>：幅と奥行を mm で入力すると、そのサイズの白紙シートができます（例：9000 × 6000 mm）。</li>
+      <li>白紙シートは<strong>最初から実寸が確定している</strong>ので、次の「縮尺を合わせる」は不要です。そのまま配置に進めます。</li>
+    </ul>
+    <div class="note">図面シートは<strong>何枚でも追加できます</strong>。1階・2階、A案・B案のように分けて、左パネルのリストから切り替えられます。切り替えても、それぞれの配置はそのまま保持されます。</div>
+  </section>
+
+  <section class="step" id="scale">
+    <h2><span class="no">2</span>縮尺を合わせる</h2>
+    <p>読み込んだ図面が「実際の何ミリなのか」をアプリに教える作業です。ここを合わせておくと、以降に置く什器がすべて正しい実寸になります。</p>
+    <ol class="list">
+      <li>左パネルの<strong>「📏 2点クリックで縮尺を設定」</strong>を押します。</li>
+      <li>図面上で、<strong>長さの分かる2点</strong>をクリックします（寸法線の両端など）。</li>
+      <li>その2点の実際の長さを <strong>mm で入力</strong>します。</li>
+    </ol>
+    <div class="note"><b>基準にする長さが見つからないとき：</b>一般的なドアの開口（約800〜900mm）、シングルベッドの長辺（約1950〜2000mm）、机の幅など、寸法が推測できるものを使います。<b>長い距離を基準にするほど誤差が小さくなる</b>ので、部屋の壁から壁など、できるだけ長い区間を選ぶのがコツです。</div>
+    <h3>合っているかの確かめ方</h3>
+    <ul>
+      <li>設定後、左パネルに <strong>「1px = ○○ mm」</strong> と表示されます。</li>
+      <li>4人テーブル（1200 × 700 mm）を1つ置いてみて、図面上の他の什器や壁と比べて違和感がなければ合っています。</li>
+      <li>あとから設定し直しても、<strong>すでに置いた什器の実寸は保たれます</strong>（画面上の大きさだけが変わります）。安心して測り直せます。</li>
+    </ul>
+  </section>
+
+  <section class="step" id="place">
+    <h2><span class="no">3</span>什器を配置する</h2>
+    <p>左パネルの「什器・設備パーツ」から選びます。業種別のカテゴリに分かれていて、検索も使えます。</p>
+
+    <h3>置く</h3>
+    <ul>
+      <li><strong>クリック</strong>：画面の中央に追加されます。</li>
+      <li><strong>ドラッグ＆ドロップ</strong>：置きたい位置に直接ドロップできます。</li>
+    </ul>
+
+    <h3>大きさ・向き・色を変える</h3>
+    <ul>
+      <li>選択すると下部にパネルが出ます。<strong>幅W・奥行D（丸物は直径φ）を mm で直接入力</strong>できます。手持ちの什器の実寸に合わせてください。</li>
+      <li>角度はスライダー、<kbd>⟲15°</kbd> などのボタン、数値入力で変えられます。<strong>15°刻みのスナップ</strong>のON/OFFも切り替えられます。</li>
+      <li>色を変えれば、既存什器と新規購入分、A案とB案などを塗り分けられます。</li>
+    </ul>
+
+    <h3>きれいに揃える</h3>
+    <div class="cards">
+      <div class="card"><b>什器・壁に吸着</b><span>動かしている什器の辺や中心が、他の什器や図面の外周と揃う位置に近づくと吸着し、ピンクのガイド線が出ます。</span></div>
+      <div class="card"><b>グリッドに吸着</b><span>50〜1000mmのグリッドに合わせて動きます。間隔は左パネルで変更できます。</span></div>
+      <div class="card"><b>複製</b><span>同じ椅子やテーブルを並べるときは <kbd>Ctrl</kbd>+<kbd>D</kbd> で複製すると、サイズや色をそのまま引き継げます。</span></div>
+      <div class="card"><b>やり直し</b><span>間違えたら <kbd>Ctrl</kbd>+<kbd>Z</kbd> で1操作ずつ戻せます。画面のボタン ↶ ↷ でも同じことができます。</span></div>
+    </div>
+  </section>
+
+  <section class="step" id="check">
+    <h2><span class="no">4</span>通路幅と席数を確認する</h2>
+    <p>置けたら、「実際に人が通れるか」「何席取れているか」を確認します。ここがレイアウト検討でいちばん判断を左右するところです。</p>
+
+    <h3>2点間の距離を測る</h3>
+    <ol class="list">
+      <li>画面の<strong>📐 計測</strong>ボタン（またはキーボードの <kbd>M</kbd>）を押します。</li>
+      <li>測りたい2点をクリックすると、その間の実寸が mm で表示されます。</li>
+      <li>続けて何本でも測れます。終わるときは <kbd>Esc</kbd>、消すときは左パネルの「計測をクリア」です。</li>
+    </ol>
+    <p>測った線は、幅の目安で色が変わります。</p>
+    <div class="aisle">
+      <div><b><i style="background:#e63946"></i>600mm 未満</b><span>人がすれ違うのは困難な幅です。スタッフ動線としても窮屈になりがちです。</span></div>
+      <div><b><i style="background:#e07c0a"></i>600〜900mm</b><span>1人が通れる程度。片側通行の動線や、什器の裏の作業スペース向き。</span></div>
+      <div><b><i style="background:#1f8f7d"></i>900mm 以上</b><span>すれ違いや、荷物・カートを持っての移動に余裕が出てきます。</span></div>
+    </div>
+    <div class="note"><b>この色分けはあくまで検討用の目安です。</b>実際に必要な通路幅は、用途・規模・席数によって建築基準法や消防法、バリアフリー関連の基準で定められている場合があります。最終的な判断は、建築士・施工会社・所轄の窓口にご確認ください。</div>
+
+    <h3>席数と面積を見る</h3>
+    <ul>
+      <li>左パネルの<strong>「集計」</strong>に、席・人数の目安、配置パーツ数、什器の合計面積、シート全体に対する占有率が出ます。</li>
+      <li>席数は什器ごとの標準的な人数から自動計算しています（4人テーブル＝4席など）。<strong>カウンター席は幅600mmごとに1席</strong>として数えます。</li>
+      <li>什器を増やしたり大きさを変えたりすると、その場で数字が更新されます。A案とB案で席数を比べる、といった使い方ができます。</li>
+    </ul>
+  </section>
+
+  <section class="step" id="export">
+    <h2><span class="no">5</span>保存・出力する</h2>
+
+    <h3>作業データを保存する</h3>
+    <ul>
+      <li><strong>💾 保存(JSON)</strong>：図面画像・縮尺・什器の位置やサイズ・角度をまとめて1つのファイルに書き出します。後日<strong>📂 読込</strong>から開けば、続きから編集できます。</li>
+      <li><strong>自動保存</strong>：作業中の内容はお使いのブラウザ内に自動で保存され、次に開いたときに復元するか確認されます。ただし<strong>ブラウザのデータを消すと失われる</strong>ので、大事な案はJSONで保存しておいてください。</li>
+    </ul>
+
+    <h3>共有・印刷する</h3>
+    <ul>
+      <li><strong>PNG</strong>：画像として書き出します。メールやチャットで共有するのに向きます。</li>
+      <li><strong>PDF</strong>：用紙サイズ（A4／A3／A5／Letter）を選べます。向きは図面に合わせて自動で決まります。</li>
+      <li><strong>印刷</strong>：そのままプリンターへ出力します。</li>
+    </ul>
+    <div class="note">出力される絵には<strong>グリッドと計測線は含まれません</strong>（図面と配置だけのすっきりした状態で出ます）。計測線は画面上での確認用とお考えください。</div>
+  </section>
+
+  <section class="step" id="mobile">
+    <h2><span class="no">6</span>スマホでの操作</h2>
+    <p>現場で図面を見ながら確認したり、その場で配置を試したりできます。細かい数値の詰めはPCのほうが快適です。</p>
+    <div class="cards">
+      <div class="card"><b>画面移動・拡大</b><span>2本指のピンチで拡大縮小、何もない所を1本指でドラッグすると画面が動きます。</span></div>
+      <div class="card"><b>誤操作を防ぐ移動モード</b><span>スマホでは既定で「🖐 移動」モードです。ドラッグしても大きさが変わりません。サイズを変えたいときだけ「⤢ サイズ・回転」に切り替えます。</span></div>
+      <div class="card"><b>下部のクイックバー</b><span>よく使うパーツが画面下に並びます。最近使ったものが自動で前に来るので、メニューを開かずに追加できます。</span></div>
+      <div class="card"><b>メニュー</b><span>左上の ☰ から、図面の読み込み・縮尺・パーツ一覧・集計・出力にアクセスできます。</span></div>
+    </div>
+  </section>
+
+  <section class="step" id="shortcuts">
+    <h2><span class="no">7</span>ショートカット一覧（PC）</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>キー</th><th>動作</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>元に戻す</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>やり直す</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>選択中の什器を複製</td></tr>
+          <tr><td><kbd>Delete</kbd></td><td>選択中の什器を削除</td></tr>
+          <tr><td><kbd>R</kbd> / <kbd>Shift</kbd>+<kbd>R</kbd></td><td>15°回転 / 逆方向に15°回転</td></tr>
+          <tr><td><kbd>[</kbd> / <kbd>]</kbd></td><td>−15° / ＋15°回転</td></tr>
+          <tr><td><kbd>M</kbd></td><td>計測モードの切り替え</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>計測・縮尺設定モードを終了</td></tr>
+          <tr><td><kbd>Space</kbd>+ドラッグ</td><td>画面を移動</td></tr>
+          <tr><td>マウスホイール</td><td>拡大・縮小</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="step" id="faq">
+    <h2><span class="no">8</span>よくある質問</h2>
+
+    <details>
+      <summary>図面データはどこかにアップロードされますか？</summary>
+      <p>いいえ。読み込んだ図面も配置したデータも、<strong>ブラウザの中だけで処理されます</strong>。サーバーには送信されません。自動保存も、お使いの端末のブラウザ内に保存される仕組みです。共有したいときは、JSON・PNG・PDFとして書き出したファイルをご自身で渡してください。</p>
+    </details>
+
+    <details>
+      <summary>図面が手元にない場合でも使えますか？</summary>
+      <p>使えます。「白紙作成」で幅と奥行を mm で指定すれば、そのサイズの区画ができます。縮尺の設定は不要で、そのまま実寸で什器を並べられます。物件を見に行く前の当たり付けや、内見時に測った寸法での再現に向いています。</p>
+    </details>
+
+    <details>
+      <summary>施工用の図面として使えますか？</summary>
+      <p>MiseFitsは<strong>検討用のツール</strong>です。配置の当たりを付けたり、席数を数えたり、関係者と話すたたき台を作るのに向いています。実際の施工や、消防・避難経路・バリアフリーなどの法令要件の判断には使えません。最終的な確認は、建築士・施工会社・所轄の窓口へお願いします。</p>
+    </details>
+
+    <details>
+      <summary>置きたい什器がライブラリにありません。</summary>
+      <p>「自由図形」の四角・丸を置いて、幅と奥行を実寸で入力してください。名前は付けられませんが、色を変えたりテキストを添えたりして区別できます。よく使う什器で追加してほしいものがあれば、ご要望としてお寄せください。</p>
+    </details>
+
+    <details>
+      <summary>料金はかかりますか？ 登録は必要ですか？</summary>
+      <p>無料です。登録もログインも不要で、ブラウザで開けばすぐに使えます。</p>
+    </details>
+
+    <details>
+      <summary>推奨環境を教えてください。</summary>
+      <p>PC・スマホ・タブレットの、最新のGoogle Chrome / Safari / Microsoft Edge / Firefox でお使いいただけます。図面の処理に外部のライブラリを読み込むため、<strong>オンライン環境</strong>が必要です。</p>
+    </details>
+  </section>
+
+  <div class="cta">
+    <h2>さっそく試してみる</h2>
+    <p>図面がなくても、白紙サイズを入れるだけで始められます。</p>
+    <a class="btn" href="./">MiseFitsを開く</a>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <b>MiseFits</b>
+    <span>店舗・施設の図面データはブラウザ内だけで処理されます</span>
+    <span class="sp"></span>
+    <a href="./">アプリ</a>
+    <a href="guide.html">使い方</a>
+    <span>Produced by ここ企画</span>
+    <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
+  </div>
+  <p class="legalnote"><strong>注意・免責</strong> MiseFitsは概算検討用のツールです。表示される寸法・面積・席数・通路幅の目安は、入力された縮尺にもとづく計算値であり、施工や法令適合を保証するものではありません。実際の設計・施工・法令上の判断は、建築士や施工会社、所轄の窓口にご確認ください。</p>
+</footer>
+</body>
+</html>

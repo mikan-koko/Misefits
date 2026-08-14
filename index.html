@@ -88,8 +88,10 @@
   .brand-name .dot{display:inline-block;width:8px;height:8px;margin-left:5px;border-radius:999px;background:var(--sun);vertical-align:top;transform:translateY(4px);}
   .brand-copy small{display:block;color:var(--sub);font-weight:700;font-size:11.5px;letter-spacing:0;line-height:1.35;}
   .page-nav{display:flex;align-items:center;gap:6px;color:var(--sub);font-size:12px;font-weight:700;}
-  .page-nav span{border:1px solid var(--line);background:#f8fafc;border-radius:999px;padding:5px 9px;white-space:nowrap;}
-  .page-nav span.active{background:var(--accent-soft);border-color:#cfe4ff;color:var(--accent);}
+  .page-nav a{border:1px solid var(--line);background:#f8fafc;border-radius:999px;padding:5px 9px;white-space:nowrap;
+    color:var(--sub);text-decoration:none;transition:.12s;}
+  .page-nav a:hover{border-color:#9fcbff;background:#f2f8ff;color:var(--accent);}
+  .page-nav a.guide{background:var(--accent-soft);border-color:#cfe4ff;color:var(--accent);}
   .top-actions{margin-left:auto;display:flex;align-items:center;gap:8px;}
   header .spacer{flex:1;}
   .hbtn{font-size:12.5px;}
@@ -122,6 +124,10 @@
   .start-card:hover{transform:translateY(-1px);border-color:#b9d9ff;box-shadow:0 8px 20px rgba(16,76,145,.1);}
   .start-card b{display:block;font-size:12.5px;margin-bottom:3px;}
   .start-card span{display:block;color:var(--sub);font-size:10.5px;line-height:1.45;}
+  .intro-guide{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;padding:9px 10px;
+    border:1px solid #cfe4ff;background:var(--accent-soft);border-radius:9px;color:var(--accent);
+    font-size:12px;font-weight:800;text-decoration:none;}
+  .intro-guide:hover{background:#dceeff;}
   .industry-tags,.industry-cloud{display:flex;gap:6px;flex-wrap:wrap;}
   .industry-tags{margin-top:10px;}
   .industry-tags span,.industry-cloud span{border:1px solid var(--line);background:#fff;border-radius:999px;color:var(--sub);font-size:11px;font-weight:700;padding:4px 8px;white-space:nowrap;}
@@ -439,6 +445,15 @@
   #backdrop.show{display:block;}
   #c-wrap, #c-wrap canvas{touch-action:none;}
 
+  /* 狭めのデスクトップ幅では、ヘッダーの操作ボタンが押せるようナビを段階的に畳む */
+  @media (max-width:1180px){
+    .page-nav a:not(.guide){display:none;}
+  }
+  @media (max-width:1000px){
+    .page-nav{display:none;}
+    .brand{min-width:0;}
+  }
+
   /* ===== タブレット・スマホ ===== */
   @media (max-width:860px){
     .menu-btn{display:inline-flex;align-items:center;justify-content:center;}
@@ -565,11 +580,12 @@
       </div>
     </div>
   </div>
-  <nav class="page-nav" aria-label="アプリの特長">
-    <span class="active">図面読込</span>
-    <span>縮尺設定</span>
-    <span>什器配置</span>
-    <span>出力</span>
+  <nav class="page-nav" aria-label="使い方ガイド">
+    <a href="guide.html#drawing">図面読込</a>
+    <a href="guide.html#scale">縮尺設定</a>
+    <a href="guide.html#place">什器配置</a>
+    <a href="guide.html#export">出力</a>
+    <a class="guide" href="guide.html">使い方ガイド</a>
   </nav>
   <div class="top-actions">
     <button class="btn ghost hbtn" onclick="saveProject()" title="プロジェクトをJSONで保存" aria-label="プロジェクトをJSONで保存"><span class="ico">💾</span><span class="lbl"> 保存(JSON)</span></button>
@@ -592,6 +608,7 @@
         <button class="start-card" onclick="pickDrawingFile()"><b>図面から</b><span>PDF/画像を読み込む</span></button>
         <button class="start-card" onclick="createBlankSheet()"><b>白紙から</b><span>サイズ指定で作成</span></button>
       </div>
+      <a class="intro-guide" href="guide.html">📘 はじめての方へ：使い方ガイド</a>
       <div class="industry-tags" aria-label="対応業種">
         <span>飲食</span><span>美容</span><span>教室</span><span>物販</span><span>医療</span><span>オフィス</span>
       </div>
@@ -743,7 +760,7 @@
               </div>
               <div class="empty-actions">
                 <button class="btn" onclick="openDrawer()">パーツを見る</button>
-                <button class="btn outline" onclick="showHint('図面がある場合はPDF/画像、ない場合は白紙作成から始められます')">操作のヒント</button>
+                <a class="btn outline" href="guide.html">使い方を見る</a>
               </div>
             </div>
           </section>
@@ -842,6 +859,7 @@
       <b>MiseFits</b>
       <span>店舗・施設の図面データはブラウザ内だけで処理されます</span>
       <div class="foot-company">
+        <a href="guide.html">使い方ガイド</a>
         <span>Produced by ここ企画</span>
         <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
       </div>
