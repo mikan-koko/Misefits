@@ -11,13 +11,20 @@
   "icons": [
     {
       "src": "assets/misefits-favicon.png",
-      "sizes": "192x192",
+      "sizes": "64x64",
       "type": "image/png"
     },
     {
+      "src": "assets/misefits-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "assets/misefits-icon.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

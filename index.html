@@ -240,6 +240,17 @@
   .zoombar button:hover{background:#e4e8ee;}
   .zoombar .z{font-size:12px;min-width:46px;text-align:center;color:var(--sub);}
 
+  /* 起動失敗（CDN読み込み失敗）時の案内 */
+  .loaderr{display:none;position:fixed;inset:0;z-index:100;background:rgba(238,241,245,.96);
+    align-items:center;justify-content:center;padding:24px;}
+  .loaderr.show{display:flex;}
+  .loaderr-box{max-width:520px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 24px;
+    box-shadow:0 18px 44px rgba(25,33,46,.16);}
+  .loaderr-box b{display:block;font-size:17px;margin-bottom:10px;}
+  .loaderr-box p{font-size:13px;line-height:1.8;color:var(--sub);margin-bottom:10px;}
+  .loaderr-box code{background:#f2f4f7;border-radius:4px;padding:1px 6px;font-size:12px;color:var(--ink);}
+  .loaderr-box .btn{margin-top:6px;}
+
   /* Action bar (undo/redo etc.) */
   .actionbar{position:absolute;right:14px;bottom:56px;display:none;align-items:center;gap:6px;
     background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:10px;padding:5px 7px;
@@ -272,6 +283,7 @@
   .status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;background:#f2f4f7;color:var(--sub);white-space:nowrap;}
   .status-pill.ok{background:#e6f6f2;color:#157263;}
   .status-pill.warn{background:#fff1e8;color:#a5480d;}
+  .status-pill.danger{background:#fdeaec;color:#a4141f;font-weight:800;}
   .status-next{color:var(--accent);font-weight:700;white-space:nowrap;}
 
   /* Empty state */
@@ -852,6 +864,16 @@
     </div>
   </div>
 </div>
+<div class="loaderr" id="loadError" role="alert" aria-live="assertive">
+  <div class="loaderr-box">
+    <b>MiseFitsを起動できませんでした</b>
+    <p>図面の表示に必要なライブラリ（<code>cdnjs.cloudflare.com</code>）を読み込めませんでした。オフラインのとき、または社内ネットワークなどで外部CDNが遮断されているときに発生します。</p>
+    <p>通信環境をご確認のうえ、ページを再読み込みしてください。作業中のデータは端末内に自動保存されているため、復旧後に復元できます。</p>
+    <button class="btn" onclick="location.reload()">再読み込み</button>
+    <a class="btn ghost" href="guide.html" style="margin-left:8px;">使い方を見る</a>
+  </div>
+</div>
+
 <footer class="page-foot">
   <div class="foot-main">
     <div class="foot-logo">MF</div>
@@ -976,6 +998,7 @@ function mmpp(){ const s=activeSheet(); return s ? s.mmPerPixel : SAMPLE_MMPP; }
 
 /* ================= 初期化 ================= */
 window.addEventListener('load', ()=>{
+  if(!window.fabric){ showLoadError(); return; }   // CDNを読めていない場合は案内を出して停止
   fabric.Object.prototype.set({ transparentCorners:false, cornerColor:'#0066cc', cornerStyle:'circle',
       borderColor:'#0066cc', cornerSize:9, padding:2, borderScaleFactor:1.4 });
   fabric.Object.prototype.touchCornerSize = 32; // タッチ操作用の大きめハンドル
@@ -1089,7 +1112,8 @@ function updateWorkStatus(){
   const next=s.calibrated ? (count ? '配置を調整できます' : '次: パーツを追加') : '次: 縮尺を設定';
   const seats=computeSummary().seats;
   const seatPill=seats? `<span class="status-pill">席 ${seats}</span>` : '';
-  box.innerHTML=`<b title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</b><span class="status-pill ${s.calibrated?'ok':'warn'}">${scaleLabel}</span><span class="status-pill">パーツ ${count}</span>${seatPill}<span class="status-next">${next}</span>`;
+  const savePill=autosaveFailed? '<span class="status-pill danger" title="図面が大きく端末に自動保存できません。JSONで保存してください">⚠ 自動保存できません</span>' : '';
+  box.innerHTML=`<b title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</b><span class="status-pill ${s.calibrated?'ok':'warn'}">${scaleLabel}</span><span class="status-pill">パーツ ${count}</span>${seatPill}${savePill}<span class="status-next">${next}</span>`;
   box.classList.add('show');
   updateSummary();
 }
@@ -1165,15 +1189,20 @@ function handleImageFile(file, name){
 }
 
 async function handlePdfFile(file){
-  const buf=await file.arrayBuffer();
-  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-  const page=await pdf.getPage(1);
-  const vp=page.getViewport({scale:2.0}); // ~144dpi相当
-  const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
-  await page.render({canvasContext:cv.getContext('2d'), viewport:vp}).promise;
-  addSheet({ name:file.name.replace(/\.pdf$/i,''), image:cv.toDataURL('image/png'),
-             mmPerPixel:SAMPLE_MMPP, calibrated:false, objects:[] });
-  showHint('PDFを読み込みました。「縮尺を設定」で実寸を合わせてください');
+  if(!window.pdfjsLib){ showHint('PDFの読み込みに必要なライブラリを読み込めませんでした（オンライン環境が必要です）', 5000); return; }
+  try{
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    const page=await pdf.getPage(1);
+    const vp=page.getViewport({scale:2.0}); // ~144dpi相当
+    const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
+    await page.render({canvasContext:cv.getContext('2d'), viewport:vp}).promise;
+    addSheet({ name:file.name.replace(/\.pdf$/i,''), image:cv.toDataURL('image/png'),
+               mmPerPixel:SAMPLE_MMPP, calibrated:false, objects:[] });
+    showHint('PDFを読み込みました。「縮尺を設定」で実寸を合わせてください');
+  }catch(e){
+    showHint('PDFを読み込めませんでした。別のPDF、または画像として書き出したものをお試しください', 5000);
+  }
 }
 
 function createBlankSheet(){
@@ -1964,6 +1993,12 @@ function printLayout(){
   }, 2);
 }
 
+/* ================= 起動失敗時の案内 ================= */
+function showLoadError(){
+  const box=document.getElementById('loadError');
+  if(box) box.classList.add('show');
+}
+
 /* ================= 編集履歴（Undo / Redo） ================= */
 const HISTORY_LIMIT = 50;
 let historyLock = false, historyTimer = null;
@@ -2038,13 +2073,24 @@ function updateHistoryBtns(){
 
 /* ================= autosave (localStorage) ================= */
 let saveTimer=null;
+let autosaveFailed=false, autosaveWarned=false;
 function autosave(){
   if(suppressAutosave) return;
   historyPush();                    // 変更のたびに編集履歴も更新
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
-    try{ localStorage.setItem('layoutSim', JSON.stringify(serializeProject())); }
-    catch(e){/* quota */}
+    try{
+      localStorage.setItem('layoutSim', JSON.stringify(serializeProject()));
+      if(autosaveFailed){ autosaveFailed=false; updateWorkStatus(); }
+    }catch(e){
+      // 図面が大きいと localStorage の容量を超える。黙って失敗させず必ず知らせる
+      autosaveFailed=true;
+      updateWorkStatus();
+      if(!autosaveWarned){
+        autosaveWarned=true;
+        showHint('図面が大きいため自動保存できません。💾 保存(JSON) でファイルに保存してください', 7000);
+      }
+    }
   },600);
 }
 // 保存用の素データ（_hist などの内部プロパティは保存しない）
@@ -2073,9 +2119,9 @@ function triggerDownload(url, filename){
 }
 
 let hintTimer=null;
-function showHint(msg){
+function showHint(msg, ms){
   const h=document.getElementById('hint'); h.textContent=msg; h.classList.add('show');
-  clearTimeout(hintTimer); hintTimer=setTimeout(()=>h.classList.remove('show'),2600);
+  clearTimeout(hintTimer); hintTimer=setTimeout(()=>h.classList.remove('show'), ms||2600);
 }
 
 function showHeroSlide(index){

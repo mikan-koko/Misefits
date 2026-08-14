@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ページが見つかりません | MiseFits</title>
+<meta name="description" content="お探しのページは見つかりませんでした。MiseFitsのトップページまたは使い方ガイドからお進みください。">
+<meta name="robots" content="noindex,follow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="theme-color" content="#0066cc">
+<link rel="icon" href="assets/misefits-favicon.png">
+<link rel="apple-touch-icon" href="assets/misefits-icon.png">
+<style>
+  :root{ --bg:#eef1f5; --line:#dfe4ec; --ink:#242933; --sub:#667085; --accent:#0066cc; --accent2:#004f9f;
+    --accent-soft:#e8f2ff; --sun:#ffb545; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;background:var(--bg);color:var(--ink);
+    line-height:1.75;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:28px 18px;text-align:center;
+    background-image:
+      linear-gradient(135deg,rgba(255,255,255,.66),rgba(255,255,255,.18)),
+      linear-gradient(120deg,rgba(0,102,204,.09) 0 24%,transparent 24% 100%),
+      linear-gradient(300deg,transparent 0 72%,rgba(255,181,69,.14) 72% 100%);}
+  .box{max-width:560px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:34px 28px;
+    box-shadow:0 16px 40px rgba(25,33,46,.1);}
+  .brand{display:inline-flex;align-items:center;gap:11px;text-decoration:none;margin-bottom:18px;}
+  .brand img{width:44px;height:44px;border-radius:14px;filter:drop-shadow(0 9px 18px rgba(0,80,160,.19));}
+  .brand-name{font-family:Arial Rounded MT Bold,Arial,"Hiragino Kaku Gothic ProN",sans-serif;font-weight:900;
+    font-size:24px;color:#102033;line-height:1;}
+  .brand-name .fit{color:var(--accent);font-style:italic;}
+  .brand-name .dot{display:inline-block;width:8px;height:8px;margin-left:5px;border-radius:999px;background:var(--sun);
+    vertical-align:top;transform:translateY(4px);}
+  .code{display:inline-block;color:var(--accent);background:var(--accent-soft);border:1px solid #cfe4ff;
+    border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800;margin-bottom:12px;}
+  h1{font-size:22px;line-height:1.45;margin-bottom:10px;}
+  p{font-size:13.5px;color:#3d4654;margin-bottom:8px;}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px;}
+  .btn{display:inline-flex;align-items:center;background:var(--accent);color:#fff;border:1px solid var(--accent);
+    border-radius:9px;padding:11px 18px;font-size:13px;font-weight:800;text-decoration:none;}
+  .btn:hover{background:var(--accent2);border-color:var(--accent2);}
+  .btn.outline{background:#fff;color:var(--accent);}
+  .btn.outline:hover{background:var(--accent-soft);}
+  .foot{margin-top:22px;font-size:11px;color:var(--sub);}
+  .foot a{color:var(--accent);text-decoration:none;font-weight:800;}
+  @media (max-width:600px){ .box{padding:26px 20px;} h1{font-size:19px;} }
+</style>
+</head>
+<body>
+  <div class="box">
+    <a class="brand" href="/" aria-label="MiseFits トップへ">
+      <img src="assets/misefits-icon.png" alt="" width="44" height="44">
+      <span class="brand-name"><span>Mise</span><span class="fit">Fits</span><span class="dot"></span></span>
+    </a>
+    <div class="code">404 NOT FOUND</div>
+    <h1>お探しのページは見つかりませんでした。</h1>
+    <p>URLが変更されたか、入力に誤りがある可能性があります。</p>
+    <p>下のリンクから、レイアウトシミュレーターまたは使い方ガイドへお進みください。</p>
+    <div class="actions">
+      <a class="btn" href="/">MiseFitsを開く</a>
+      <a class="btn outline" href="/guide.html">使い方ガイド</a>
+    </div>
+    <div class="foot">Produced by <a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画</a></div>
+  </div>
+</body>
+</html>
