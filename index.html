@@ -118,16 +118,16 @@
   .hbtn{font-size:12.5px;}
 
   .app{flex:1;display:flex;min-height:0;max-width:100vw;}
-  .page-foot{min-height:72px;flex:0 0 auto;background:#fbfcfe;border-top:1px solid var(--line);
-    display:grid;grid-template-columns:minmax(220px,1fr) auto;align-items:center;gap:14px;padding:10px 16px;color:var(--sub);font-size:11.5px;z-index:14;}
-  .foot-main{display:flex;align-items:center;gap:12px;min-width:0;}
-  .foot-logo{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#102033;color:#fff;font-weight:900;letter-spacing:.02em;flex:0 0 auto;}
-  .foot-text{min-width:0;display:grid;gap:3px;}
-  .foot-text b{color:var(--ink);font-size:13px;}
-  .foot-text span{line-height:1.45;overflow-wrap:anywhere;}
-  .foot-company{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .page-foot{min-height:0;flex:0 0 auto;background:#fbfcfe;border-top:1px solid var(--line);
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 14px;
+    padding:9px 16px;color:var(--sub);font-size:11.5px;z-index:14;}
+  .foot-main{display:flex;align-items:center;gap:10px;min-width:0;}
+  .foot-logo{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#102033;color:#fff;font-weight:900;font-size:11px;letter-spacing:.02em;flex:0 0 auto;}
+  .foot-text{min-width:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .foot-text b{color:var(--ink);font-size:12.5px;flex:0 0 auto;}
+  .foot-company{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .page-foot a{color:var(--accent);text-decoration:none;font-weight:800;}
-  .foot-share{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;}
+  .foot-share{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
   .foot-share .share-btn{margin:0;background:#fff;}
   .foot-share .line-share{background:#06c755;border-color:#06c755;color:#fff;}
 
@@ -468,7 +468,6 @@
   .quick-step{display:grid;grid-template-columns:26px 1fr;gap:9px;align-items:flex-start;color:var(--ink);font-size:12.5px;}
   .quick-step b{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:12px;}
   .quick-step span{color:var(--sub);font-size:11.5px;line-height:1.5;}
-  .foot-legal{font-size:10.5px;color:#7a8494;line-height:1.5;overflow-wrap:anywhere;word-break:break-all;}
   .foot-legal strong{color:#3d4654;}
 
   /* Properties bar */
@@ -605,20 +604,16 @@
     .compare-card{min-height:84px;padding:10px;}
     .hero-dots{overflow-x:auto;justify-content:flex-start;padding-bottom:2px;}
     .hero-dot{flex:0 0 auto;}
-    /* スマホではフッターを1行に圧縮し、キャンバスを広く保つ */
-    .page-foot{min-height:0;grid-template-columns:1fr auto;align-items:center;padding:6px 9px;font-size:10.5px;gap:8px;}
-    .foot-main{align-items:center;gap:8px;min-width:0;}
-    .foot-logo{width:26px;height:26px;font-size:11px;border-radius:8px;}
-    .foot-text{min-width:0;}
-    .foot-text > b{font-size:11.5px;}
-    .foot-text > span,.foot-legal{display:none;}      /* 説明と免責文はプライバシーページへ集約 */
-    .foot-company{gap:9px;flex-wrap:nowrap;overflow:hidden;}
-    .foot-company span{display:none;}
+    /* スマホはさらにコンパクトに */
+    .page-foot{padding:6px 9px;font-size:10.5px;gap:6px 8px;}
+    .foot-main{gap:8px;}
+    .foot-logo{width:24px;height:24px;font-size:10px;border-radius:7px;}
+    .foot-text{gap:8px;}
+    .foot-text b{font-size:11px;}
+    .foot-company{gap:8px;flex-wrap:nowrap;overflow:hidden;}
+    .foot-share{gap:6px;}
     .foot-share .share-btn:not(.primary){display:none;} /* スマホは端末の共有メニューに集約 */
-    .foot-share .share-btn.primary{padding:6px 12px;}
-    .foot-logo{width:32px;height:32px;border-radius:9px;font-size:11px;}
-    .foot-share{justify-content:flex-start;gap:6px;}
-    .foot-share .share-btn{padding:6px 9px;font-size:11px;}
+    .foot-share .share-btn.primary{padding:6px 12px;font-size:11px;}
   }
   @media (max-width:480px){
     .brand-copy small{max-width:136px;}
@@ -1010,14 +1005,11 @@
     <div class="foot-logo">MF</div>
     <div class="foot-text">
       <b>MiseFits</b>
-      <span>店舗・施設の図面データはブラウザ内だけで処理されます</span>
       <div class="foot-company">
-        <a href="guide.html">使い方ガイド</a>
+        <a href="guide.html">使い方</a>
         <a href="privacy.html">プライバシー・免責</a>
-        <span>Produced by ここ企画</span>
-        <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
+        <a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画</a>
       </div>
-      <div class="foot-legal"><strong>注意・免責</strong> 概算検討用。施工・法令等は専門家へ。</div>
     </div>
   </div>
   <div class="foot-share" aria-label="SNSシェア">
