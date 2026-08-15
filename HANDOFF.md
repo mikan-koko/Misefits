@@ -121,6 +121,16 @@ const project = {
 - GAローダーは4ファイルに同一のものを配置。`GA_ID` が空なら何も読み込まない。`misefitsAnalyticsOptOut`（localStorage）と Do Not Track を尊重し、`privacy.html` に切り替えUIがある。CSPは `www.googletagmanager.com` / `*.google-analytics.com` を許可済み（テスト用IDで読み込み・collect ともに違反ゼロを確認済み）。
 - アプリのフッターはシェルの一部として常時表示。スマホでは1行（約45px）に圧縮し、説明文と免責文は `privacy.html` に集約している。
 
+## 白紙シートの形状（矩形／L字／コの字）
+
+- 「白紙から」ボタンは `createBlankSheet()` → `openShapeModal()` を呼ぶだけの薄いラッパー。実際の作成フローは形状選択モーダル（`#shapeModalBackdrop`）。
+- 形状は `shapeState = {type:'rect'|'L'|'U', W, D, nw, nd, corner|side}` で管理。`shapeVertsMm(state)` が mm単位の頂点配列（時計回り、原点は左上・Y下向き）を返す。L字は `lVerts()`（4隅から矩形の欠けを1つ取る）、コの字は `uVerts()`（4辺のいずれかの中央に開口を作る）。
+- 実寸面積は `polygonAreaMm()`（シューレース公式）。矩形以外は `sheetArea = realW*realD` ではなく、この実面積を `sheet.realArea` に保存し、`computeSummary()`・`updateScaleBox()` はこちらを優先する（`realArea` が無い＝旧データ/矩形は `realW*realD` にフォールバックするので後方互換）。
+- 背景ラスターは `drawShapeRaster()` が生成：輪郭の内側だけ白＋グリッド、外側（矩形の欠け部分）は薄いグレー（`#e7ebf1`）で塗る。什器はこの範囲外にも物理的には置けてしまう（Fabric側で制約していない）ので、欠け部分はあくまで視覚的な目安。
+- モーダル内のプレビュー（`#shapePreviewCanvas`）は毎回の入力変更で `renderShapePreview()` が再描画。実際の書き出し用ラスターとは別の軽量描画（グリッド無し）。
+- **有料プラン候補（未実装）**：頂点を自由にドラッグ編集できる完全自由形状エディタ、および読み込んだPDF/画像の上に実寸の輪郭をトレースする機能。今回はどちらも見送り、白紙シート専用のプリセット止まり。
+- 什器・壁への吸着（`computeSnap()`）は現状 **矩形の外周（0..`_imgW`/`_imgH`）にしか吸着しない**。L字/コの字の欠け部分の辺には吸着しない（既知の制限）。
+
 ## 削除まわり
 
 - パーツ: `deleteSel()`（選択削除）と `clearFixtures()`（シート内を一括削除・確認あり）。どちらも `historyMark()` を呼ぶので Ctrl+Z で戻せる。

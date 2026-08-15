@@ -261,6 +261,36 @@
   .zoombar button:hover{background:#e4e8ee;}
   .zoombar .z{font-size:12px;min-width:46px;text-align:center;color:var(--sub);}
 
+  /* 白紙シート：形状選択モーダル */
+  .modal-backdrop{display:none;position:fixed;inset:0;z-index:90;background:rgba(20,24,31,.44);
+    align-items:center;justify-content:center;padding:16px;}
+  .modal-backdrop.show{display:flex;}
+  .modal{width:100%;max-width:440px;max-height:88vh;overflow-y:auto;background:#fff;border-radius:16px;
+    padding:20px 20px 18px;box-shadow:0 20px 50px rgba(20,24,31,.3);}
+  .modal-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .modal-head b{font-size:15px;flex:1;}
+  .shape-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .shape-opt{border:1px solid var(--line);background:#fbfcfe;border-radius:10px;padding:10px 6px;
+    font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:5px;}
+  .shape-opt .ic{font-size:20px;line-height:1;}
+  .shape-opt.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+  .shape-fields{display:none;}
+  .shape-fields.show{display:block;}
+  .shape-row{display:flex;gap:10px;margin-bottom:10px;}
+  .shape-row label{flex:1;font-size:11px;color:var(--sub);display:flex;flex-direction:column;gap:3px;font-weight:700;}
+  .shape-row input{padding:8px 9px;border:1px solid #ccd1d9;border-radius:7px;font-size:13px;font-family:inherit;}
+  .notch-pick{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;}
+  .notch-pick.sides4{grid-template-columns:repeat(4,1fr);}
+  .notch-pick button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px 4px;
+    font-size:11px;color:var(--sub);cursor:pointer;font-family:inherit;}
+  .notch-pick button.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700;}
+  .shape-preview-wrap{display:flex;justify-content:center;margin:4px 0 6px;}
+  #shapePreviewCanvas{border:1px solid var(--line);border-radius:10px;background:#f8fafc;}
+  .shape-note{font-size:11.5px;color:var(--sub);text-align:center;margin:0 0 14px;}
+  .modal-actions{display:flex;gap:8px;}
+  .modal-actions .btn{flex:1;}
+
   /* 起動失敗（CDN読み込み失敗）時の案内 */
   .loaderr{display:none;position:fixed;inset:0;z-index:100;background:rgba(238,241,245,.96);
     align-items:center;justify-content:center;padding:24px;}
@@ -912,6 +942,69 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="shapeModalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><b>白紙シートを作成</b>
+      <button class="phbtn" onclick="closeShapeModal()" aria-label="閉じる">✕</button>
+    </div>
+
+    <div class="shape-picker" role="tablist" aria-label="形状を選ぶ">
+      <button class="shape-opt" data-shape="rect" onclick="pickShape('rect')"><span class="ic">▭</span>矩形</button>
+      <button class="shape-opt" data-shape="L" onclick="pickShape('L')"><span class="ic">⌐</span>L字</button>
+      <button class="shape-opt" data-shape="U" onclick="pickShape('U')"><span class="ic">⊔</span>コの字</button>
+    </div>
+
+    <div class="shape-fields" data-for="rect">
+      <div class="shape-row">
+        <label>横幅 W(mm)<input type="number" min="1" step="10" id="shpW" oninput="updateShapeField('W',this.value)"></label>
+        <label>奥行 D(mm)<input type="number" min="1" step="10" id="shpD" oninput="updateShapeField('D',this.value)"></label>
+      </div>
+    </div>
+
+    <div class="shape-fields" data-for="L">
+      <div class="shape-row">
+        <label>全体の横幅 W(mm)<input type="number" min="1" step="10" id="shpW_L" oninput="updateShapeField('W',this.value)"></label>
+        <label>全体の奥行 D(mm)<input type="number" min="1" step="10" id="shpD_L" oninput="updateShapeField('D',this.value)"></label>
+      </div>
+      <div class="shape-row">
+        <label>欠けの幅(mm)<input type="number" min="1" step="10" id="shpNw_L" oninput="updateShapeField('nw',this.value)"></label>
+        <label>欠けの奥行(mm)<input type="number" min="1" step="10" id="shpNd_L" oninput="updateShapeField('nd',this.value)"></label>
+      </div>
+      <div class="notch-pick sides4" id="lCornerPick" aria-label="欠けの位置">
+        <button data-v="tl" onclick="pickCorner('tl')">左上</button>
+        <button data-v="tr" onclick="pickCorner('tr')">右上</button>
+        <button data-v="bl" onclick="pickCorner('bl')">左下</button>
+        <button data-v="br" onclick="pickCorner('br')">右下</button>
+      </div>
+    </div>
+
+    <div class="shape-fields" data-for="U">
+      <div class="shape-row">
+        <label>全体の横幅 W(mm)<input type="number" min="1" step="10" id="shpW_U" oninput="updateShapeField('W',this.value)"></label>
+        <label>全体の奥行 D(mm)<input type="number" min="1" step="10" id="shpD_U" oninput="updateShapeField('D',this.value)"></label>
+      </div>
+      <div class="shape-row">
+        <label>開口部の幅(mm)<input type="number" min="1" step="10" id="shpNw_U" oninput="updateShapeField('nw',this.value)"></label>
+        <label>凹みの深さ(mm)<input type="number" min="1" step="10" id="shpNd_U" oninput="updateShapeField('nd',this.value)"></label>
+      </div>
+      <div class="notch-pick sides4" id="uSidePick" aria-label="開口部の向き">
+        <button data-v="top" onclick="pickSide('top')">上が開口</button>
+        <button data-v="bottom" onclick="pickSide('bottom')">下が開口</button>
+        <button data-v="left" onclick="pickSide('left')">左が開口</button>
+        <button data-v="right" onclick="pickSide('right')">右が開口</button>
+      </div>
+    </div>
+
+    <div class="shape-preview-wrap"><canvas id="shapePreviewCanvas" width="260" height="170"></canvas></div>
+    <div class="shape-note" id="shapeAreaNote">延べ床面積の目安：—</div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeShapeModal()">キャンセル</button>
+      <button class="btn" onclick="confirmCreateBlankSheet()">この形で作成</button>
+    </div>
+  </div>
+</div>
+
 <footer class="page-foot">
   <div class="foot-main">
     <div class="foot-logo">MF</div>
@@ -1277,38 +1370,162 @@ async function handlePdfFile(file){
   }
 }
 
-function createBlankSheet(){
-  const wmm=askPositiveNumber('白紙レイアウトの横幅(mm)を入力してください', 9000);
-  if(!wmm) return;
-  const hmm=askPositiveNumber('白紙レイアウトの奥行(mm)を入力してください', 6000);
-  if(!hmm) return;
-  const blankMmpp=10;
-  const pxW=Math.max(240, Math.round(wmm/blankMmpp));
-  const pxH=Math.max(180, Math.round(hmm/blankMmpp));
-  const cv=document.createElement('canvas');
-  cv.width=pxW; cv.height=pxH;
-  const ctx=cv.getContext('2d');
-  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,pxW,pxH);
-  ctx.strokeStyle='#d7deea'; ctx.lineWidth=2; ctx.strokeRect(1,1,pxW-2,pxH-2);
-  ctx.strokeStyle='#eef2f7'; ctx.lineWidth=1;
-  const major=Math.max(20, Math.round(1000/blankMmpp));
-  for(let x=major;x<pxW;x+=major){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,pxH); ctx.stroke(); }
-  for(let y=major;y<pxH;y+=major){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(pxW,y); ctx.stroke(); }
-  const hadExisting = project.sheets.length>0;   // 既に図面がある状態への追加か
-  addSheet({
-    name:`白紙 ${wmm}×${hmm}mm`,
-    image:cv.toDataURL('image/png'),
-    mmPerPixel:blankMmpp,
-    calibrated:true,
-    blank:true,
-    realW:wmm,
-    realH:hmm,
-    objects:[]
-  });
-  showHint(`白紙レイアウトを作成しました：${wmm} × ${hmm} mm`+keepNote(hadExisting), hadExisting?4200:2600);
-}
+// 「白紙から」ボタンは形状選択モーダルを開く
+function createBlankSheet(){ openShapeModal(); }
 // 既存シートがある状態で追加した場合に添える一言（消えたのではなく一覧に残ることを明示）
 function keepNote(hadExisting){ return hadExisting ? '（元の図面はシート一覧に残っています）' : ''; }
+
+/* ================= 白紙シート：形状プリセット（矩形／L字／コの字） =================
+   有料プラン候補: 頂点を自由にドラッグして編集できる完全自由形状エディタ、
+   および読み込んだ図面（PDF/画像）の上に実寸の輪郭をトレースする機能。
+   今回は白紙シート専用・プリセット形状＋辺の実寸入力までを実装する。 */
+const SHAPE_DEFAULTS = {
+  rect: { W:9000, D:6000 },
+  L:    { W:9000, D:6000, nw:3000, nd:2000, corner:'br' },
+  U:    { W:9000, D:6000, nw:3000, nd:2000, side:'bottom' },
+};
+let shapeState = { type:'rect', ...SHAPE_DEFAULTS.rect };
+let shapeModalOpen = false;
+
+function rectVerts(W,D){ return [[0,0],[W,0],[W,D],[0,D]]; }
+// L字: 全体 W×D の指定コーナーから nw×nd を欠き取る（原点は左上、Yは下向き）
+function lVerts(W,D,nw,nd,corner){
+  nw=Math.max(1,Math.min(nw,W-1)); nd=Math.max(1,Math.min(nd,D-1));
+  if(corner==='tr') return [[0,0],[W-nw,0],[W-nw,nd],[W,nd],[W,D],[0,D]];
+  if(corner==='tl') return [[nw,0],[W,0],[W,D],[0,D],[0,nd],[nw,nd]];
+  if(corner==='br') return [[0,0],[W,0],[W,D-nd],[W-nw,D-nd],[W-nw,D],[0,D]];
+  return [[0,0],[W,0],[W,D],[nw,D],[nw,D-nd],[0,D-nd]]; // bl
+}
+// コの字: 全体 W×D の指定辺の中央に、幅nw・深さndの開口（凹み）を作る
+function uVerts(W,D,nw,nd,side){
+  const cx=W/2, cy=D/2;
+  if(side==='top'||side==='bottom'){ nw=Math.max(1,Math.min(nw,W-2)); nd=Math.max(1,Math.min(nd,D-1)); }
+  else { nw=Math.max(1,Math.min(nw,D-2)); nd=Math.max(1,Math.min(nd,W-1)); }
+  if(side==='top'){ const x1=cx-nw/2,x2=cx+nw/2; return [[0,0],[x1,0],[x1,nd],[x2,nd],[x2,0],[W,0],[W,D],[0,D]]; }
+  if(side==='bottom'){ const x1=cx-nw/2,x2=cx+nw/2; return [[0,0],[W,0],[W,D],[x2,D],[x2,D-nd],[x1,D-nd],[x1,D],[0,D]]; }
+  if(side==='left'){ const y1=cy-nw/2,y2=cy+nw/2; return [[0,0],[W,0],[W,D],[0,D],[0,y2],[nd,y2],[nd,y1],[0,y1]]; }
+  const y1=cy-nw/2,y2=cy+nw/2; return [[0,0],[W,0],[W,y1],[W-nd,y1],[W-nd,y2],[W,y2],[W,D],[0,D]]; // right
+}
+function shapeVertsMm(st){
+  if(st.type==='L') return lVerts(st.W,st.D,st.nw,st.nd,st.corner);
+  if(st.type==='U') return uVerts(st.W,st.D,st.nw,st.nd,st.side);
+  return rectVerts(st.W,st.D);
+}
+// シューレース公式（多角形の面積）
+function polygonAreaMm(verts){
+  let a=0;
+  for(let i=0;i<verts.length;i++){
+    const [x1,y1]=verts[i], [x2,y2]=verts[(i+1)%verts.length];
+    a += x1*y2 - x2*y1;
+  }
+  return Math.abs(a)/2;
+}
+// 実際に書き出す背景ラスター：輪郭の内側だけ白＋グリッド、外側は淡いグレー
+function drawShapeRaster(ctx, pxW, pxH, vertsPx, blankMmpp){
+  ctx.fillStyle='#e7ebf1'; ctx.fillRect(0,0,pxW,pxH);
+  const path=new Path2D();
+  vertsPx.forEach(([x,y],i)=> i===0?path.moveTo(x,y):path.lineTo(x,y));
+  path.closePath();
+  ctx.save(); ctx.fillStyle='#ffffff'; ctx.fill(path); ctx.restore();
+  ctx.save(); ctx.clip(path);
+  ctx.strokeStyle='#eef2f7'; ctx.lineWidth=1;
+  const major=Math.max(6, Math.round(1000/blankMmpp));
+  ctx.beginPath();
+  for(let x=major;x<pxW;x+=major){ ctx.moveTo(x,0); ctx.lineTo(x,pxH); }
+  for(let y=major;y<pxH;y+=major){ ctx.moveTo(0,y); ctx.lineTo(pxW,y); }
+  ctx.stroke();
+  ctx.restore();
+  ctx.strokeStyle='#93a2b6'; ctx.lineWidth=3; ctx.stroke(path);
+}
+const SHAPE_LABEL = { rect:'矩形', L:'L字', U:'コの字' };
+
+function openShapeModal(){
+  if(project.active>=0 && isMobile()) closeDrawer();
+  shapeState = { type:'rect', ...SHAPE_DEFAULTS.rect };
+  document.getElementById('shapeModalBackdrop').classList.add('show');
+  shapeModalOpen=true;
+  syncShapeForm(); renderShapePreview();
+}
+function closeShapeModal(){
+  document.getElementById('shapeModalBackdrop').classList.remove('show');
+  shapeModalOpen=false;
+}
+function pickShape(type){
+  shapeState = { type, ...SHAPE_DEFAULTS[type] };
+  syncShapeForm(); renderShapePreview();
+}
+function pickCorner(v){ shapeState.corner=v; syncShapeForm(); renderShapePreview(); }
+function pickSide(v){ shapeState.side=v; syncShapeForm(); renderShapePreview(); }
+function updateShapeField(key, val){
+  const n=Math.round(Number(val));
+  if(Number.isFinite(n) && n>0) shapeState[key]=n;
+  renderShapePreview();
+}
+function syncShapeForm(){
+  document.querySelectorAll('.shape-opt').forEach(b=>b.classList.toggle('active', b.dataset.shape===shapeState.type));
+  document.querySelectorAll('.shape-fields').forEach(el=>el.classList.toggle('show', el.dataset.for===shapeState.type));
+  const suf = shapeState.type==='L'?'_L': shapeState.type==='U'?'_U':'';
+  const wEl=document.getElementById('shpW'+suf), dEl=document.getElementById('shpD'+suf);
+  if(wEl) wEl.value=shapeState.W; if(dEl) dEl.value=shapeState.D;
+  if(shapeState.type!=='rect'){
+    const nwEl=document.getElementById('shpNw'+suf), ndEl=document.getElementById('shpNd'+suf);
+    if(nwEl) nwEl.value=shapeState.nw; if(ndEl) ndEl.value=shapeState.nd;
+  }
+  if(shapeState.type==='L') document.querySelectorAll('#lCornerPick button').forEach(b=>b.classList.toggle('active', b.dataset.v===shapeState.corner));
+  if(shapeState.type==='U') document.querySelectorAll('#uSidePick button').forEach(b=>b.classList.toggle('active', b.dataset.v===shapeState.side));
+}
+function renderShapePreview(){
+  const cv=document.getElementById('shapePreviewCanvas'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const {W,D}=shapeState;
+  const note=document.getElementById('shapeAreaNote');
+  if(!(W>0)||!(D>0)){ if(note) note.textContent='延べ床面積の目安：—'; return; }
+  const verts=shapeVertsMm(shapeState);
+  const pad=12;
+  const scale=Math.min((cv.width-pad*2)/W, (cv.height-pad*2)/D);
+  const vertsPx=verts.map(([x,y])=>[pad+x*scale, pad+y*scale]);
+  ctx.fillStyle='#e7ebf1'; ctx.fillRect(0,0,cv.width,cv.height);
+  const path=new Path2D();
+  vertsPx.forEach(([x,y],i)=> i===0?path.moveTo(x,y):path.lineTo(x,y));
+  path.closePath();
+  ctx.fillStyle='#ffffff'; ctx.fill(path);
+  ctx.lineWidth=2.5; ctx.strokeStyle='#5b6b82'; ctx.stroke(path);
+  if(note) note.textContent = `延べ床面積の目安：約 ${(polygonAreaMm(verts)/1e6).toFixed(1)} m²`;
+}
+function confirmCreateBlankSheet(){
+  const st=shapeState;
+  if(!(st.W>0) || !(st.D>0)){ showHint('横幅・奥行を正しく入力してください'); return; }
+  if(st.type!=='rect'){
+    if(!(st.nw>0) || !(st.nd>0)){ showHint('欠けの寸法を正しく入力してください'); return; }
+    if(st.nw>=st.W || st.nd>=st.D){ showHint('欠けの寸法が全体より大きくなっています。小さくしてください'); return; }
+  }
+  const blankMmpp=10;
+  const vertsMm=shapeVertsMm(st);
+  const pxW=Math.max(240, Math.round(st.W/blankMmpp));
+  const pxH=Math.max(180, Math.round(st.D/blankMmpp));
+  const vertsPx=vertsMm.map(([x,y])=>[x/blankMmpp, y/blankMmpp]);
+  const cv=document.createElement('canvas'); cv.width=pxW; cv.height=pxH;
+  drawShapeRaster(cv.getContext('2d'), pxW, pxH, vertsPx, blankMmpp);
+  const realArea=polygonAreaMm(vertsMm);
+  const shapeLabel=SHAPE_LABEL[st.type];
+  const hadExisting=project.sheets.length>0;
+  addSheet({
+    name: st.type==='rect' ? `白紙 ${st.W}×${st.D}mm` : `白紙(${shapeLabel}) ${st.W}×${st.D}mm`,
+    image: cv.toDataURL('image/png'),
+    mmPerPixel: blankMmpp,
+    calibrated: true,
+    blank: true,
+    realW: st.W,
+    realH: st.D,
+    realArea: realArea,
+    shape: st.type,
+    shapeParams: {...st},
+    objects: []
+  });
+  closeShapeModal();
+  showHint(`白紙レイアウト（${shapeLabel}）を作成しました：延べ床 約${(realArea/1e6).toFixed(1)}m²`+keepNote(hadExisting), hadExisting?4400:3000);
+}
 
 function askPositiveNumber(message, fallback){
   const raw=prompt(message, String(fallback));
@@ -1554,7 +1771,9 @@ function updateScaleBox(){
   const mppv=s.mmPerPixel;
   const gpx=(+document.getElementById('gridMM').value)/mppv;
   if(s.blank){
-    box.innerHTML = `白紙サイズ <b>${s.realW} × ${s.realH} mm</b><br><span class="muted">1px = ${mppv.toFixed(1)} mm / グリッド1マス ≈ ${gpx.toFixed(1)}px</span>`;
+    const shapeTag = (s.shape && s.shape!=='rect') ? `（${SHAPE_LABEL[s.shape]||s.shape}）` : '';
+    const areaLine = s.realArea ? `<br><span class="muted">延べ床 約${(s.realArea/1e6).toFixed(1)}m²</span>` : '';
+    box.innerHTML = `白紙サイズ${shapeTag} <b>外形 ${s.realW} × ${s.realH} mm</b>${areaLine}<br><span class="muted">1px = ${mppv.toFixed(1)} mm / グリッド1マス ≈ ${gpx.toFixed(1)}px</span>`;
     return;
   }
   box.innerHTML = s.calibrated
@@ -1625,7 +1844,10 @@ function computeSummary(){
     const key=d.name||d.key; counts[key]=(counts[key]||0)+1;
   });
   res.list=Object.entries(counts).sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]));
-  if(s.blank && s.realW){ res.sheetArea=s.realW*s.realH; res.sheetLabel='白紙サイズ'; }
+  if(s.blank && s.realArea){
+    res.sheetArea=s.realArea;
+    res.sheetLabel=(s.shape && s.shape!=='rect') ? `白紙サイズ（${SHAPE_LABEL[s.shape]||s.shape}）` : '白紙サイズ';
+  } else if(s.blank && s.realW){ res.sheetArea=s.realW*s.realH; res.sheetLabel='白紙サイズ'; }
   else if(s.calibrated && s._imgW){ res.sheetArea=(s._imgW*s.mmPerPixel)*(s._imgH*s.mmPerPixel); res.sheetLabel='図面範囲（余白含む）'; }
   if(res.sheetArea>0) res.ratio=res.areaMm2/res.sheetArea;
   return res;
@@ -2362,6 +2584,7 @@ function bindEvents(){
   window.addEventListener('keydown',e=>{
     if(e.key==='Escape'&&calMode){ endCalibration(); return; }
     if(e.key==='Escape'&&measMode){ endMeasure(); return; }
+    if(e.key==='Escape'&&shapeModalOpen){ closeShapeModal(); return; }
     const tag=document.activeElement.tagName;
     if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA') return;
     if(e.code==='Space'){ spaceDown=true; canvas.defaultCursor='grab'; canvas.setCursor('grab'); e.preventDefault(); }
