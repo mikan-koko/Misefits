@@ -1369,7 +1369,7 @@ window.addEventListener('message', handleNativeMessage);
 document.addEventListener('message', handleNativeMessage); // WebView実装差異（Android等）向けの保険
 // 本番のStripe決済リンク。本番モードのPayment Linkを作成したらここに入れる
 // （テストモードのリンクは公開版に置かないこと）。空のあいだはキー入力欄へ誘導する。
-const PRO_PURCHASE_URL = '';
+const PRO_PURCHASE_URL = 'https://buy.stripe.com/cNi7sEb0eg2g7HtcOv9R600';
 function requestProPurchase(){
   // iOSアプリ内は必ずApple IAP経由（規約上、外部決済へ誘導しない）
   if(window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage==='function'){

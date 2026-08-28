@@ -13,3 +13,6 @@ functions/.secret.local
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
+
+# Firebaseデプロイの一時ログ（環境変数値が混ざりうるため追跡しない）
+deploy-*.log
