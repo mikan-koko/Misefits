@@ -269,7 +269,11 @@
     padding:20px 20px 18px;box-shadow:0 20px 50px rgba(20,24,31,.3);}
   .modal-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
   .modal-head b{font-size:15px;flex:1;}
-  .shape-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .shape-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px;}
+  .shape-opt .pro-badge{margin-left:3px;}
+  .free-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0 6px;}
+  .free-help{font-size:11.5px;color:var(--sub);line-height:1.55;margin-bottom:4px;}
+  #shapePreviewCanvas.editing{cursor:crosshair;touch-action:none;}
   .shape-opt{border:1px solid var(--line);background:#fbfcfe;border-radius:10px;padding:10px 6px;
     font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;display:flex;flex-direction:column;
     align-items:center;gap:5px;}
@@ -759,6 +763,17 @@
       <div class="muted" style="margin-top:7px;">2点をクリック（タップ）すると実寸の距離を表示します。<b>計測モード中に線をクリックすると、その1本だけ削除</b>できます。計測線は保存・出力には含まれません。</div>
     </div>
 
+    <!-- Pro: 面積トレース -->
+    <div class="section">
+      <h3>面積トレース</h3>
+      <div class="row">
+        <button class="btn sm outline" id="traceBtnSide" onclick="toggleTrace()">✎ 輪郭をなぞる</button>
+        <button class="btn sm ghost" id="traceFinishBtn" onclick="finishTrace()" style="display:none;">確定</button>
+        <span class="muted" id="traceLock">🔒 Pro</span>
+      </div>
+      <div class="muted" style="margin-top:7px;">図面の上をクリックしていくと輪郭ができ、<b>囲んだ範囲の実寸面積</b>が出ます。最初の点をもう一度クリック（または「確定」）で閉じます。計測線と違い、<b>保存・PNG/PDF出力にも残ります</b>。</div>
+    </div>
+
     <!-- Library -->
     <div class="section">
       <h3>什器・設備パーツ</h3>
@@ -1013,6 +1028,7 @@
       <button class="shape-opt" data-shape="rect" onclick="pickShape('rect')"><span class="ic">▭</span>矩形</button>
       <button class="shape-opt" data-shape="L" onclick="pickShape('L')"><span class="ic">⌐</span>L字</button>
       <button class="shape-opt" data-shape="U" onclick="pickShape('U')"><span class="ic">⊔</span>コの字</button>
+      <button class="shape-opt" data-shape="free" onclick="pickShape('free')"><span class="ic">✎</span>自由<span class="pro-badge" id="freeShapeBadge">PRO</span></button>
     </div>
 
     <div class="shape-fields" data-for="rect">
@@ -1054,6 +1070,19 @@
         <button data-v="left" onclick="pickSide('left')">左が開口</button>
         <button data-v="right" onclick="pickSide('right')">右が開口</button>
       </div>
+    </div>
+
+    <div class="shape-fields" data-for="free">
+      <div class="shape-row">
+        <label>全体の横幅 W(mm)<input type="number" min="1" step="10" id="shpW_free" oninput="updateFreeBBox('W',this.value)"></label>
+        <label>全体の奥行 D(mm)<input type="number" min="1" step="10" id="shpD_free" oninput="updateFreeBBox('D',this.value)"></label>
+      </div>
+      <div class="free-tools">
+        <button type="button" class="btn sm ghost" onclick="resetFreeShape()">形をリセット</button>
+        <button type="button" class="btn sm ghost" onclick="undoFreeVertex()">頂点を1つ戻す</button>
+        <span class="muted" id="freeVertCount"></span>
+      </div>
+      <div class="free-help">辺をクリックすると頂点が増えます。頂点はドラッグで移動、ダブルクリックで削除できます。</div>
     </div>
 
     <div class="shape-preview-wrap"><canvas id="shapePreviewCanvas" width="260" height="170"></canvas></div>
@@ -1322,6 +1351,7 @@ function updateWebProUI(){
   if(unlocked) unlocked.style.display = on ? '' : 'none';
   updateScaleNote();   // 出力セクションのPro表示も合わせて更新
   renderMemoList();    // メモ機能のロック表示も更新
+  if(typeof updateTraceUI==='function') updateTraceUI();   // 面積トレースのロック表示
   if(document.getElementById('library')) buildLibrary();   // Pro什器の鍵表示を外す
 }
 function submitWebLicense(){
@@ -1469,8 +1499,8 @@ function updateWorkStatus(){
   const s=activeSheet();
   updateHistoryBtns();
   if(!s){ box.classList.remove('show'); box.innerHTML=''; updateSummary(); renderMemoList(); return; }
-  // メモは什器ではないのでパーツ数に含めない（集計パネルの数え方と揃える）
-  const countable=o=>o.data && o.data.shape!=='text' && o.data.kind!=='memo';
+  // 注記（メモ・トレース範囲）は什器ではないのでパーツ数に含めない（集計パネルと揃える）
+  const countable=o=>o.data && o.data.shape!=='text' && o.data.kind!=='memo' && o.data.kind!=='trace';
   const count=canvas ? canvas.getObjects().filter(countable).length : ((s.objects||[]).filter(countable).length);
   const scaleLabel=s.calibrated ? `${s.mmPerPixel.toFixed(3)}mm/px` : '未校正';
   const next=s.calibrated ? (count ? '配置を調整できます' : '次: パーツを追加') : '次: 縮尺を設定';
@@ -1638,9 +1668,27 @@ function uVerts(W,D,nw,nd,side){
   const y1=cy-nw/2,y2=cy+nw/2; return [[0,0],[W,0],[W,y1],[W-nd,y1],[W-nd,y2],[W,y2],[W,D],[0,D]]; // right
 }
 function shapeVertsMm(st){
+  if(st.type==='free') return (st.verts && st.verts.length>=3) ? st.verts : rectVerts(st.W,st.D);
   if(st.type==='L') return lVerts(st.W,st.D,st.nw,st.nd,st.corner);
   if(st.type==='U') return uVerts(st.W,st.D,st.nw,st.nd,st.side);
   return rectVerts(st.W,st.D);
+}
+// 自由形状の外接矩形（W/D表示と背景ラスターのサイズに使う）
+function vertsBBox(verts){
+  const xs=verts.map(v=>v[0]), ys=verts.map(v=>v[1]);
+  const minX=Math.min(...xs), maxX=Math.max(...xs);
+  const minY=Math.min(...ys), maxY=Math.max(...ys);
+  return { minX, minY, maxX, maxY, W:Math.max(1,Math.round(maxX-minX)), D:Math.max(1,Math.round(maxY-minY)) };
+}
+// 頂点を左上原点に寄せ直す（負座標のまま書き出すとラスターからはみ出すため）
+function normalizeFreeVerts(st){
+  if(st.type!=='free'||!st.verts) return;
+  const bb=vertsBBox(st.verts);
+  if(bb.minX!==0 || bb.minY!==0){
+    st.verts = st.verts.map(([x,y])=>[x-bb.minX, y-bb.minY]);
+  }
+  const nb=vertsBBox(st.verts);
+  st.W=nb.W; st.D=nb.D;
 }
 // シューレース公式（多角形の面積）
 function polygonAreaMm(verts){
@@ -1668,7 +1716,122 @@ function drawShapeRaster(ctx, pxW, pxH, vertsPx, blankMmpp){
   ctx.restore();
   ctx.strokeStyle='#93a2b6'; ctx.lineWidth=3; ctx.stroke(path);
 }
-const SHAPE_LABEL = { rect:'矩形', L:'L字', U:'コの字' };
+const SHAPE_LABEL = { rect:'矩形', L:'L字', U:'コの字', free:'自由形状' };
+
+/* ---- Pro: 自由形状エディタ（プレビュー上で頂点を直接編集する） ---- */
+let freeDragIdx=-1;                 // ドラッグ中の頂点
+let freeUndoStack=[];               // 「頂点を1つ戻す」用
+let previewTf={ scale:1, padX:0, padY:0 };   // mm↔プレビューpxの変換（描画時に更新）
+const FREE_HIT_PX=11;               // 頂点をつかめる距離（指でも押せる大きさ）
+
+function defaultFreeVerts(){ return rectVerts(SHAPE_DEFAULTS.rect.W, SHAPE_DEFAULTS.rect.D); }
+function pxToMm(px,py){
+  return [ (px-previewTf.padX)/previewTf.scale, (py-previewTf.padY)/previewTf.scale ];
+}
+function mmToPx(mx,my){
+  return [ previewTf.padX+mx*previewTf.scale, previewTf.padY+my*previewTf.scale ];
+}
+function previewPointerPos(e){
+  const cv=document.getElementById('shapePreviewCanvas');
+  const r=cv.getBoundingClientRect();
+  // CSSで拡縮されていても内部解像度に合わせる
+  return [ (e.clientX-r.left)*(cv.width/r.width), (e.clientY-r.top)*(cv.height/r.height) ];
+}
+function findFreeVertexAt(px,py){
+  const vs=shapeState.verts||[];
+  for(let i=0;i<vs.length;i++){
+    const [hx,hy]=mmToPx(vs[i][0], vs[i][1]);
+    if(Math.hypot(hx-px, hy-py) <= FREE_HIT_PX) return i;
+  }
+  return -1;
+}
+// 点に最も近い辺を探し、その辺のどこに落とすか（挿入位置と座標）を返す
+function nearestEdgeInsert(mx,my){
+  const vs=shapeState.verts||[];
+  let best={ idx:-1, dist:Infinity, pt:null };
+  for(let i=0;i<vs.length;i++){
+    const a=vs[i], b=vs[(i+1)%vs.length];
+    const dx=b[0]-a[0], dy=b[1]-a[1];
+    const len2=dx*dx+dy*dy || 1;
+    let t=((mx-a[0])*dx + (my-a[1])*dy)/len2;
+    t=Math.max(0, Math.min(1, t));
+    const px=a[0]+dx*t, py=a[1]+dy*t;
+    const d=Math.hypot(mx-px, my-py);
+    if(d<best.dist) best={ idx:i+1, dist:d, pt:[Math.round(px), Math.round(py)] };
+  }
+  return best;
+}
+function pushFreeUndo(){
+  if(shapeState.type!=='free'||!shapeState.verts) return;
+  freeUndoStack.push(JSON.stringify(shapeState.verts));
+  if(freeUndoStack.length>40) freeUndoStack.shift();
+}
+function undoFreeVertex(){
+  if(!freeUndoStack.length){ showHint('これ以上戻せません'); return; }
+  shapeState.verts=JSON.parse(freeUndoStack.pop());
+  normalizeFreeVerts(shapeState); syncShapeForm(); renderShapePreview();
+}
+function resetFreeShape(){
+  pushFreeUndo();
+  shapeState.verts=defaultFreeVerts();
+  normalizeFreeVerts(shapeState); syncShapeForm(); renderShapePreview();
+}
+// W/D入力で自由形状全体を相似変形する（各頂点の相対位置を保つ）
+function updateFreeBBox(key, val){
+  const n=Math.round(Number(val));
+  if(!Number.isFinite(n) || n<=0) return;
+  const vs=shapeState.verts; if(!vs||vs.length<3) return;
+  const bb=vertsBBox(vs);
+  const sx = key==='W' ? n/bb.W : 1;
+  const sy = key==='D' ? n/bb.D : 1;
+  pushFreeUndo();
+  shapeState.verts = vs.map(([x,y])=>[Math.round(x*sx), Math.round(y*sy)]);
+  normalizeFreeVerts(shapeState); renderShapePreview();
+  const cnt=document.getElementById('freeVertCount');
+  if(cnt) cnt.textContent=`頂点 ${shapeState.verts.length}`;
+}
+function bindFreeShapeEditor(){
+  const cv=document.getElementById('shapePreviewCanvas'); if(!cv || cv.__freeBound) return;
+  cv.__freeBound=true;
+  cv.addEventListener('pointerdown', e=>{
+    if(shapeState.type!=='free') return;
+    const [px,py]=previewPointerPos(e);
+    const hit=findFreeVertexAt(px,py);
+    if(hit>=0){ pushFreeUndo(); freeDragIdx=hit; cv.setPointerCapture(e.pointerId); return; }
+    // 頂点でなければ、最も近い辺に新しい頂点を挿入する
+    const [mx,my]=pxToMm(px,py);
+    const ins=nearestEdgeInsert(mx,my);
+    if(ins.idx>=0 && ins.dist*previewTf.scale < 26){
+      pushFreeUndo();
+      shapeState.verts.splice(ins.idx, 0, ins.pt);
+      normalizeFreeVerts(shapeState); syncShapeForm(); renderShapePreview();
+    }
+  });
+  cv.addEventListener('pointermove', e=>{
+    if(shapeState.type!=='free' || freeDragIdx<0) return;
+    const [px,py]=previewPointerPos(e);
+    const [mx,my]=pxToMm(px,py);
+    shapeState.verts[freeDragIdx]=[Math.round(mx), Math.round(my)];
+    renderShapePreview();
+  });
+  const endDrag=()=>{
+    if(freeDragIdx<0) return;
+    freeDragIdx=-1;
+    normalizeFreeVerts(shapeState); syncShapeForm(); renderShapePreview();
+  };
+  cv.addEventListener('pointerup', endDrag);
+  cv.addEventListener('pointercancel', endDrag);
+  cv.addEventListener('dblclick', e=>{
+    if(shapeState.type!=='free') return;
+    const [px,py]=previewPointerPos(e);
+    const hit=findFreeVertexAt(px,py);
+    if(hit<0) return;
+    if(shapeState.verts.length<=3){ showHint('三角形より少なくはできません'); return; }
+    pushFreeUndo();
+    shapeState.verts.splice(hit,1);
+    normalizeFreeVerts(shapeState); syncShapeForm(); renderShapePreview();
+  });
+}
 
 function openShapeModal(){
   if(project.active>=0 && isMobile()) closeDrawer();
@@ -1682,7 +1845,18 @@ function closeShapeModal(){
   shapeModalOpen=false;
 }
 function pickShape(type){
-  shapeState = { type, ...SHAPE_DEFAULTS[type] };
+  if(type==='free' && !isPro()){
+    showHint('自由形状エディタは Pro 機能です', 3000);
+    requestProPurchase();
+    return;
+  }
+  if(type==='free'){
+    shapeState = { type:'free', W:SHAPE_DEFAULTS.rect.W, D:SHAPE_DEFAULTS.rect.D, verts:defaultFreeVerts() };
+    freeUndoStack=[];
+    bindFreeShapeEditor();
+  }else{
+    shapeState = { type, ...SHAPE_DEFAULTS[type] };
+  }
   syncShapeForm(); renderShapePreview();
 }
 function pickCorner(v){ shapeState.corner=v; syncShapeForm(); renderShapePreview(); }
@@ -1695,6 +1869,18 @@ function updateShapeField(key, val){
 function syncShapeForm(){
   document.querySelectorAll('.shape-opt').forEach(b=>b.classList.toggle('active', b.dataset.shape===shapeState.type));
   document.querySelectorAll('.shape-fields').forEach(el=>el.classList.toggle('show', el.dataset.for===shapeState.type));
+  const badge=document.getElementById('freeShapeBadge');
+  if(badge) badge.textContent = isPro() ? 'PRO' : '🔒';
+  const cvEl=document.getElementById('shapePreviewCanvas');
+  if(cvEl) cvEl.classList.toggle('editing', shapeState.type==='free');
+  if(shapeState.type==='free'){
+    const wf=document.getElementById('shpW_free'), df=document.getElementById('shpD_free');
+    const bb=vertsBBox(shapeState.verts||defaultFreeVerts());
+    if(wf) wf.value=bb.W; if(df) df.value=bb.D;
+    const cnt=document.getElementById('freeVertCount');
+    if(cnt) cnt.textContent=`頂点 ${(shapeState.verts||[]).length}`;
+    return;
+  }
   const suf = shapeState.type==='L'?'_L': shapeState.type==='U'?'_U':'';
   const wEl=document.getElementById('shpW'+suf), dEl=document.getElementById('shpD'+suf);
   if(wEl) wEl.value=shapeState.W; if(dEl) dEl.value=shapeState.D;
@@ -1707,14 +1893,20 @@ function syncShapeForm(){
 }
 function renderShapePreview(){
   const cv=document.getElementById('shapePreviewCanvas'); if(!cv) return;
+  const free = shapeState.type==='free';
+  // 自由形状は頂点をつまむ余地が要るのでプレビューを大きくする
+  const wantW = free ? 320 : 260, wantH = free ? 240 : 170;
+  if(cv.width!==wantW || cv.height!==wantH){ cv.width=wantW; cv.height=wantH; }
   const ctx=cv.getContext('2d');
   ctx.clearRect(0,0,cv.width,cv.height);
-  const {W,D}=shapeState;
   const note=document.getElementById('shapeAreaNote');
-  if(!(W>0)||!(D>0)){ if(note) note.textContent='延べ床面積の目安：—'; return; }
   const verts=shapeVertsMm(shapeState);
-  const pad=12;
+  const bb = free ? vertsBBox(verts) : { W:shapeState.W, D:shapeState.D };
+  const W=bb.W, D=bb.D;
+  if(!(W>0)||!(D>0)){ if(note) note.textContent='延べ床面積の目安：—'; return; }
+  const pad = free ? 20 : 12;
   const scale=Math.min((cv.width-pad*2)/W, (cv.height-pad*2)/D);
+  previewTf={ scale, padX:pad, padY:pad };   // 頂点編集の座標変換に使う
   const vertsPx=verts.map(([x,y])=>[pad+x*scale, pad+y*scale]);
   ctx.fillStyle='#e7ebf1'; ctx.fillRect(0,0,cv.width,cv.height);
   const path=new Path2D();
@@ -1722,12 +1914,26 @@ function renderShapePreview(){
   path.closePath();
   ctx.fillStyle='#ffffff'; ctx.fill(path);
   ctx.lineWidth=2.5; ctx.strokeStyle='#5b6b82'; ctx.stroke(path);
+  if(free){
+    // 頂点ハンドル（ドラッグ対象なので指でも押せる大きさで描く）
+    vertsPx.forEach(([x,y],i)=>{
+      ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2);
+      ctx.fillStyle = i===freeDragIdx ? '#ff6b6b' : '#ffffff';
+      ctx.fill();
+      ctx.lineWidth=2; ctx.strokeStyle='#0066cc'; ctx.stroke();
+    });
+  }
   if(note) note.textContent = `延べ床面積の目安：約 ${(polygonAreaMm(verts)/1e6).toFixed(1)} m²`;
 }
 function confirmCreateBlankSheet(){
   const st=shapeState;
+  if(st.type==='free'){
+    if(!st.verts || st.verts.length<3){ showHint('頂点が足りません（3つ以上必要です）'); return; }
+    normalizeFreeVerts(st);
+    if(polygonAreaMm(st.verts) <= 0){ showHint('形が潰れています。頂点を動かして面積のある形にしてください', 4000); return; }
+  }
   if(!(st.W>0) || !(st.D>0)){ showHint('横幅・奥行を正しく入力してください'); return; }
-  if(st.type!=='rect'){
+  if(st.type!=='rect' && st.type!=='free'){
     if(!(st.nw>0) || !(st.nd>0)){ showHint('欠けの寸法を正しく入力してください'); return; }
     if(st.nw>=st.W || st.nd>=st.D){ showHint('欠けの寸法が全体より大きくなっています。小さくしてください'); return; }
   }
@@ -1743,6 +1949,7 @@ function confirmCreateBlankSheet(){
   const hadExisting=project.sheets.length>0;
   addSheet({
     name: st.type==='rect' ? `白紙 ${st.W}×${st.D}mm` : `白紙(${shapeLabel}) ${st.W}×${st.D}mm`,
+    freeVerts: st.type==='free' ? st.verts.map(v=>v.slice()) : undefined,   // 再編集・面積再計算のため残す
     image: cv.toDataURL('image/png'),
     mmPerPixel: blankMmpp,
     calibrated: true,
@@ -1979,7 +2186,7 @@ function viewCenterScene(){
 function objRealSize(o){
   const scale=mmpp();
   const d=o.data||{};
-  if(d.kind==='memo') return {w:0,d:0,text:true};   // メモに実寸の意味は無いので寸法を出さない
+  if(d.kind==='memo'||d.kind==='trace') return {w:0,d:0,text:true};   // 注記に「什器としての実寸」は無い
   if(d.shape==='text') return {w:0,d:0,text:true};
   // 基準ジオメトリ(線幅を含まない)×スケールで実寸を算出
   if(d.baseW){
@@ -2012,19 +2219,23 @@ function updateProps(){
   updateModeSeg();
   const d=o.data||{};
   const memo = d.kind==='memo';
-  document.getElementById('pName').textContent=d.name||'オブジェクト';
-  document.getElementById('pTag').textContent = memo ? 'メモ' : '什器';
-  // メモは実寸を持たないのでW/Dは出さず、代わりに内容の編集ボタンを出す
+  const trace = d.kind==='trace';
+  const annot = memo || trace;   // 注記は什器としての寸法欄を持たない
+  document.getElementById('pName').textContent = trace
+    ? `${d.name||'トレース範囲'}（約${((d.areaMm2||0)/1e6).toFixed(2)}m²）`
+    : (d.name||'オブジェクト');
+  document.getElementById('pTag').textContent = memo ? 'メモ' : (trace ? '範囲' : '什器');
+  // メモは内容の編集ボタンを出す（トレースは面積表示のみ）
   document.getElementById('pMemoEdit').style.display = memo ? '' : 'none';
   const wLabel=document.getElementById('pW').parentElement;
-  wLabel.style.display = memo ? 'none' : '';
+  wLabel.style.display = annot ? 'none' : '';
   const sz=objRealSize(o);
   const isText = d.shape==='text';
   const isCircle = d.shape==='circle';
-  document.getElementById('pDwrap').style.display = (memo||isText||isCircle)?'none':'flex';
+  document.getElementById('pDwrap').style.display = (annot||isText||isCircle)?'none':'flex';
   const wl=document.getElementById('pW').parentElement;
-  if(!memo) wl.childNodes[0].nodeValue = isCircle? '直径 φ(mm)' : (isText?'文字サイズ(px)':'幅 W(mm)');
-  if(memo){ /* サイズ欄は使わない */ }
+  if(!annot) wl.childNodes[0].nodeValue = isCircle? '直径 φ(mm)' : (isText?'文字サイズ(px)':'幅 W(mm)');
+  if(annot){ /* サイズ欄は使わない */ }
   else if(isText){ document.getElementById('pW').value=Math.round(o.fontSize); }
   else { document.getElementById('pW').value=sz.w; document.getElementById('pD').value=sz.d; }
   const ang=Math.round(o.angle);
@@ -2052,12 +2263,12 @@ function rgbToHex(c){
 function applyProps(){
   const o=canvas.getActiveObject(); if(!o) return;
   const d=o.data||{}; const scale=mmpp();
-  if(d.kind==='memo'){
-    // メモはサイズ欄を持たない。角度と色だけ反映して抜ける
+  if(d.kind==='memo'||d.kind==='trace'){
+    // 注記はサイズ欄を持たない。角度と色だけ反映して抜ける
     let ma=+document.getElementById('pA').value||0; ma=((ma%360)+360)%360; o.rotate(ma);
     document.getElementById('pA').value=Math.round(ma); document.getElementById('pASlider').value=Math.round(ma);
     const mc=document.getElementById('pColor').value;
-    setFill(o, mc); d.color=mc;
+    setFill(o, mc); if(d.kind==='memo') d.color=mc;
     o.setCoords(); canvas.requestRenderAll(); autosave();
     return;
   }
@@ -2223,7 +2434,7 @@ function computeSummary(){
   const counts={};
   canvas.getObjects().forEach(o=>{
     const d=o.data; if(!d||d.shape==='text') return;
-    if(d.kind==='memo') return;   // メモは什器ではないので席数・面積・パーツ数に含めない
+    if(d.kind==='memo'||d.kind==='trace') return;   // 注記は什器ではないので席数・面積・パーツ数に含めない
     const sz=objRealSize(o);
     res.items++;
     res.areaMm2 += sz.circle ? Math.PI*Math.pow(sz.w/2,2) : sz.w*sz.d;
@@ -2294,6 +2505,121 @@ function updateMeasureUI(){
   const b=document.getElementById('measBtn'); if(b) b.classList.toggle('on', measMode);
   const s=document.getElementById('measBtnSide');
   if(s){ s.classList.toggle('on', measMode); s.textContent = measMode? '📐 計測を終了' : '📐 距離を測る'; }
+}
+
+/* ================= Pro: 面積トレース =================
+   図面の上をクリックして輪郭を作り、囲んだ範囲の実寸面積を出す。
+   計測線（_meas・オーバーレイのみ）と違い、確定した輪郭は fabric オブジェクトとして
+   sheet.objects に入れるので、保存・PNG/PDF出力・Undo/Redo にそのまま乗る。 */
+// updateWebProUI() はスクリプト解析時にも走り、そこから updateTraceUI() を呼ぶ。
+// let だと一時的死角(TDZ)で ReferenceError になるため、巻き上げられる var で宣言する。
+var traceMode=false, tracePts=[];
+const TRACE_CLOSE_PX=14;   // 最初の点に戻ったと判定する距離（画面px）
+
+function isTrace(o){ return !!(o && o.data && o.data.kind==='trace'); }
+// メモとトレースは「注記」であって什器ではない、という共通の扱い
+function isAnnotation(o){ return isMemo(o) || isTrace(o); }
+
+function toggleTrace(){ traceMode ? endTrace(true) : startTrace(); }
+function startTrace(){
+  if(!isPro()){ showHint('面積トレースは Pro 機能です', 3000); requestProPurchase(); return; }
+  if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
+  const s=activeSheet();
+  if(!s.calibrated){ showHint('先に「縮尺を設定」してください。未校正のままでは面積が正しく出ません', 5000); return; }
+  if(measMode) endMeasure();
+  if(calMode) endCalibration();
+  traceMode=true; tracePts=[];
+  canvas.discardActiveObject(); canvas.selection=false; setObjectsInteractive(false);
+  canvas.defaultCursor='crosshair';
+  updateTraceUI();
+  document.getElementById('calBanner').textContent='✎ トレース：輪郭に沿ってクリック（最初の点で閉じる／Escで中止）';
+  document.getElementById('calBanner').classList.add('show');
+  canvas.requestRenderAll();
+  if(isMobile()) closeDrawer();
+}
+function endTrace(silent){
+  traceMode=false; tracePts=[];
+  canvas.selection=!IS_TOUCH; setObjectsInteractive(true);
+  canvas.defaultCursor='default';
+  updateTraceUI();
+  document.getElementById('calBanner').classList.remove('show');
+  canvas.requestRenderAll();
+  if(!silent) showHint('トレードを中止しました');
+}
+function updateTraceUI(){
+  const b=document.getElementById('traceBtnSide');
+  const fin=document.getElementById('traceFinishBtn');
+  const lock=document.getElementById('traceLock');
+  const pro=isPro();
+  if(lock) lock.style.display = pro ? 'none' : '';
+  if(b){ b.classList.toggle('on', traceMode); b.textContent = traceMode ? '✎ トレースを中止' : '✎ 輪郭をなぞる'; }
+  if(fin) fin.style.display = (traceMode && tracePts.length>=3) ? '' : 'none';
+}
+function traceClick(p){
+  // 最初の点の近くをクリックしたら閉じる
+  if(tracePts.length>=3){
+    const z=canvas.getZoom();
+    const d=Math.hypot(p.x-tracePts[0].x, p.y-tracePts[0].y)*z;
+    if(d<=TRACE_CLOSE_PX){ finishTrace(); return; }
+  }
+  tracePts.push({x:p.x, y:p.y});
+  updateTraceUI();
+  const s=activeSheet();
+  if(tracePts.length>=3){
+    const a=polygonAreaMm(tracePts.map(q=>[q.x*s.mmPerPixel, q.y*s.mmPerPixel]));
+    document.getElementById('calBanner').textContent =
+      `✎ トレース：${tracePts.length}点／現在 約${(a/1e6).toFixed(2)}m²（最初の点で閉じる）`;
+  }else{
+    document.getElementById('calBanner').textContent =
+      `✎ トレース：${tracePts.length}点（3点以上で閉じられます／Escで中止）`;
+  }
+  canvas.requestRenderAll();
+}
+function finishTrace(){
+  if(tracePts.length<3){ showHint('3点以上必要です'); return; }
+  const s=activeSheet();
+  const areaMm2=polygonAreaMm(tracePts.map(q=>[q.x*s.mmPerPixel, q.y*s.mmPerPixel]));
+  if(areaMm2<=0){ showHint('面積が0になっています。線が交差していないか確認してください', 4500); endTrace(true); return; }
+  const z=canvas.getZoom();
+  const poly=new fabric.Polygon(tracePts.map(q=>({x:q.x,y:q.y})),{
+    fill:'rgba(0,102,204,0.10)', stroke:'#0066cc', strokeWidth:Math.max(1, 2/z),
+    originX:'center', originY:'center', objectCaching:false
+  });
+  const c=poly.getCenterPoint();
+  const label=new fabric.Text(`${(areaMm2/1e6).toFixed(2)} m²`,{
+    fontSize:Math.max(10, 16/z), fill:'#004f9f', fontFamily:'inherit',
+    originX:'center', originY:'center'
+  });
+  const g=new fabric.Group([poly,label],{
+    originX:'center', originY:'center',
+    data:{ kind:'trace', name:'トレース範囲', areaMm2:Math.round(areaMm2) }
+  });
+  g.set({ left:c.x, top:c.y });
+  applyObjMode(g);
+  canvas.add(g);
+  endTrace(true);
+  canvas.setActiveObject(g); canvas.requestRenderAll();
+  updateWorkStatus(); autosave(); historyMark();
+  showHint(`トレース範囲：約 ${(areaMm2/1e6).toFixed(2)} m²`, 4000);
+}
+// 確定前の途中経過を描く（after:render から呼ぶ）
+function drawTracePreview(){
+  if(!traceMode || !tracePts.length) return;
+  const ctx=canvas.getContext(), z=canvas.getZoom(), vpt=canvas.viewportTransform;
+  const toScreen=q=>[q.x*z+vpt[4], q.y*z+vpt[5]];
+  ctx.save();
+  ctx.lineWidth=2; ctx.strokeStyle='#0066cc'; ctx.fillStyle='rgba(0,102,204,0.10)';
+  ctx.beginPath();
+  tracePts.forEach((q,i)=>{ const [x,y]=toScreen(q); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  if(tracePts.length>=3){ ctx.closePath(); ctx.fill(); }
+  ctx.stroke();
+  tracePts.forEach((q,i)=>{
+    const [x,y]=toScreen(q);
+    ctx.beginPath(); ctx.arc(x,y, i===0?6:4, 0, Math.PI*2);
+    ctx.fillStyle = i===0 ? '#ff6b6b' : '#ffffff';
+    ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle='#0066cc'; ctx.stroke();
+  });
+  ctx.restore();
 }
 // 点と線分の距離（シーン座標）
 function distToSegment(p, m){
@@ -2436,7 +2762,7 @@ function drawGrid(){
 function drawDimBadge(){
   const o=canvas.getActiveObject(); if(!o||!o.data) return;
   if(o.data.shape==='text') return;
-  if(o.data.kind==='memo') return;   // メモは実寸を持たない
+  if(o.data.kind==='memo'||o.data.kind==='trace') return;   // 注記は実寸を持たない
   const sz=objRealSize(o);
   const ang=Math.round(o.angle||0);
   const base = sz.circle? `φ${sz.w}` : `${sz.w} × ${sz.d} mm`;
@@ -2495,12 +2821,13 @@ function isMobile(){ return window.matchMedia('(max-width:860px)').matches; }
 
 /* ================= キャンバスイベント ================= */
 function wireCanvas(){
-  canvas.on('after:render', ()=>{ drawGrid(); drawSnapGuides(); drawMeasures(); drawDimBadge(); });
+  canvas.on('after:render', ()=>{ drawGrid(); drawSnapGuides(); drawMeasures(); drawTracePreview(); drawDimBadge(); });
 
   canvas.on('mouse:down', opt=>{
     if(pinch.active) return;
     if(calMode){ const p=canvas.getPointer(opt.e); calClick(p); return; }
     if(measMode){ const p=canvas.getPointer(opt.e); measClick(p); return; }
+    if(traceMode){ const p=canvas.getPointer(opt.e); traceClick(p); return; }
     // PC: Space+ドラッグ / タッチ: 何もない所を1本指ドラッグで画面移動
     const emptyTouchPan = IS_TOUCH && !opt.target;
     if(spaceDown || emptyTouchPan){ const c=clientXY(opt.e); isPanning=true; lastPan=c;
@@ -2636,8 +2963,25 @@ function sanitizeSheet(s){
     blank: !!s.blank,
     realW: Number(s.realW)||0,
     realH: Number(s.realH)||0,
+    // 形状情報（外部JSONから来る値なので型と範囲を検証してから受け入れる）
+    realArea: (Number(s.realArea)>0) ? Number(s.realArea) : undefined,
+    shape: (typeof s.shape==='string' && SHAPE_LABEL[s.shape]) ? s.shape : undefined,
+    shapeParams: (s.shapeParams && typeof s.shapeParams==='object') ? s.shapeParams : undefined,
+    freeVerts: sanitizeVerts(s.freeVerts),
     objects: Array.isArray(s.objects) ? s.objects : []
   };
+}
+// [[x,y],...] の形と有限数だけを通す（壊れた値で描画やシューレース計算が破綻しないように）
+function sanitizeVerts(v){
+  if(!Array.isArray(v) || v.length<3) return undefined;
+  const out=[];
+  for(const p of v){
+    if(!Array.isArray(p) || p.length<2) return undefined;
+    const x=Number(p[0]), y=Number(p[1]);
+    if(!Number.isFinite(x) || !Number.isFinite(y)) return undefined;
+    out.push([x,y]);
+  }
+  return out.length>=3 ? out.slice(0,500) : undefined;   // 頂点数にも上限を設ける
 }
 function loadProjectData(data){
   const raw = (data && Array.isArray(data.sheets)) ? data.sheets : [];
@@ -2985,7 +3329,10 @@ function serializeProject(){
   syncActiveObjects();
   return { version:1, active:project.active, sheets:project.sheets.map(s=>({
     name:s.name, image:s.image, mmPerPixel:s.mmPerPixel, calibrated:!!s.calibrated,
-    blank:!!s.blank, realW:s.realW, realH:s.realH, objects:s.objects||[] })) };
+    blank:!!s.blank, realW:s.realW, realH:s.realH,
+    // 形状情報を落とすと、復元後にL字/コの字/自由形状の面積が「外接矩形の面積」に化けてしまう
+    realArea:s.realArea, shape:s.shape, shapeParams:s.shapeParams, freeVerts:s.freeVerts,
+    objects:s.objects||[] })) };
 }
 function tryRestore(){
   let raw=null; try{ raw=localStorage.getItem('layoutSim'); }catch(e){}
@@ -3074,7 +3421,11 @@ function bindEvents(){
   window.addEventListener('keydown',e=>{
     if(e.key==='Escape'&&calMode){ endCalibration(); return; }
     if(e.key==='Escape'&&measMode){ endMeasure(); return; }
+    if(e.key==='Escape'&&traceMode){ endTrace(); return; }
+    if(e.key==='Escape'&&document.getElementById('memoModalBackdrop').classList.contains('show')){ closeMemoEditor(); return; }
     if(e.key==='Escape'&&shapeModalOpen){ closeShapeModal(); return; }
+    // トレース中は Enter で確定できると手数が減る
+    if(e.key==='Enter'&&traceMode&&tracePts.length>=3){ finishTrace(); return; }
     const tag=document.activeElement.tagName;
     if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA') return;
     if(e.code==='Space'){ spaceDown=true; canvas.defaultCursor='grab'; canvas.setCursor('grab'); e.preventDefault(); }
