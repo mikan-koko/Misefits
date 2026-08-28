@@ -785,6 +785,20 @@
         </select>
         <span class="muted">向きは図面に合わせ自動</span>
       </div>
+      <!-- Pro: 実寸スケール印刷。無料版は「自動フィット」固定（従来と同じ挙動）。 -->
+      <div class="toggle" style="margin-bottom:8px;">
+        <label for="exportScale">縮尺</label>
+        <select id="exportScale" class="inp" onchange="updateScaleNote()">
+          <option value="fit" selected>自動フィット</option>
+          <option value="20">1:20</option>
+          <option value="30">1:30</option>
+          <option value="50">1:50</option>
+          <option value="100">1:100</option>
+          <option value="200">1:200</option>
+        </select>
+        <span class="muted" id="exportScaleLock">🔒 Pro</span>
+      </div>
+      <div class="muted" id="exportScaleNote" style="margin-bottom:8px;"></div>
       <div class="row">
         <button class="btn sm outline" onclick="exportPNG()"><span class="ico text-ico"></span>PNG</button>
         <button class="btn sm outline" onclick="exportPDF()">📄 PDF出力</button>
@@ -1173,6 +1187,7 @@ function updateWebProUI(){
   const on = hasWebLicense();
   if(locked) locked.style.display = on ? 'none' : '';
   if(unlocked) unlocked.style.display = on ? '' : 'none';
+  updateScaleNote();   // 出力セクションのPro表示も合わせて更新
 }
 function submitWebLicense(){
   const input = document.getElementById('webLicenseInput');
@@ -1836,6 +1851,7 @@ function applyCalibration(newMmpp){
 }
 
 function updateScaleBox(){
+  updateScaleNote();   // 実寸出力の案内はシートの校正状態・寸法に依存するので併せて更新
   const s=activeSheet(); const box=document.getElementById('scaleBox');
   if(!s){ box.innerHTML='図面が未選択です'; return; }
   const mppv=s.mmPerPixel;
@@ -2335,6 +2351,67 @@ function loadProjectData(data){
   showHint(dropped ? `プロジェクトを読み込みました（${dropped}件のシートは形式が不正なため除外）` : 'プロジェクトを読み込みました');
 }
 // 現在のシート（図面＋什器、グリッド無し）を合成してPNGのdataURLを生成
+/* ================= Pro: 出力強化（高解像度・実寸スケール） =================
+   無料版の挙動は一切変えない。Proのときだけ解像度を上げ、縮尺指定を許可する。 */
+const FREE_MULTIPLIER = 2;   // 従来どおり
+const PRO_MULTIPLIER  = 4;   // Proは4倍精細
+// キャンバスにはブラウザ側の上限があり、超えると出力が真っ白になる。
+// iOS/iPadOS は総ピクセル数の制限が特に厳しい（およそ16.7M=4096²）ため別枠にする。
+// ※ IS_TOUCH で判定すると「タッチ対応のWindowsノート」まで巻き込んで不必要に低解像度に
+//   なってしまうので、実際に制限が厳しいiOS系だけを対象にしている。
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent)
+  || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);   // iPadOSはMac扱いで来る
+// デスクトップ側は「従来の2倍出力が成立していた図面では絶対にクランプが効かない」よう余裕を持たせる。
+// （クランプが働くのは2倍で50M画素を超えるような巨大図面のみ＝従来なら真っ白になっていた領域）
+function exportLimits(){
+  return IS_IOS ? { dim:4096, px:16000000 } : { dim:12000, px:50000000 };
+}
+// 実際に使える倍率（上限に収まるところまで0.5刻みで落とす）
+function exportMultiplier(w, h){
+  const want = isPro() ? PRO_MULTIPLIER : FREE_MULTIPLIER;
+  if(!w || !h) return want;
+  const lim = exportLimits();
+  let m = want;
+  while(m > 1 && (w*m > lim.dim || h*m > lim.dim || (w*m)*(h*m) > lim.px)) m -= 0.5;
+  return Math.max(1, m);
+}
+// 選択中の縮尺分母（1:N の N）。「自動フィット」または非Proなら null。
+function selectedScaleDenom(){
+  if(!isPro()) return null;
+  const el=document.getElementById('exportScale');
+  const v = el ? el.value : 'fit';
+  return v==='fit' ? null : Number(v);
+}
+// 縮尺指定が実際に使えるか判定し、使えない理由を返す（使えるなら null）。
+function scaleBlockReason(s){
+  if(!s) return '図面がありません';
+  if(!s.calibrated) return '縮尺を設定してから実寸出力してください（未校正の図面では正確な縮尺になりません）';
+  return null;
+}
+function updateScaleNote(){
+  const note=document.getElementById('exportScaleNote');
+  const lock=document.getElementById('exportScaleLock');
+  const sel=document.getElementById('exportScale');
+  if(!note||!sel) return;
+  const pro=isPro();
+  if(lock) lock.style.display = pro ? 'none' : '';
+  sel.disabled = !pro;
+  if(!pro){
+    if(sel.value!=='fit') sel.value='fit';
+    note.textContent = '実寸スケール印刷と高解像度出力は Pro 機能です。';
+    return;
+  }
+  const denom=selectedScaleDenom();
+  if(!denom){ note.textContent = 'Pro: 4倍精細で書き出します。'; return; }
+  const s=activeSheet();
+  const reason=scaleBlockReason(s);
+  if(reason){ note.textContent = '⚠ ' + reason; return; }
+  const wmm = s._imgW * s.mmPerPixel, hmm = s._imgH * s.mmPerPixel;
+  const dw = wmm/denom, dh = hmm/denom;
+  note.textContent = `1:${denom} で出力すると用紙上で約 ${dw.toFixed(0)}×${dh.toFixed(0)} mm になります。`
+    + ' 印刷時はプリンタ設定の倍率を「100%（実際のサイズ）」にしてください。';
+}
+
 function renderComposite(cb, multiplier){
   const s=activeSheet(); if(!s){ showHint('図面がありません'); return; }
   syncActiveObjects();
@@ -2343,7 +2420,9 @@ function renderComposite(cb, multiplier){
     off.setBackgroundImage(img,()=>{
       fabric.util.enlivenObjects(s.objects||[], objs=>{
         objs.forEach(o=>off.add(o)); off.renderAll();
-        const url=off.toDataURL({format:'png',multiplier:multiplier||2});
+        // multiplier未指定なら、Pro判定と端末のキャンバス上限から自動決定する
+        const m = multiplier || exportMultiplier(s._imgW, s._imgH);
+        const url=off.toDataURL({format:'png',multiplier:m});
         off.dispose();
         cb(url, s._imgW, s._imgH, s);
       });
@@ -2407,8 +2486,12 @@ function applyShareSupport(){
 function exportPNG(){
   renderComposite((url,w,h,s)=>{
     triggerDownload(url, (s.name||'layout')+'.png');
-    showHint('PNGを書き出しました');
-  }, 2);
+    // 端末の上限で倍率が落ちることがあるので、実際に出た画素数をそのまま伝える
+    const m=exportMultiplier(w,h);
+    showHint(isPro()
+      ? `PNGを書き出しました（${Math.round(w*m)}×${Math.round(h*m)}px）`
+      : 'PNGを書き出しました', 3200);
+  });
 }
 
 function exportPDF(){
@@ -2421,43 +2504,75 @@ function exportPDF(){
 function buildPDF(cb){
   if(!window.jspdf || !window.jspdf.jsPDF){ showHint('PDFライブラリの読み込みに失敗しました（オンライン環境が必要）'); return; }
   const fmt=(document.getElementById('paperSize')||{}).value || 'a4';
+  const denom=selectedScaleDenom();
+  if(denom){
+    const reason=scaleBlockReason(activeSheet());
+    if(reason){ showHint(reason, 5000); return; }
+  }
   renderComposite((url,w,h,s)=>{
     const { jsPDF }=window.jspdf;
     const orient = w>=h ? 'landscape':'portrait';
     const pdf=new jsPDF({orientation:orient, unit:'mm', format:fmt});
     const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
     const margin=8, availW=pw-margin*2, availH=ph-margin*2, ratio=w/h;
-    let dw=availW, dh=availW/ratio; if(dh>availH){ dh=availH; dw=availH*ratio; }
+    let dw, dh;
+    if(denom){
+      // 実寸スケール：図面の実寸(mm)を縮尺で割った値をそのまま用紙上のmmとして配置する
+      dw = (w * s.mmPerPixel) / denom;
+      dh = (h * s.mmPerPixel) / denom;
+      if(dw > availW || dh > availH){
+        // 収まらないまま出すと「1:50と書いてあるのに実際は違う」PDFになるため中止する
+        showHint(`1:${denom} では用紙に収まりません（必要 ${dw.toFixed(0)}×${dh.toFixed(0)}mm）。`
+          + '用紙を大きくするか、縮尺の数字を大きくしてください。', 6000);
+        return;
+      }
+    }else{
+      dw=availW; dh=availW/ratio; if(dh>availH){ dh=availH; dw=availH*ratio; }
+    }
     const x=(pw-dw)/2, y=(ph-dh)/2;
     pdf.addImage(url,'PNG',x,y,dw,dh,undefined,'FAST');
     // フッター：縮尺情報（jsPDF標準フォントは日本語非対応のためASCIIのみ）
     pdf.setFontSize(8); pdf.setTextColor(120);
     const sm=computeSummary();
-    const note=(s.calibrated ? `Scale: 1px = ${s.mmPerPixel.toFixed(3)} mm` : 'Scale: not calibrated')
+    const scaleTxt = denom ? `Scale: 1:${denom} (true scale)`
+      : (s.calibrated ? `Scale: 1px = ${s.mmPerPixel.toFixed(3)} mm` : 'Scale: not calibrated');
+    const note=scaleTxt
       + `   |   Fixtures: ${sm.items}   Seats: ${sm.seats}   Fixture area: ${m2(sm.areaMm2).toFixed(2)} m2`;
     try{ pdf.text(note, margin, ph-3); }catch(e){}
     cb(pdf.output('blob'), (s.name||'layout')+'.pdf');
-  }, 2);
+  });
 }
 
 function printLayout(){
+  const denom=selectedScaleDenom();
+  if(denom){
+    const reason=scaleBlockReason(activeSheet());
+    if(reason){ showHint(reason, 5000); return; }
+  }
   renderComposite((url,w,h,s)=>{
     let f=document.getElementById('printFrame'); if(f) f.remove();
     f=document.createElement('iframe'); f.id='printFrame';
     f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
     document.body.appendChild(f);
     const orient = w>=h ? 'landscape':'portrait';
+    // 実寸スケールのときは mm 固定でサイズを指定する（自動フィットは従来どおり）
+    const imgCss = denom
+      ? `img{width:${((w*s.mmPerPixel)/denom).toFixed(2)}mm;height:${((h*s.mmPerPixel)/denom).toFixed(2)}mm;display:block;margin:0 auto}`
+      : 'img{max-width:100%;max-height:100vh;display:block;margin:0 auto}';
     const doc=f.contentWindow.document; doc.open();
     doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+escapeHtml(s.name||'layout')+
       '</title><style>@page{size:'+orient+';margin:8mm}html,body{margin:0;padding:0}'+
-      'img{max-width:100%;max-height:100vh;display:block;margin:0 auto}</style></head><body>'+
+      imgCss+'</style></head><body>'+
       '<img src="'+url+'"></body></html>');
     doc.close();
     const img=doc.querySelector('img');
     const go=()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){} };
     if(img.complete) setTimeout(go,150); else img.onload=()=>setTimeout(go,150);
-    showHint('印刷ダイアログを準備しました');
-  }, 2);
+    // ブラウザ既定の「用紙に合わせる」が有効だと縮尺が狂うため、必ず案内する
+    showHint(denom
+      ? `1:${denom} で印刷します。プリンタ設定の倍率を必ず「100%（実際のサイズ）」にしてください`
+      : '印刷ダイアログを準備しました', denom ? 6000 : 2600);
+  });
 }
 
 /* ================= 起動失敗時の案内 ================= */
