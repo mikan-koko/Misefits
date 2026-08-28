@@ -291,6 +291,24 @@
   .modal-actions{display:flex;gap:8px;}
   .modal-actions .btn{flex:1;}
 
+  /* Pro: メモ機能 */
+  .memo-label{display:block;font-size:12px;color:var(--sub);margin-bottom:5px;}
+  .memo-text{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:13.5px;
+    font-family:inherit;line-height:1.6;resize:vertical;background:#fbfcfe;color:var(--ink);}
+  .memo-text:focus{outline:2px solid var(--accent-soft);border-color:var(--accent);}
+  .memo-color-row{display:flex;align-items:center;gap:7px;margin:12px 0 16px;font-size:12px;color:var(--sub);}
+  .memo-swatch{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);cursor:pointer;padding:0;}
+  .memo-swatch[data-c="#fff3bf"]{background:#fff3bf;} .memo-swatch[data-c="#ffd8d8"]{background:#ffd8d8;}
+  .memo-swatch[data-c="#d7f0ff"]{background:#d7f0ff;} .memo-swatch[data-c="#dcf5e3"]{background:#dcf5e3;}
+  .memo-swatch.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);}
+  .memo-list{margin-top:8px;display:flex;flex-direction:column;gap:5px;}
+  .memo-item{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:9px;
+    padding:7px 9px;background:#fff;font-size:12px;}
+  .memo-item .mtxt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+  .memo-item .mbtn{border:0;background:transparent;cursor:pointer;font-size:13px;padding:2px 4px;color:var(--sub);}
+  .memo-item .mbtn:hover{color:var(--accent);}
+  .memo-empty{font-size:11.5px;color:var(--sub);}
+
   /* 起動失敗（CDN読み込み失敗）時の案内 */
   .loaderr{display:none;position:fixed;inset:0;z-index:100;background:rgba(238,241,245,.96);
     align-items:center;justify-content:center;padding:24px;}
@@ -773,6 +791,16 @@
       </div>
     </div>
 
+    <!-- Pro: メモ -->
+    <div class="section">
+      <h3>メモ</h3>
+      <div class="row">
+        <button class="btn sm" id="memoAddBtn" onclick="addMemo()">📌 メモを追加</button>
+        <span class="muted" id="memoLock">🔒 Pro</span>
+      </div>
+      <div class="memo-list" id="memoList"></div>
+    </div>
+
     <!-- Summary -->
     <div class="section">
       <h3>集計</h3>
@@ -902,6 +930,7 @@
       <div class="props-head">
         <span class="tag" id="pTag">什器</span><span id="pName">—</span>
         <span class="ph-sp"></span>
+        <button class="phbtn" id="pMemoEdit" onclick="editMemo(canvas.getActiveObject())" title="メモを編集" style="display:none;">✎ 編集</button>
         <button class="phbtn" id="propsToggle" onclick="togglePropsExpand()" title="詳細の表示切替">詳細 ▾</button>
         <button class="phbtn" onclick="deselectActive()" title="選択を解除">✕</button>
       </div>
@@ -1026,6 +1055,28 @@
     <div class="modal-actions">
       <button class="btn ghost" onclick="closeShapeModal()">キャンセル</button>
       <button class="btn" onclick="confirmCreateBlankSheet()">この形で作成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pro: メモの編集モーダル -->
+<div class="modal-backdrop" id="memoModalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><b>メモを編集</b>
+      <button class="phbtn" onclick="closeMemoEditor()" aria-label="閉じる">✕</button>
+    </div>
+    <label class="memo-label" for="memoText">内容（改行できます）</label>
+    <textarea id="memoText" class="memo-text" rows="5" placeholder="例）ここに電源が必要&#10;要確認：避難経路の幅"></textarea>
+    <div class="memo-color-row">
+      <span>色</span>
+      <button type="button" class="memo-swatch" data-c="#fff3bf" onclick="pickMemoColor('#fff3bf')" title="黄"></button>
+      <button type="button" class="memo-swatch" data-c="#ffd8d8" onclick="pickMemoColor('#ffd8d8')" title="赤"></button>
+      <button type="button" class="memo-swatch" data-c="#d7f0ff" onclick="pickMemoColor('#d7f0ff')" title="青"></button>
+      <button type="button" class="memo-swatch" data-c="#dcf5e3" onclick="pickMemoColor('#dcf5e3')" title="緑"></button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeMemoEditor()">キャンセル</button>
+      <button class="btn" onclick="saveMemoEditor()">保存</button>
     </div>
   </div>
 </div>
@@ -1195,6 +1246,7 @@ function updateWebProUI(){
   if(locked) locked.style.display = on ? 'none' : '';
   if(unlocked) unlocked.style.display = on ? '' : 'none';
   updateScaleNote();   // 出力セクションのPro表示も合わせて更新
+  renderMemoList();    // メモ機能のロック表示も更新
 }
 function submitWebLicense(){
   const input = document.getElementById('webLicenseInput');
@@ -1332,8 +1384,10 @@ function updateWorkStatus(){
   if(!box) return;
   const s=activeSheet();
   updateHistoryBtns();
-  if(!s){ box.classList.remove('show'); box.innerHTML=''; updateSummary(); return; }
-  const count=canvas ? canvas.getObjects().filter(o=>o.data && o.data.shape!=='text').length : ((s.objects||[]).filter(o=>o.data && o.data.shape!=='text').length);
+  if(!s){ box.classList.remove('show'); box.innerHTML=''; updateSummary(); renderMemoList(); return; }
+  // メモは什器ではないのでパーツ数に含めない（集計パネルの数え方と揃える）
+  const countable=o=>o.data && o.data.shape!=='text' && o.data.kind!=='memo';
+  const count=canvas ? canvas.getObjects().filter(countable).length : ((s.objects||[]).filter(countable).length);
   const scaleLabel=s.calibrated ? `${s.mmPerPixel.toFixed(3)}mm/px` : '未校正';
   const next=s.calibrated ? (count ? '配置を調整できます' : '次: パーツを追加') : '次: 縮尺を設定';
   const seats=computeSummary().seats;
@@ -1342,6 +1396,7 @@ function updateWorkStatus(){
   box.innerHTML=`<b title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</b><span class="status-pill ${s.calibrated?'ok':'warn'}">${scaleLabel}</span><span class="status-pill">パーツ ${count}</span>${seatPill}${savePill}<span class="status-next">${next}</span>`;
   box.classList.add('show');
   updateSummary();
+  renderMemoList();   // メモ一覧もオブジェクトの増減に合わせて更新
 }
 
 function escapeHtml(v){
@@ -1657,6 +1712,136 @@ function makeFixture(item, opts){
   return obj;
 }
 
+/* ================= Pro: メモ・コメント =================
+   メモは fabric オブジェクトとして sheet.objects に入れる。こうすることで保存・PNG/PDF出力・
+   Undo/Redo の仕組みにそのまま乗る（計測線は _meas に別管理でオーバーレイのみ、という違いがある）。
+   ただし什器ではないので、集計（席数・面積・パーツ数）と寸法バッジからは除外する。 */
+const MEMO_COLORS=['#fff3bf','#ffd8d8','#d7f0ff','#dcf5e3'];
+const MEMO_W_MM=1800;          // メモ札の横幅（実寸mm）。図面の縮尺に合わせて見た目の大きさを揃える
+let memoEditTarget=null;       // 編集中のメモ（新規追加なら仮オブジェクト）
+let memoEditColor=MEMO_COLORS[0];
+
+function isMemo(o){ return !!(o && o.data && o.data.kind==='memo'); }
+function memoObjects(){ return canvas ? canvas.getObjects().filter(isMemo) : []; }
+
+// テキストから付箋オブジェクトを組み立てる（内容を変えるたびに作り直す）
+function makeMemo(text, color){
+  const scale=mmpp();
+  const wpx=MEMO_W_MM/scale;
+  const fs=Math.max(wpx*0.11, 9);
+  const pad=wpx*0.07;
+  const body=new fabric.Textbox(text||'メモ',{
+    width:wpx-pad*2, fontSize:fs, fill:'#3a3320', fontFamily:'inherit', lineHeight:1.35,
+    originX:'center', originY:'top', textAlign:'left'
+  });
+  const hpx=Math.max(body.height+pad*2, wpx*0.34);
+  const card=new fabric.Rect({ width:wpx, height:hpx, fill:color||MEMO_COLORS[0],
+    stroke:'#d8c98a', strokeWidth:1, rx:wpx*0.04, ry:wpx*0.04, originX:'center', originY:'center' });
+  const pin=new fabric.Text('📌',{ fontSize:fs*1.25, originX:'center', originY:'center',
+    left:-wpx/2+pad*0.9, top:-hpx/2+pad*0.9 });
+  body.set({ left:-wpx/2+pad, top:-hpx/2+pad });
+  body.originX='left';
+  const g=new fabric.Group([card, body, pin],{ originX:'center', originY:'center',
+    data:{ kind:'memo', name:'メモ', text:text||'メモ', color:color||MEMO_COLORS[0] } });
+  return g;
+}
+
+function addMemo(){
+  if(!isPro()){ requestProPurchase(); return; }
+  if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
+  memoEditTarget=null;                 // null = 新規
+  memoEditColor=MEMO_COLORS[0];
+  openMemoEditor('');
+}
+function editMemo(o){
+  if(!isPro()){ requestProPurchase(); return; }
+  memoEditTarget=o;
+  memoEditColor=(o.data&&o.data.color)||MEMO_COLORS[0];
+  openMemoEditor((o.data&&o.data.text)||'');
+}
+function openMemoEditor(text){
+  const ta=document.getElementById('memoText');
+  ta.value=text||'';
+  syncMemoSwatches();
+  document.getElementById('memoModalBackdrop').classList.add('show');
+  setTimeout(()=>{ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 30);
+}
+function closeMemoEditor(){
+  document.getElementById('memoModalBackdrop').classList.remove('show');
+  memoEditTarget=null;
+}
+function pickMemoColor(c){ memoEditColor=c; syncMemoSwatches(); }
+function syncMemoSwatches(){
+  document.querySelectorAll('.memo-swatch').forEach(b=>{
+    b.classList.toggle('on', b.dataset.c===memoEditColor);
+  });
+}
+function saveMemoEditor(){
+  const text=(document.getElementById('memoText').value||'').trim();
+  if(!text){ showHint('メモの内容を入力してください'); return; }
+  if(memoEditTarget){
+    // 位置・角度を保ったまま中身だけ差し替える（Textboxの高さが変わるため作り直しが確実）
+    const old=memoEditTarget;
+    const at={ left:old.left, top:old.top, angle:old.angle, scaleX:old.scaleX, scaleY:old.scaleY };
+    const g=makeMemo(text, memoEditColor);
+    g.set(at); applyObjMode(g);
+    canvas.remove(old); canvas.add(g); canvas.setActiveObject(g);
+  }else{
+    const g=makeMemo(text, memoEditColor);
+    const p=viewCenterScene();
+    g.set({ left:p.x, top:p.y }); applyObjMode(g);
+    canvas.add(g); canvas.setActiveObject(g);
+    if(isMobile()) closeDrawer();
+  }
+  bringMemosToFront();
+  canvas.requestRenderAll();
+  closeMemoEditor();
+  renderMemoList(); updateWorkStatus(); autosave(); historyMark();
+}
+// メモは常に什器より前面に出す（下敷きになって読めなくなるのを防ぐ）
+function bringMemosToFront(){
+  if(!canvas) return;
+  memoObjects().forEach(o=>{ try{ canvas.bringToFront(o); }catch(e){} });
+}
+function jumpToMemo(o){
+  if(!o||!canvas) return;
+  const z=canvas.getZoom();
+  const c=o.getCenterPoint();
+  canvas.viewportTransform[4]=canvas.width/2 - c.x*z;
+  canvas.viewportTransform[5]=canvas.height/2 - c.y*z;
+  canvas.setActiveObject(o); canvas.requestRenderAll();
+  if(isMobile()) closeDrawer();
+}
+function deleteMemo(o){
+  if(!o) return;
+  canvas.remove(o); canvas.discardActiveObject(); canvas.requestRenderAll();
+  renderMemoList(); updateWorkStatus(); autosave(); historyMark();
+}
+function renderMemoList(){
+  const box=document.getElementById('memoList'); if(!box) return;
+  const pro=isPro();
+  const lock=document.getElementById('memoLock');
+  const addBtn=document.getElementById('memoAddBtn');
+  if(lock) lock.style.display = pro ? 'none' : '';
+  if(addBtn) addBtn.classList.toggle('ghost', !pro);
+  if(!pro){ box.innerHTML='<div class="memo-empty">図面に付箋メモを貼り、施主や現場との確認事項を書き残せます（Pro機能）。</div>'; return; }
+  const list=memoObjects();
+  if(!list.length){ box.innerHTML='<div class="memo-empty">まだメモはありません。</div>'; return; }
+  box.innerHTML='';
+  list.forEach((o,i)=>{
+    const first=((o.data&&o.data.text)||'').split('\n')[0] || 'メモ';
+    const row=document.createElement('div'); row.className='memo-item';
+    const t=document.createElement('span'); t.className='mtxt'; t.textContent=`${i+1}. ${first}`;
+    t.title='クリックでその位置へ移動';
+    t.addEventListener('click',()=>jumpToMemo(o));
+    const e=document.createElement('button'); e.className='mbtn'; e.textContent='✎'; e.title='編集';
+    e.addEventListener('click',()=>editMemo(o));
+    const d=document.createElement('button'); d.className='mbtn'; d.textContent='🗑'; d.title='削除';
+    d.addEventListener('click',()=>deleteMemo(o));
+    row.append(t,e,d); box.appendChild(row);
+  });
+}
+
 function addFixture(key, pos){
   if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
   const item=ITEM_INDEX[key]; if(!item) return;
@@ -1705,6 +1890,7 @@ function viewCenterScene(){
 function objRealSize(o){
   const scale=mmpp();
   const d=o.data||{};
+  if(d.kind==='memo') return {w:0,d:0,text:true};   // メモに実寸の意味は無いので寸法を出さない
   if(d.shape==='text') return {w:0,d:0,text:true};
   // 基準ジオメトリ(線幅を含まない)×スケールで実寸を算出
   if(d.baseW){
@@ -1736,15 +1922,21 @@ function updateProps(){
   applyPropsCollapse();
   updateModeSeg();
   const d=o.data||{};
+  const memo = d.kind==='memo';
   document.getElementById('pName').textContent=d.name||'オブジェクト';
+  document.getElementById('pTag').textContent = memo ? 'メモ' : '什器';
+  // メモは実寸を持たないのでW/Dは出さず、代わりに内容の編集ボタンを出す
+  document.getElementById('pMemoEdit').style.display = memo ? '' : 'none';
+  const wLabel=document.getElementById('pW').parentElement;
+  wLabel.style.display = memo ? 'none' : '';
   const sz=objRealSize(o);
   const isText = d.shape==='text';
   const isCircle = d.shape==='circle';
-  document.getElementById('pDwrap').style.display = (isText||isCircle)?'none':'flex';
-  document.getElementById('pW').parentElement.querySelector('input').previousSibling; // noop
+  document.getElementById('pDwrap').style.display = (memo||isText||isCircle)?'none':'flex';
   const wl=document.getElementById('pW').parentElement;
-  wl.childNodes[0].nodeValue = isCircle? '直径 φ(mm)' : (isText?'文字サイズ(px)':'幅 W(mm)');
-  if(isText){ document.getElementById('pW').value=Math.round(o.fontSize); }
+  if(!memo) wl.childNodes[0].nodeValue = isCircle? '直径 φ(mm)' : (isText?'文字サイズ(px)':'幅 W(mm)');
+  if(memo){ /* サイズ欄は使わない */ }
+  else if(isText){ document.getElementById('pW').value=Math.round(o.fontSize); }
   else { document.getElementById('pW').value=sz.w; document.getElementById('pD').value=sz.d; }
   const ang=Math.round(o.angle);
   document.getElementById('pA').value=ang;
@@ -1771,6 +1963,15 @@ function rgbToHex(c){
 function applyProps(){
   const o=canvas.getActiveObject(); if(!o) return;
   const d=o.data||{}; const scale=mmpp();
+  if(d.kind==='memo'){
+    // メモはサイズ欄を持たない。角度と色だけ反映して抜ける
+    let ma=+document.getElementById('pA').value||0; ma=((ma%360)+360)%360; o.rotate(ma);
+    document.getElementById('pA').value=Math.round(ma); document.getElementById('pASlider').value=Math.round(ma);
+    const mc=document.getElementById('pColor').value;
+    setFill(o, mc); d.color=mc;
+    o.setCoords(); canvas.requestRenderAll(); autosave();
+    return;
+  }
   if(d.shape==='text'){ o.set('fontSize', Math.max(1,+document.getElementById('pW').value||14)); }
   else {
     const wmm=+document.getElementById('pW').value||100;
@@ -1929,6 +2130,7 @@ function computeSummary(){
   const counts={};
   canvas.getObjects().forEach(o=>{
     const d=o.data; if(!d||d.shape==='text') return;
+    if(d.kind==='memo') return;   // メモは什器ではないので席数・面積・パーツ数に含めない
     const sz=objRealSize(o);
     res.items++;
     res.areaMm2 += sz.circle ? Math.PI*Math.pow(sz.w/2,2) : sz.w*sz.d;
@@ -2141,6 +2343,7 @@ function drawGrid(){
 function drawDimBadge(){
   const o=canvas.getActiveObject(); if(!o||!o.data) return;
   if(o.data.shape==='text') return;
+  if(o.data.kind==='memo') return;   // メモは実寸を持たない
   const sz=objRealSize(o);
   const ang=Math.round(o.angle||0);
   const base = sz.circle? `φ${sz.w}` : `${sz.w} × ${sz.d} mm`;
@@ -2258,6 +2461,8 @@ function wireCanvas(){
   canvas.on('selection:created', updateProps);
   canvas.on('selection:updated', updateProps);
   canvas.on('selection:cleared', ()=>document.getElementById('props').classList.remove('show'));
+  // メモはダブルクリックで内容を編集できる（付箋を開く感覚に合わせる）
+  canvas.on('mouse:dblclick', opt=>{ if(isMemo(opt.target)) editMemo(opt.target); });
 
   // drag & drop from library
   const wrap=document.getElementById('c-wrap');
