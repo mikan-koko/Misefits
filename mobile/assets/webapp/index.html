@@ -284,6 +284,13 @@
   .modal-actions{display:flex;gap:8px;}
   .modal-actions .btn{flex:1;}
 
+  /* Pro: 什器ライブラリのPRO表示 */
+  .pro-badge{display:inline-block;margin-left:4px;padding:0 4px;border-radius:5px;font-size:9px;
+    font-weight:800;line-height:14px;vertical-align:middle;background:var(--accent-soft);color:var(--accent);}
+  .part.locked{opacity:.62;}
+  .part.locked .sw{filter:grayscale(.55);}
+  .part.locked .pro-badge{background:#f1f3f7;color:var(--sub);}
+
   /* Pro: メモ機能 */
   .memo-label{display:block;font-size:12px;color:var(--sub);margin-bottom:5px;}
   .memo-text{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:13.5px;
@@ -1099,9 +1106,34 @@
 const SAMPLES = {};
 const SAMPLE_MMPP = 6.35; // 25.4/100*25
 
-/* ================= 什器ライブラリ ================= */
-// w,d は実寸(mm)。shape: rect|circle。circleは w を直径として使用。
+/* ================= 什器ライブラリ =================
+   w,d は実寸(mm)。shape: rect|circle。circleは w を直径として使用。
+   pro:true を付けた項目は買い切り「MiseFits Pro」限定（無料版では鍵アイコン付きで表示し、
+   押すと購入案内を出す）。無料版で元から使えた項目には絶対に pro を付けないこと（機能低下になる）。 */
 const LIBRARY = [
+  // Pro: 建築要素。ドア・柱・階段はレイアウトの制約そのものなので、実務ではこれが無いと検討にならない。
+  { cat:"建築要素", color:"#e5e7eb", items:[
+    { key:"door_swing", name:"片開きドア", shape:"rect", w:800, d:100, color:"#94a3b8", pro:true },
+    { key:"door_double", name:"両開きドア", shape:"rect", w:1600, d:100, color:"#94a3b8", pro:true },
+    { key:"door_slide", name:"引戸", shape:"rect", w:1600, d:80, color:"#a3aab5", pro:true },
+    { key:"door_auto", name:"自動ドア", shape:"rect", w:1800, d:120, color:"#7dd3fc", pro:true },
+    { key:"window_arch", name:"窓", shape:"rect", w:1800, d:80, color:"#bae6fd", pro:true },
+    { key:"column_sq", name:"柱（角）", shape:"rect", w:500, d:500, color:"#6b7280", pro:true },
+    { key:"column_rd", name:"柱（丸）", shape:"circle", w:500, d:500, color:"#6b7280", pro:true },
+    { key:"stairs", name:"階段", shape:"rect", w:1200, d:2700, color:"#b0b7c3", pro:true },
+    { key:"elevator", name:"エレベーター", shape:"rect", w:1800, d:1800, color:"#9ca3af", pro:true },
+    { key:"pipe_shaft", name:"PS（配管）", shape:"rect", w:600, d:600, color:"#8b93a1", pro:true },
+  ]},
+  // Pro: バリアフリー・法令チェック用。φ1500の転回スペースは車椅子基準の定番確認。
+  { cat:"バリアフリー・設備", color:"#fef3c7", items:[
+    { key:"wheelchair_turn", name:"車椅子転回 φ1500", shape:"circle", w:1500, d:1500, color:"#fcd34d", pro:true },
+    { key:"toilet_multi", name:"多目的トイレ", shape:"rect", w:2000, d:2000, color:"#cfd4db", pro:true },
+    { key:"handrail", name:"手すり", shape:"rect", w:1200, d:60, color:"#cbd5e1", pro:true },
+    { key:"slope", name:"スロープ", shape:"rect", w:1200, d:2000, color:"#d6d3d1", pro:true },
+    { key:"fire_ext", name:"消火器", shape:"rect", w:250, d:250, color:"#ef4444", pro:true },
+    { key:"distribution_board", name:"分電盤", shape:"rect", w:600, d:200, color:"#a8a29e", pro:true },
+    { key:"aircon_out", name:"室外機", shape:"rect", w:900, d:350, color:"#9ca3af", pro:true },
+  ]},
   { cat:"共通・受付", color:"#dbeafe", items:[
     { key:"reception", name:"受付カウンター", shape:"rect", w:1500, d:600, color:"#7db7ee" },
     { key:"cashier", name:"レジ台", shape:"rect", w:900, d:600, color:"#ffb545" },
@@ -1119,6 +1151,12 @@ const LIBRARY = [
     { key:"rtable4", name:"丸テーブル4人", shape:"circle", w:900, d:900, color:"#e9c46a" },
     { key:"counter", name:"カウンター席", shape:"rect", w:1800, d:450, color:"#d9a066" },
     { key:"drinkbar", name:"ドリンク台", shape:"rect", w:1200, d:600, color:"#f4a261" },
+    { key:"table6", name:"6人テーブル", shape:"rect", w:1800, d:800, color:"#e9c46a", pro:true },
+    { key:"booth4", name:"ボックス席4人", shape:"rect", w:1400, d:1600, color:"#d9a066", pro:true },
+    { key:"ticket_machine", name:"券売機", shape:"rect", w:700, d:500, color:"#94a3b8", pro:true },
+    { key:"beer_server", name:"ビールサーバー", shape:"rect", w:500, d:500, color:"#fbbf24", pro:true },
+    { key:"pos_register", name:"POSレジ", shape:"rect", w:600, d:500, color:"#ffb545", pro:true },
+    { key:"highchair", name:"子供椅子", shape:"rect", w:400, d:400, color:"#86efac", pro:true },
   ]},
   { cat:"物販・花・食料品", color:"#dcfce7", items:[
     { key:"display_table", name:"陳列テーブル", shape:"rect", w:1200, d:800, color:"#8fcf9a" },
@@ -1128,6 +1166,11 @@ const LIBRARY = [
     { key:"flower_bucket", name:"花桶台", shape:"circle", w:500, d:500, color:"#ff8fab" },
     { key:"cold_case", name:"冷蔵ケース", shape:"rect", w:1800, d:800, color:"#8ecae6" },
     { key:"basket_stand", name:"カゴ置き", shape:"rect", w:700, d:500, color:"#c7b299" },
+    { key:"gondola", name:"ゴンドラ什器", shape:"rect", w:1800, d:900, color:"#86b795", pro:true },
+    { key:"fitting_room", name:"試着室", shape:"rect", w:1000, d:1200, color:"#c9b6d6", pro:true },
+    { key:"register_counter_l", name:"レジカウンターL字", shape:"rect", w:1800, d:1200, color:"#ffb545", pro:true },
+    { key:"end_cap", name:"エンド陳列", shape:"rect", w:900, d:600, color:"#9ac2a6", pro:true },
+    { key:"shopping_cart", name:"カート置場", shape:"rect", w:1000, d:1200, color:"#b8bec8", pro:true },
   ]},
   { cat:"美容・サロン", color:"#fde2e7", items:[
     { key:"salon_chair", name:"セット椅子", shape:"circle", w:700, d:700, color:"#f4a7b9" },
@@ -1136,6 +1179,11 @@ const LIBRARY = [
     { key:"treatment_bed", name:"施術ベッド", shape:"rect", w:700, d:1900, color:"#e7b6c8" },
     { key:"wagon", name:"ワゴン", shape:"rect", w:450, d:350, color:"#c8cdd6" },
     { key:"dryer", name:"ドライヤー席", shape:"circle", w:650, d:650, color:"#f7c6a3" },
+    { key:"nail_table", name:"ネイルテーブル", shape:"rect", w:1000, d:500, color:"#f4a7b9", pro:true },
+    { key:"eyelash_bed", name:"アイラッシュ台", shape:"rect", w:700, d:1800, color:"#e7b6c8", pro:true },
+    { key:"salon_reception", name:"サロン受付", shape:"rect", w:1500, d:700, color:"#f7c6a3", pro:true },
+    { key:"towel_shelf", name:"タオル棚", shape:"rect", w:900, d:400, color:"#d8c9a3", pro:true },
+    { key:"foot_bath", name:"フットバス", shape:"rect", w:600, d:500, color:"#a5d8e6", pro:true },
   ]},
   { cat:"教室・オフィス", color:"#e0e7ff", items:[
     { key:"desk_single", name:"1人デスク", shape:"rect", w:1000, d:600, color:"#a5b4fc" },
@@ -1144,6 +1192,11 @@ const LIBRARY = [
     { key:"whiteboard", name:"ホワイトボード", shape:"rect", w:1800, d:80, color:"#dbeafe" },
     { key:"locker", name:"ロッカー", shape:"rect", w:900, d:500, color:"#94a3b8" },
     { key:"copy_machine", name:"複合機", shape:"rect", w:700, d:700, color:"#cbd5e1" },
+    { key:"desk_island4", name:"4人島デスク", shape:"rect", w:2400, d:1400, color:"#a5b4fc", pro:true },
+    { key:"cabinet", name:"書庫・キャビネット", shape:"rect", w:900, d:450, color:"#94a3b8", pro:true },
+    { key:"student_desk", name:"学習机", shape:"rect", w:650, d:450, color:"#bfdbfe", pro:true },
+    { key:"phone_booth", name:"集中ブース", shape:"rect", w:1200, d:1200, color:"#c7d2fe", pro:true },
+    { key:"server_rack", name:"サーバーラック", shape:"rect", w:600, d:900, color:"#64748b", pro:true },
   ]},
   { cat:"クリニック・ケア", color:"#ccfbf1", items:[
     { key:"exam_bed", name:"診察ベッド", shape:"rect", w:700, d:1900, color:"#67d5c2" },
@@ -1171,6 +1224,13 @@ const LIBRARY = [
     { key:"worktop", name:"作業台", shape:"rect", w:900, d:600, color:"#c9cdd4" },
     { key:"toilet", name:"トイレ", shape:"rect", w:500, d:800, color:"#cfd4db" },
     { key:"washbasin", name:"手洗い器", shape:"rect", w:400, d:350, color:"#8fc0d0" },
+    { key:"fryer", name:"フライヤー", shape:"rect", w:450, d:600, color:"#e8a87c", pro:true },
+    { key:"oven", name:"オーブン", shape:"rect", w:800, d:750, color:"#d98a8a", pro:true },
+    { key:"ice_maker", name:"製氷機", shape:"rect", w:700, d:600, color:"#93c5fd", pro:true },
+    { key:"dishwasher", name:"食器洗浄機", shape:"rect", w:600, d:650, color:"#a5d8e6", pro:true },
+    { key:"range_hood", name:"レンジフード", shape:"rect", w:1500, d:800, color:"#b9c0cc", pro:true },
+    { key:"prep_shelf", name:"食器棚", shape:"rect", w:1200, d:400, color:"#c9cdd4", pro:true },
+    { key:"grease_trap", name:"グリストラップ", shape:"rect", w:600, d:400, color:"#8b93a1", pro:true },
   ]},
   { cat:"自由図形", color:"#e0e0e0", items:[
     { key:"free_rect", name:"四角", shape:"rect", w:500, d:500, color:"#b8bec8" },
@@ -1210,11 +1270,26 @@ function handleNativeMessage(ev){
 }
 window.addEventListener('message', handleNativeMessage);
 document.addEventListener('message', handleNativeMessage); // WebView実装差異（Android等）向けの保険
+// 本番のStripe決済リンク。本番モードのPayment Linkを作成したらここに入れる
+// （テストモードのリンクは公開版に置かないこと）。空のあいだはキー入力欄へ誘導する。
+const PRO_PURCHASE_URL = '';
 function requestProPurchase(){
+  // iOSアプリ内は必ずApple IAP経由（規約上、外部決済へ誘導しない）
   if(window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage==='function'){
     window.ReactNativeWebView.postMessage(JSON.stringify({ type:'requestPurchase' }));
+    return;
+  }
+  if(PRO_PURCHASE_URL){ window.open(PRO_PURCHASE_URL, '_blank', 'noopener'); return; }
+  // Web版はサイト上で購入できる。キー入力欄まで案内する
+  const sec=document.getElementById('webProSection');
+  if(sec && getComputedStyle(sec).display!=='none'){
+    if(isMobile()) openDrawer();
+    sec.scrollIntoView({ behavior:'smooth', block:'center' });
+    const inp=document.getElementById('webLicenseInput');
+    if(inp) setTimeout(()=>inp.focus(), 420);
+    showHint('サイドバーの「MiseFits Pro」からライセンスキーを入力すると解放されます', 4500);
   }else{
-    showHint('この機能はiOSアプリ版のPro機能です。App Storeのアプリからご利用ください。', 4000);
+    showHint('この機能は MiseFits Pro でご利用いただけます', 3500);
   }
 }
 
@@ -1240,6 +1315,7 @@ function updateWebProUI(){
   if(unlocked) unlocked.style.display = on ? '' : 'none';
   updateScaleNote();   // 出力セクションのPro表示も合わせて更新
   renderMemoList();    // メモ機能のロック表示も更新
+  if(document.getElementById('library')) buildLibrary();   // Pro什器の鍵表示を外す
 }
 function submitWebLicense(){
   const input = document.getElementById('webLicenseInput');
@@ -1324,10 +1400,18 @@ function buildLibrary(){
         const radius = it.shape==='circle'?'border-radius:50%;':'border-radius:2px;';
         sw=`<span class="sw" style="width:${pw}px;height:${ph}px;background:${it.color};${radius}"></span>`;
       }
-      p.innerHTML=`<span class="swbox">${sw}</span>${it.name}<br><span class="dim">${dim}</span>`;
-      p.dataset.search=`${c.cat} ${it.name} ${dim}`.toLowerCase();
+      const locked = it.pro && !isPro();
+      const badge = it.pro ? `<span class="pro-badge">${locked?'🔒':'PRO'}</span>` : '';
+      p.innerHTML=`<span class="swbox">${sw}</span>${it.name}${badge}<br><span class="dim">${dim}</span>`;
+      if(locked) p.classList.add('locked');
+      p.dataset.search=`${c.cat} ${it.name} ${dim}${it.pro?' pro':''}`.toLowerCase();
       p.onclick=()=>addFixture(it.key);
-      p.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/fx', it.key); });
+      // Pro什器は無料版ではドラッグでも入れられないようにする（クリック経路だけ塞いでも意味がないため）
+      p.draggable = !locked;
+      p.addEventListener('dragstart',e=>{
+        if(it.pro && !isPro()){ e.preventDefault(); return; }
+        e.dataTransfer.setData('text/fx', it.key);
+      });
       parts.appendChild(p);
     });
     cat.appendChild(h); cat.appendChild(parts); wrap.appendChild(cat);
@@ -1836,8 +1920,13 @@ function renderMemoList(){
 }
 
 function addFixture(key, pos){
-  if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
   const item=ITEM_INDEX[key]; if(!item) return;
+  if(item.pro && !isPro()){
+    showHint(`「${item.name}」は Pro の什器です`, 3000);
+    requestProPurchase();
+    return;
+  }
+  if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
   const obj=makeFixture(item,{});
   const p = pos || viewCenterScene();
   obj.set({ left:p.x, top:p.y });
@@ -2114,7 +2203,11 @@ const SEAT_COUNT = { bench:3, chair_round:1, chair_sq:1, sofa:3,
   salon_chair:1, shampoo:1, treatment_bed:1, dryer:1,
   desk_single:1, desk_pair:2, meeting_table:6,
   exam_bed:1, doctor_desk:1, waiting_chair3:3,
-  treadmill:1, training_mat:1, single_bed:1 };
+  treadmill:1, training_mat:1, single_bed:1,
+  // Pro什器のうち「人が座る/使う」ものも席数に数える（数え漏れると集計が実態とずれる）
+  table6:6, booth4:4, highchair:1,
+  nail_table:1, eyelash_bed:1, foot_bath:1,
+  desk_island4:4, student_desk:1, phone_booth:1 };
 const SEAT_PER_MM = { counter:600 };
 
 function computeSummary(){
