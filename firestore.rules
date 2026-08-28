@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ライセンス（買い切り）関連のドキュメントはクライアントから直接読み書きさせない。
+    // 発行・検証は必ず functions/index.js の Cloud Functions（Admin SDK、このルールをバイパスする）経由。
+    // 将来 iOS のクラウド保存機能（Firestore/Storage）を同じプロジェクトに追加する際は、
+    // ユーザーのプロジェクトデータ用に別のルールをここへ追記すること（この全面拒否のまま流用しない）。
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -23,7 +23,6 @@
 <meta name="twitter:title" content="MiseFits | かんたん店舗レイアウトシミュレーター">
 <meta name="twitter:description" content="店舗・施設の図面や白紙サイズから、什器・設備の配置を実寸で検討できるブラウザ完結ツール。">
 <meta name="twitter:image" content="https://misefits.kokokikaku.com/assets/misefits-ogp.jpg">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.googletagmanager.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com; font-src 'self' data:; connect-src 'self' https://cdnjs.cloudflare.com https://us-central1-misefits.cloudfunctions.net blob: data: https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0066cc">
 <link rel="icon" href="assets/misefits-favicon.png">
@@ -56,7 +55,7 @@
 /* アクセス解析（GA4）。測定IDが未設定のあいだは、外部への通信は一切発生しません。
    オプトアウト設定（privacy.html）と Do Not Track を尊重します。 */
 (function(){
-  var GA_ID = 'G-W0Y7GMPVRK';   /* MiseFits プロパティの測定ID */
+  var GA_ID = ''; /* アプリ版では無効化（build-webapp-bundle.jsが変換） */   /* MiseFits プロパティの測定ID */
   if(!GA_ID) return;
   try{ if(localStorage.getItem('misefitsAnalyticsOptOut')==='1'){ window['ga-disable-'+GA_ID]=true; return; } }catch(e){}
   if(navigator.doNotTrack==='1'||window.doNotTrack==='1') return;
@@ -69,15 +68,9 @@
   document.head.appendChild(s);
 })();
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"
-  integrity="sha384-sLpuECXYCB5TUyTbC06pftm/rgurDambREZmV4eRHwEqJzCQtU6lxI2Ve00z4XW5"
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
-  integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e"
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-  integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk"
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="vendor/fabric.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
 <style>
   :root{
     --bg:#eef1f5; --panel:#ffffff; --line:#dfe4ec; --ink:#242933; --sub:#667085;
@@ -1138,7 +1131,7 @@ let handleMode = true; // true=サイズ/回転ハンドル有効, false=移動�
    Web版はこのメッセージを一切受け取らないため isApp/pro は常に false のまま、
    従来通りの無料版として動作する。iOSアプリ（Expo WebViewラッパー）側から
    {type:'entitlement', pro, uid} が postMessage されるとPro状態を反映する。 */
-window.MiseFitsNative = window.MiseFitsNative || { isApp:false, pro:false, uid:null };
+window.MiseFitsNative = { isApp:true, pro:false, uid:null }; /* アプリ版はisAppを同期初期化（build-webapp-bundle.jsが変換） */
 function isPro(){ return !!(window.MiseFitsNative && window.MiseFitsNative.pro) || hasWebLicense(); }
 function handleNativeMessage(ev){
   let data = ev && ev.data;
@@ -1213,7 +1206,7 @@ window.addEventListener('load', ()=>{
       borderColor:'#0066cc', cornerSize:9, padding:2, borderScaleFactor:1.4 });
   fabric.Object.prototype.touchCornerSize = 32; // タッチ操作用の大きめハンドル
   if (window['pdfjsLib']) pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      'vendor/pdf.worker.min.js';
 
   canvas = new fabric.Canvas('c', { selection:true, preserveObjectStacking:true, backgroundColor:'#ffffff' });
   // タップしやすいよう当たり判定に余裕（タッチは大きめ）

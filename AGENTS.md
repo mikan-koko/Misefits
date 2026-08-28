@@ -22,16 +22,37 @@
 ## リポジトリ構成
 
 ```
-index.html   … 本番アプリ（公開版・単一ファイル）。ここを編集する。
-guide.html   … 使い方ガイド（静的ページ。HowTo/FAQPage の構造化データ入り）。
-privacy.html … プライバシーポリシー・免責事項（解析のオプトアウトUIを含む）。
-404.html     … カスタム404（GitHub Pages が自動で使用）。
-assets/      … ブランド画像（WebP/PNG）とOGP画像。
+index.html      … 本番アプリ（公開版・単一ファイル）。ここを編集する。
+guide.html      … 使い方ガイド（静的ページ。HowTo/FAQPage の構造化データ入り）。
+privacy.html    … プライバシーポリシー・免責事項（解析のオプトアウトUIを含む）。
+pro-unlock.html … 買い切りStripe決済後のリダイレクト先（ライセンスキー表示）。
+404.html        … カスタム404（GitHub Pages が自動で使用）。
+assets/         … ブランド画像（WebP/PNG）とOGP画像。
 manifest.webmanifest / robots.txt / sitemap.xml / CNAME
-README.md    … 利用者向けの使い方・公開手順。
-AGENTS.md    … 本ファイル。
-HANDOFF.md   … 詳細な設計・アーキテクチャ・変更履歴。
+README.md       … 利用者向けの使い方・公開手順。
+AGENTS.md       … 本ファイル。
+HANDOFF.md      … 詳細な設計・アーキテクチャ・変更履歴。
+mobile/         … iOSアプリ（Expo + WebView）。詳細は mobile/README.md。
+functions/      … Firebase Cloud Functions（Web版買い切りのライセンスAPI）。
+firebase.json / firestore.rules / firestore.indexes.json … 上記Functionsのプロジェクト設定。
 ```
+
+### `mobile/`（iOSアプリ）について
+
+- iOS App Store向けに、`index.html` を **フォークせず** Expo/React Native の `WebView` でラップしたもの。
+- `index.html` はこれまで通り唯一の本番ソース。`mobile/scripts/build-webapp-bundle.js` がCDN依存の
+  ローカル同梱・CSP調整だけを行った派生HTMLを自動生成する（ロジックはWeb版と完全に共有）。
+- `index.html` に手を入れたら `mobile/` 側で `npm run build:webapp` を実行して同梱HTMLを再生成すること。
+- 課金（RevenueCat）・クラウド保存（Firebase）・Pro限定機能は未実装（ロードマップは HANDOFF.md の
+  「ネイティブアプリ連携（Pro機能・iOSアプリ向け）」を参照）。
+
+### `functions/`（Web版の買い切り販売）について
+
+- Web版（`misefits.kokokikaku.com`）で「MiseFits Pro」買い切り（¥1,480）をStripeで直接販売するための
+  Firebase Cloud Functions。iOSアプリのRevenueCat/Apple IAPとは完全に別売り（意図的な設計、統合しない）。
+- `index.html`・`pro-unlock.html` はこのFunctionsのURLを`FUNCTIONS_BASE`定数とCSPの`connect-src`に
+  ハードコードしている：`https://us-central1-misefits.cloudfunctions.net`（Firebaseプロジェクト
+  `misefits`、2026-08-26作成・Blazeプラン・Firestore作成済み）。詳細は HANDOFF.md「Web版での買い切り販売」を参照。
 
 ### アクセス解析（GA4）
 

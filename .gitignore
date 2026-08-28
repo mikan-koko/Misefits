@@ -1,3 +1,15 @@
 .claude/
 index.test.html
-vendor/
+# ルート直下のみ（Playwright回帰テスト用にライブラリをローカル退避する作業ディレクトリ）。
+# 末尾スラッシュだけだと mobile/assets/webapp/vendor/ まで巻き込み、iOSアプリのビルドに必要な
+# 同梱ライブラリがコミットされなくなるため、先頭スラッシュで階層を限定している。
+/vendor/
+
+__pycache__/
+
+# Firebase Functions（Web版買い切り販売のライセンスAPI）
+functions/node_modules/
+functions/.secret.local
+.firebase/
+firebase-debug.log
+firebase-debug.*.log

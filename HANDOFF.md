@@ -114,6 +114,141 @@ const project = {
 7. モバイルの移動/サイズ切替モード・タップ判定拡大。プロパティパネルのコンパクト化＋移動中の一時非表示。
 8. MiseFits としてリリース準備（ブランド・カスタムドメイン・OGP/構造化データ・ヒーロースライダー・フッター）。
 9. Undo/Redo、什器・壁への吸着ガイド、通路幅の計測ツール、席数・面積の自動集計、モバイルのクイックパーツバーを追加。
+10. iOSアプリ化（`mobile/` に Expo + WebView ラッパーを追加）に向けて、ネイティブ連携フックを追加。
+
+## ネイティブアプリ連携（Pro機能・iOSアプリ向け）
+
+- `index.html` 内、状態初期化部分（`const project = ...` の直前）に `window.MiseFitsNative` /
+  `isPro()` / `handleNativeMessage()` / `requestProPurchase()` を定義。Web版はこのメッセージを
+  一切受け取らないため常に `pro:false` のまま、従来通りの無料版として動作する（Web版の挙動に変更なし）。
+- iOSアプリ（`mobile/`。Expo + `react-native-webview`）側から `{type:'entitlement', pro, uid}` を
+  `postMessage`（`injectJavaScript` 経由で `window.handleNativeMessage()` を直接呼ぶ）すると
+  `window.MiseFitsNative.pro` が更新され、`misefits:entitlement-changed` イベントが発火する。
+  今後Pro限定機能を実装する際は、この `isPro()` で分岐させる。
+- Web側からネイティブへは `requestProPurchase()`（`window.ReactNativeWebView.postMessage(...)`）で
+  購入導線を要求する。Web版（`window.ReactNativeWebView` が存在しない）では `showHint()` で
+  「iOSアプリ版のPro機能です」と案内するだけに留める。
+- アプリ側の実装・ビルド手順は `mobile/README.md` を参照。`mobile/` は `index.html` を
+  フォークせず、`mobile/scripts/build-webapp-bundle.js` がCDN依存のローカル同梱・CSP調整のみを
+  行った `mobile/assets/webapp/index.html` を自動生成して読み込む（ロジックは共有）。
+- 課金（RevenueCat）・クラウド保存（Firebase）・Pro限定機能（自由形状エディタ／トレース等）は
+  まだ未実装。以下の課金設計（2026-08-25確定）に沿って実装する。
+
+### 課金設計（確定・2026-08-25）
+
+「継続コストがかかるかどうか」で買い切りとサブスクを分けるハイブリッド方式。
+
+- **買い切り「MiseFits Pro」（非消費型IAP・単一バンドル・¥1,480）**：サーバー不要な機能をまとめて1商品にする。
+  1. 自由形状エディタ（頂点を自由にドラッグ編集できる完全自由形状シート作成）
+  2. PDF・画像トレース（アップロードした図面の上を実寸でなぞって輪郭を作成）
+  3. 什器ライブラリ拡張（追加カテゴリ・什器アイテム）
+  4. 透かし無し高解像度PNG/PDF出力
+  5. 実寸スケール印刷（1:50等、用紙サイズに厳密フィット）
+  6. メモ・コメント機能（📌付箋アイコンを図面上の任意位置に配置し複数行テキストを編集。什器とは別レイヤーで
+     常に前面表示、集計（席数・面積）には含めない。サイドバーに「メモ一覧」を表示しクリックでジャンプ。
+     PNG/PDF出力にも含める＝計測線と違い成果物の一部として扱う。既存の自由図形「テキスト」`free_text`
+     は什器と同じ扱いの単なるラベルで無料版のまま、これとは別機能）
+- **サブスク「クラウド保存」（自動更新・月額¥480／年額¥4,800）**：複数端末間の同期・バックアップのみ。
+  年額は月額換算で2ヶ月分お得（誘導価格）。Firebase運用費が発生する唯一の機能なのでサブスクに残す。
+  什器ライブラリ拡張はサーバー不要なため買い切り側に含めた（当初案からの変更点）。
+- Apple手数料はSmall Business Program適用で15%想定（年間売上$100万未満）。
+- 実装時は現状の単一 `pro: boolean` フラグでは表現できないため、`handleNativeMessage()` の
+  `entitlement` メッセージを `{unlockPro: boolean, cloudSync: boolean, uid}` の2フラグ構成に拡張する。
+  RevenueCat側もエンタイトルメントを `unlock_pro`（非消費型）と `cloud_sync`（サブスク）の2つに分ける。
+
+### Web版での買い切り販売（iOSアプリとは別売り・実装済み・2026-08-26）
+
+Web版（misefits.kokokikaku.com）でも「MiseFits Pro」買い切り（¥1,480・クラウド保存サブスクは対象外、
+買い切りのみ）をサイト上で決済まで完結させる。iOSアプリからWebへの誘導導線は不要（スマホ新法の外部決済
+リンク対応は現時点では不要と判断）。**Apple/RevenueCatとは完全に独立した別売り**。
+
+バックエンドは当初Cloudflare Workers + KVで設計したが、iOSのクラウド保存機能でどのみちFirebase
+プロジェクトが必要になるため、**Firebase Cloud Functions（2nd gen）+ Firestore に一本化**した
+（アカウント管理を1プロジェクトに集約するため。2026-08-26変更）。
+
+- **決済**：Stripe Payment Links（コード不要でダッシュボードから¥1,480の固定価格リンクを作成）。
+  `after_completion` を「Webサイトへリダイレクト」にし、URLに`{CHECKOUT_SESSION_ID}`プレースホルダーを
+  含める（Stripe公式サポート機能。決済直後に自サイトへセッションIDを渡せる）。手数料は3.6%程度で、
+  Apple経由の15%より大幅に安い。
+- **バックエンド**：`functions/index.js`（Firebase Functions v2・Node.js）。
+  1. `stripeWebhook`：Stripeの`checkout.session.completed`をWebhookで受信。`stripe.webhooks.constructEvent(req.rawBody, sig, secret)`で署名検証（Firebase Functionsは`req.rawBody`を自動保持するため標準のNode版Stripe SDKがそのまま使える）。検証OK・支払い済み・（設定していれば）対象Price IDと一致する場合のみ、ランダムなライセンスキー（`MFPRO-XXXX-XXXX-XXXX`形式）を発行し、Firestoreの`licenses/{key}`と`sessions/{sessionId}`に書き込む。Webhook再送時の重複発行は`sessions`の既存チェックで防止。
+  2. `issueLicense`：`pro-unlock.html`（決済直後のリダイレクト先）が`session_id`でポーリングしてキーを取得するための読み取り専用エンドポイント。
+  3. `verifyLicense`：`index.html`の「ライセンスキーを入力」欄から呼ばれる検証エンドポイント。
+  4. `firestore.rules`はクライアントからの直接読み書きを全面拒否（`allow read, write: if false`）。発行・検証は必ずAdmin SDK経由のCloud Functionsを通す設計にすることで、ブラウザから偽のライセンスをFirestoreに書き込めないようにしている。
+  5. シークレットは`STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`（`firebase-functions/params`の`defineSecret`、Secret Manager管理）。Price IDは秘匿情報ではないので`defineString('STRIPE_PRICE_ID')`（任意設定）。
+- **Web側の解放UI**：`index.html`サイドバー「操作」直後に`#webProSection`を追加（`isPro()`を
+  `window.MiseFitsNative.pro || hasWebLicense()`に拡張、`hasWebLicense()`は`localStorage`の
+  `misefitsWebLicense`キーを見るだけ）。iOSアプリ内（`window.MiseFitsNative.isApp`）では非表示
+  ＝アプリはApple IAP経由のため。`mobile/scripts/build-webapp-bundle.js`がアプリ版バンドル生成時に
+  `MiseFitsNative`を`{isApp:true, pro:false, uid:null}`で同期初期化するステップを追加済み（チラつき防止）。
+- **新規ページ**：`pro-unlock.html`（Payment Linkのリダイレクト先。`session_id`をクエリで受け取り
+  `issueLicense`を1.5秒間隔・最大約10秒ポーリング。取得できたキーを表示＋コピー用ボタン。このページの
+  URLを保存しておけば`session_id`から後日また同じキーを再確認できる＝メール送信の仕組みが無い代わりの
+  簡易的な保険。メール送信でのバックアップ配布は将来の改善候補として保留）。
+- **Firebaseプロジェクト作成済み（2026-08-26）**：プロジェクトID`misefits`（Blazeプラン・Firestore
+  Standardエディション・nam5リージョン・本番モード＝全拒否ルールで作成済み。Google Analyticsは無効化）。
+  `index.html`・`pro-unlock.html`双方の`FUNCTIONS_BASE`定数とCSPの`connect-src`は
+  `https://us-central1-misefits.cloudfunctions.net`に設定済み。`.firebaserc`もこのプロジェクトIDを指す。
+- **デプロイ済み（2026-08-28）**：Firestoreルール・Functions 3本（`stripeWebhook`/`issueLicense`/
+  `verifyLicense`、Node.js 22・第2世代）を `firebase deploy` 済み。`firebase-functions`は7.x、
+  `firebase-admin`は14.xに更新（デプロイ時にNode 20が非推奨警告を出したため22へ）。
+- **Stripe（テストモード）設定済み（2026-08-28）**：商品「MiseFits Pro」¥1,480・一回限り、
+  Price ID `price_1U9GsFKwklnRvDMqi4Yyqcmj`（`functions/.env`に記載）。Payment Link
+  `https://buy.stripe.com/test_eVqbJ20pAbja08t2Mx0VO00`（決済後 `pro-unlock.html?session_id={CHECKOUT_SESSION_ID}`
+  へリダイレクト設定済み）。Payment Link作成時に既定でONだった「Managed Payments」（取引あたり3.5%の
+  追加手数料）と電話番号収集は**意図的にOFF**にした。`STRIPE_SECRET_KEY`はSecret Manager登録済み。
+
+#### GCP環境構築でハマった点（同じ手順を再現する際の注意）
+
+新規GCPプロジェクトでCloud Functions（第2世代）をデプロイする際、以下の4つが順に必要だった
+（いずれも「デプロイは成功するのに動かない」形で現れるので、原因が分かりにくい）：
+
+1. **Cloud Buildのサービスアカウント権限**：初回デプロイが「missing permission on the build service
+   account」で失敗。Google公式の対処法どおり、デフォルトのCompute Engineサービスアカウント
+   （`<PROJECT_NUMBER>-compute@developer.gserviceaccount.com`）に `roles/cloudbuild.builds.builder`
+   を付与して解決（Cloud Buildのデフォルトサービスアカウント仕様変更に伴う既知の問題）。
+2. **Compute Engine APIの有効化**：デプロイログに「Compute Engine API has not been used in project」
+   の警告。第2世代Functionsはデフォルトのコンピュートサービスアカウントを参照するため有効化が必要。
+3. **組織ポリシー「ドメインで制限された共有」の例外**：`kokokikaku.com` のGoogle Workspace組織には
+   `constraints/iam.allowedPolicyMemberDomains` が適用されており、Cloud Runサービスへの `allUsers`
+   付与（＝一般公開）がブロックされた。StripeのWebhookは外部からPOSTされ、`verifyLicense`はブラウザ
+   から呼ばれるため**公開は設計上必須**。`misefits`プロジェクトのみポリシーを上書きして解決（組織全体の
+   ポリシーは変更していない。他プロジェクトは保護されたまま）。この操作には組織レベルの
+   `roles/orgpolicy.policyAdmin` が必要。
+   - 公開しても安全な理由：Webhookは`stripe.webhooks.constructEvent`で署名検証済みのリクエストしか
+     処理せず（署名なしのPOSTは400で拒否されることを実測確認済み）、`verifyLicense`はFirestore参照の
+     真偽値を返すだけ。Firestoreはクライアント直アクセス全拒否。CORSも`misefits.kokokikaku.com`限定。
+4. **実行サービスアカウントへのFirestore権限**：公開後、今度は500エラー（`Missing or insufficient
+   permissions`）。新しいGCPプロジェクトではデフォルトのCompute SAに自動でEditor権限が付かなくなった
+   ため、Functionsの実行SAがFirestoreを読み書きできない。同じSAに `roles/datastore.user`
+   （Cloud Datastore ユーザー）を付与して解決。
+
+**症状と原因の対応表**（デバッグの手がかり）：
+| 症状 | 原因 |
+|---|---|
+| デプロイが「missing permission on the build service account」で失敗 | 上記1 |
+| `cloudfunctions.net`のURLが404（Cloud Runにサービスが無い） | 上記1でビルドが失敗しており、関数のメタデータだけ残っている状態 |
+| 403 Forbidden | 上記3（`allUsers`への公開がブロックされている） |
+| 500 Internal Server Error | 上記4（実行SAにFirestore権限が無い） |
+
+   - なお、Windows環境では `firebase` コマンドが `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)`
+     で異常終了することがあり、成功していても出力が途中で切れる。`functions:list` の結果と
+     Cloud Runのサービス一覧を突き合わせて実際の状態を確認すること（`functions:list`は失敗した
+     デプロイの残骸も表示してしまうため、Cloud Run側が正）。
+
+- **Webhookエンドポイント作成済み（2026-08-28）**：`MiseFits Pro license issuer`
+  （`we_1U9HzUKwklnRvDMqRRpALgN9`、テストモード）。宛先は
+  `https://us-central1-misefits.cloudfunctions.net/stripeWebhook`、リッスン対象は
+  `checkout.session.completed` の1件のみ。
+- **稼働確認済み（2026-08-28）**：3エンドポイントとも期待どおりに応答することを実測。
+  `verifyLicense?key=<無効なキー>` → `{"valid":false}` / 200、
+  `issueLicense?session_id=<未知>` → `{"found":false}` / 404、
+  `stripeWebhook`（署名なしPOST）→ 400で拒否、CORSは`misefits.kokokikaku.com`のみ許可。
+- **残作業**：(1) 署名シークレットを `firebase functions:secrets:set STRIPE_WEBHOOK_SECRET` で
+  本物に差し替え（現在は仮の値）てから再デプロイ、
+  (3) テストカード`4242 4242 4242 4242`で決済→キー発行→`index.html`で解放までの通し確認。
+  そのうえで本番モードのPrice ID・キー・Payment Linkに差し替える。
+- この項目はiOSアプリのPhase 0〜4とは独立して進められる（Web版のみの変更で完結するため）。
 
 ## 静的ページとアクセス解析
 
