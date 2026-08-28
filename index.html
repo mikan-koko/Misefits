@@ -101,7 +101,11 @@
   html,body{height:100%;}
   html{width:100%;overflow-x:hidden;}
   body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;
-       display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);color:var(--ink);overflow:hidden;max-width:100vw;}
+       display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);color:var(--ink);overflow:hidden;max-width:100vw;
+       /* キャンバス上で什器をドラッグすると、周囲のUI文字まで巻き込んで選択されてしまうため、
+          アプリのシェルでは既定で選択を無効化する。入力欄と本文テキストだけ下で選択可に戻す。 */
+       -webkit-user-select:none;user-select:none;}
+  input,textarea,select,#summaryBox,.muted,.scale-box,.work-status{-webkit-user-select:text;user-select:text;}
 
   /* Page shell */
   .page-top{height:72px;flex:0 0 auto;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);
