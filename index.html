@@ -700,14 +700,14 @@
   <aside class="sidebar">
     <div class="section sidebar-intro">
       <div class="intro-label">MISEFITS WORKSPACE</div>
-      <p>飲食店、美容室、教室、物販、クリニック、オフィスなど、小さな現場のレイアウト検討に使えます。</p>
+      <p>飲食店、美容室、教室、物販、クリニック、オフィスから、会議室、貸会場、宿泊、ギャラリー、イベントスペースまで、小さな現場のレイアウト検討に使えます。</p>
       <div class="start-cards">
         <button class="start-card" onclick="pickDrawingFile()"><b>図面から</b><span>PDF/画像を読み込む</span></button>
         <button class="start-card" onclick="createBlankSheet()"><b>白紙から</b><span>サイズ指定で作成</span></button>
       </div>
       <a class="intro-guide" href="guide.html">📘 はじめての方へ：使い方ガイド</a>
       <div class="industry-tags" aria-label="対応業種">
-        <span>飲食</span><span>美容</span><span>教室</span><span>物販</span><span>医療</span><span>オフィス</span>
+        <span>飲食</span><span>美容</span><span>教室</span><span>物販</span><span>医療</span><span>オフィス</span><span>会議室</span><span>貸会場</span><span>宿泊</span><span>ギャラリー</span><span>アパレル</span><span>イベント</span>
       </div>
     </div>
     <!-- Sheets -->
@@ -1132,6 +1132,7 @@
         <a href="faq.html">FAQ</a>
         <a href="releases.html">リリースノート</a>
         <a href="privacy.html">プライバシー・免責</a>
+        <a href="tokushoho.html">特商法表記</a>
         <a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画</a>
       </div>
     </div>
@@ -1274,6 +1275,59 @@ const LIBRARY = [
     { key:"range_hood", name:"レンジフード", shape:"rect", w:1500, d:800, color:"#b9c0cc", pro:true },
     { key:"prep_shelf", name:"食器棚", shape:"rect", w:1200, d:400, color:"#c9cdd4", pro:true },
     { key:"grease_trap", name:"グリストラップ", shape:"rect", w:600, d:400, color:"#8b93a1", pro:true },
+  ]},
+  // 2026-08-28追加：会議室・貸会場・宿泊・ギャラリー・アパレル・イベントの6業種。
+  // 基本什器は無料、専門・大型什器はProという既存の切り分けを踏襲する。
+  { cat:"会議室・セミナー", color:"#e0f2fe", items:[
+    { key:"seminar_table", name:"長机（会議用）", shape:"rect", w:1800, d:450, color:"#93c5fd" },
+    { key:"stack_chair", name:"スタッキングチェア", shape:"rect", w:480, d:520, color:"#a5b4fc" },
+    { key:"lectern", name:"演台", shape:"rect", w:600, d:450, color:"#d9a066" },
+    { key:"projector_screen", name:"スクリーン", shape:"rect", w:2000, d:100, color:"#dbeafe" },
+    { key:"av_cart", name:"プロジェクター台", shape:"rect", w:600, d:500, color:"#cbd5e1", pro:true },
+    { key:"stage_platform_s", name:"ステージ台（小）", shape:"rect", w:1800, d:900, color:"#b0b7c3", pro:true },
+  ]},
+  { cat:"貸会場・レンタルスペース", color:"#fef9c3", items:[
+    { key:"folding_table_w", name:"折りたたみ長机", shape:"rect", w:1800, d:600, color:"#e9c46a" },
+    { key:"pipe_chair", name:"パイプ椅子", shape:"rect", w:450, d:480, color:"#9fb3c8" },
+    { key:"banquet_round", name:"円卓（宴会用）", shape:"circle", w:1500, d:1500, color:"#e9c46a", pro:true },
+    { key:"movable_partition", name:"可動間仕切り", shape:"rect", w:3600, d:100, color:"#9ca3af", pro:true },
+    { key:"cloak_rack", name:"クロークハンガー", shape:"rect", w:1500, d:550, color:"#7eb6d9", pro:true },
+    { key:"stage_riser", name:"組立ステージ", shape:"rect", w:3600, d:1800, color:"#b0b7c3", pro:true },
+  ]},
+  { cat:"宿泊・ゲストハウス", color:"#fae8ff", items:[
+    { key:"bed_double", name:"ダブルベッド", shape:"rect", w:1400, d:1950, color:"#c4b5fd" },
+    { key:"bunk_bed", name:"2段ベッド", shape:"rect", w:1050, d:2000, color:"#c4b5fd" },
+    { key:"luggage_rack", name:"荷物置き", shape:"rect", w:600, d:450, color:"#c7b299" },
+    { key:"valuables_locker", name:"貴重品ロッカー", shape:"rect", w:400, d:450, color:"#94a3b8", pro:true },
+    { key:"shower_unit", name:"シャワーユニット", shape:"rect", w:900, d:900, color:"#a5d8e6", pro:true },
+    { key:"unit_bath", name:"ユニットバス", shape:"rect", w:1600, d:1600, color:"#8ecae6", pro:true },
+  ]},
+  { cat:"ギャラリー・工房", color:"#f1f5f9", items:[
+    { key:"display_panel", name:"展示パネル", shape:"rect", w:900, d:60, color:"#cbd5e1" },
+    { key:"display_pedestal", name:"展示台", shape:"rect", w:450, d:450, color:"#e2e8f0" },
+    { key:"work_bench", name:"作業台（工房）", shape:"rect", w:1800, d:750, color:"#d9a066" },
+    { key:"easel", name:"イーゼル", shape:"rect", w:600, d:600, color:"#c7b299", pro:true },
+    { key:"picture_rail", name:"ピクチャーレール壁", shape:"rect", w:1800, d:60, color:"#b9c0cc", pro:true },
+    { key:"tool_shelf", name:"工具棚", shape:"rect", w:900, d:400, color:"#8b93a1", pro:true },
+    { key:"kiln", name:"窯・電気炉", shape:"rect", w:900, d:900, color:"#d98a8a", pro:true },
+  ]},
+  { cat:"アパレル・衣料品", color:"#ffe4e6", items:[
+    { key:"mannequin", name:"マネキン", shape:"circle", w:450, d:450, color:"#f4a7b9" },
+    { key:"hanger_wall", name:"壁面ハンガー", shape:"rect", w:1200, d:400, color:"#7eb6d9" },
+    { key:"island_rack", name:"島什器ラック", shape:"rect", w:1200, d:1200, color:"#8fcf9a" },
+    { key:"full_mirror", name:"姿見ミラー", shape:"rect", w:600, d:80, color:"#b7c8d6" },
+    { key:"stock_shelf", name:"ストック棚", shape:"rect", w:1200, d:500, color:"#c7b299", pro:true },
+    { key:"accessory_case", name:"アクセサリーケース", shape:"rect", w:900, d:500, color:"#a9c3d6", pro:true },
+    { key:"wrap_counter", name:"包装台", shape:"rect", w:1200, d:600, color:"#ffb545", pro:true },
+  ]},
+  { cat:"ライブ・イベント", color:"#fee2e2", items:[
+    { key:"stage_main", name:"ステージ", shape:"rect", w:3600, d:2400, color:"#b0b7c3" },
+    { key:"speaker_stack", name:"スピーカー", shape:"rect", w:600, d:500, color:"#6b7280" },
+    { key:"pa_booth", name:"PA・音響ブース", shape:"rect", w:1800, d:1200, color:"#94a3b8" },
+    { key:"drink_counter", name:"ドリンクカウンター", shape:"rect", w:1800, d:600, color:"#d9a066" },
+    { key:"dj_booth", name:"DJブース", shape:"rect", w:1500, d:700, color:"#a78bfa", pro:true },
+    { key:"merch_table", name:"物販テーブル", shape:"rect", w:1500, d:600, color:"#e9c46a", pro:true },
+    { key:"crowd_barrier", name:"柵・バリケード", shape:"rect", w:1200, d:100, color:"#8b93a1", pro:true },
   ]},
   { cat:"自由図形", color:"#e0e0e0", items:[
     { key:"free_rect", name:"四角", shape:"rect", w:500, d:500, color:"#b8bec8" },
