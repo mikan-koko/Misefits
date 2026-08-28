@@ -244,10 +244,19 @@ Web版（misefits.kokokikaku.com）でも「MiseFits Pro」買い切り（¥1,48
   `verifyLicense?key=<無効なキー>` → `{"valid":false}` / 200、
   `issueLicense?session_id=<未知>` → `{"found":false}` / 404、
   `stripeWebhook`（署名なしPOST）→ 400で拒否、CORSは`misefits.kokokikaku.com`のみ許可。
-- **残作業**：(1) 署名シークレットを `firebase functions:secrets:set STRIPE_WEBHOOK_SECRET` で
-  本物に差し替え（現在は仮の値）てから再デプロイ、
-  (3) テストカード`4242 4242 4242 4242`で決済→キー発行→`index.html`で解放までの通し確認。
-  そのうえで本番モードのPrice ID・キー・Payment Linkに差し替える。
+- **通し確認完了（2026-08-28）**：テストカード`4242 4242 4242 4242`で実際に決済し、
+  決済 → Webhook発火 → Firestoreへのキー発行 → `pro-unlock.html`へのリダイレクト＋キー表示 →
+  本番`index.html`でのキー入力 → Pro解放（`isPro()`がtrue・localStorageに保存）まで
+  **一気通貫で動作することを確認済み**。キーの大文字小文字は正規化され、1文字違いは正しく拒否される。
+- **残作業**：本番モードへの切り替え。テストモードとは別に、(1) 本番の商品・Price ID作成、
+  (2) 本番Payment Link作成（リダイレクト先は同じ`pro-unlock.html?session_id={CHECKOUT_SESSION_ID}`）、
+  (3) 本番Webhookエンドポイント作成、(4) `functions/.env`のPrice IDを本番のものに差し替え、
+  (5) `STRIPE_SECRET_KEY`（`sk_live_`）と`STRIPE_WEBHOOK_SECRET`を本番用に再設定して再デプロイ。
+  ※Stripeはテストと本番で署名シークレットが別物なので、取り違えると全イベントが検証失敗する。
+- **未実装（重要）**：買い切りで解放されるはずのPro機能（自由形状エディタ／トレース／什器ライブラリ拡張／
+  透かし無し高解像度出力／実寸スケール印刷／メモ機能）は**まだ1つも実装されていない**。現状は
+  「キーを買って入力すると`isPro()`がtrueになる」までの土台のみ。本番販売を開始する前に、
+  最低でも何らかのPro機能を実装すること（でないと購入者に提供するものが無い）。
 - この項目はiOSアプリのPhase 0〜4とは独立して進められる（Web版のみの変更で完結するため）。
 
 ## 静的ページとアクセス解析
