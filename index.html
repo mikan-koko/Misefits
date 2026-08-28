@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MiseFits | かんたん店舗レイアウトシミュレーター</title>
 <meta name="description" content="MiseFitsは、PDFや画像の図面、または白紙サイズから店舗・施設のレイアウトを実寸(mm)で検討できる、ブラウザ完結のかんたんレイアウトシミュレーターです。">
-<meta name="keywords" content="店舗レイアウト,レイアウトシミュレーター,図面,什器配置,美容室,カフェ,学習塾,クリニック,オフィス,ここ企画,MiseFits">
+<meta name="keywords" content="店舗レイアウト,レイアウトシミュレーター,図面,什器配置,美容室,カフェ,学習塾,クリニック,オフィス,会議室,貸会場,ゲストハウス,ギャラリー,イベントスペース,ここ企画,MiseFits">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://misefits.kokokikaku.com/">
 <meta property="og:type" content="website">
@@ -45,11 +45,23 @@
     "name": "ここ企画",
     "url": "https://kokokikaku.com/"
   },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "JPY"
-  }
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "無料版",
+      "price": "0",
+      "priceCurrency": "JPY",
+      "description": "図面の読み込み、縮尺設定、什器の配置、通路幅の計測、席数・面積の集計、PNG/PDF出力。登録不要。"
+    },
+    {
+      "@type": "Offer",
+      "name": "MiseFits Pro（買い切り）",
+      "price": "1480",
+      "priceCurrency": "JPY",
+      "url": "https://misefits.kokokikaku.com/pro.html",
+      "description": "自由形状エディタ、面積トレース、メモ機能、高解像度出力、実寸スケール印刷、什器ライブラリ拡張を追加する買い切りライセンス。"
+    }
+  ]
 }
 </script>
 <script>
@@ -113,6 +125,7 @@
     color:var(--sub);text-decoration:none;transition:.12s;}
   .page-nav a:hover{border-color:#9fcbff;background:#f2f8ff;color:var(--accent);}
   .page-nav a.guide{background:var(--accent-soft);border-color:#cfe4ff;color:var(--accent);}
+  .page-nav a.pro{background:#fff6e6;border-color:#ffe0b0;color:#8a5200;}
   .top-actions{margin-left:auto;display:flex;align-items:center;gap:8px;}
   header .spacer{flex:1;}
   .hbtn{font-size:12.5px;}
@@ -538,7 +551,7 @@
 
   /* 狭めのデスクトップ幅では、ヘッダーの操作ボタンが押せるようナビを段階的に畳む */
   @media (max-width:1180px){
-    .page-nav a:not(.guide){display:none;}
+    .page-nav a:not(.guide):not(.pro){display:none;}
   }
   @media (max-width:1000px){
     .page-nav{display:none;}
@@ -682,6 +695,7 @@
     <a href="guide.html#place">什器配置</a>
     <a href="guide.html#export">出力</a>
     <a class="guide" href="guide.html">使い方ガイド</a>
+    <a class="pro" href="pro.html">料金・Pro</a>
   </nav>
   <div class="top-actions">
     <button class="btn hbtn share-file-btn" onclick="shareLayoutImage()" title="図面を画像で共有（写真・ドライブ・AirDrop など）" aria-label="図面を画像で共有"><span class="ico">📤</span><span class="lbl"> 共有</span></button>
@@ -897,8 +911,10 @@
                   <span class="scenario-tile">学習塾</span>
                   <span class="scenario-tile">花・物販</span>
                   <span class="scenario-tile">クリニック</span>
-                  <span class="scenario-tile">ジム</span>
-                  <span class="scenario-tile">ランドリー</span>
+                  <span class="scenario-tile">会議室</span>
+                  <span class="scenario-tile">貸会場</span>
+                  <span class="scenario-tile">ゲストハウス</span>
+                  <span class="scenario-tile">ギャラリー</span>
                 </div>
                 <div class="empty-actions">
                   <button class="btn" onclick="openDrawer()">図面を読み込む</button>
