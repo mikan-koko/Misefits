@@ -32,13 +32,16 @@ manifest.webmanifest / robots.txt / sitemap.xml / CNAME
 README.md       … 利用者向けの使い方・公開手順。
 AGENTS.md       … 本ファイル。
 HANDOFF.md      … 詳細な設計・アーキテクチャ・変更履歴。
-mobile/         … iOSアプリ（Expo + WebView）。詳細は mobile/README.md。
+mobile/         … 【凍結】iOSアプリ（Expo + WebView）。2026-08-28にリリース中止を決定、コードは参考として残置。
 functions/      … Firebase Cloud Functions（Web版買い切りのライセンスAPI）。
 firebase.json / firestore.rules / firestore.indexes.json … 上記Functionsのプロジェクト設定。
 ```
 
 ### `mobile/`（iOSアプリ）について
 
+- **【重要】2026-08-28、iOSアプリはリリースしないことが決定した（Web版のみで展開する）。**
+  `mobile/` 以下と `index.html` のネイティブブリッジ（`window.MiseFitsNative`）は無害なので残しているが、
+  今後の開発はWeb版のみを対象とする。RevenueCat/Apple IAPの実装は不要。
 - iOS App Store向けに、`index.html` を **フォークせず** Expo/React Native の `WebView` でラップしたもの。
 - `index.html` はこれまで通り唯一の本番ソース。`mobile/scripts/build-webapp-bundle.js` がCDN依存の
   ローカル同梱・CSP調整だけを行った派生HTMLを自動生成する（ロジックはWeb版と完全に共有）。

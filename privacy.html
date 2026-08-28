@@ -131,7 +131,7 @@
   <div class="head">
     <h1>プライバシーポリシー・免責事項</h1>
     <p>MiseFits（以下「本サービス」）は、ここ企画が提供する、店舗・施設のレイアウトを実寸で検討するためのブラウザツールです。本サービスにおける情報の取り扱いと、ご利用にあたっての免責事項を以下のとおり定めます。</p>
-    <div class="meta">制定日：2026年8月14日 ／ 提供：ここ企画（<a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>）</div>
+    <div class="meta">制定日：2026年8月14日 ／ 最終改定：2026年8月28日 ／ 提供：ここ企画（<a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>）</div>
   </div>
 
   <section id="drawing-data">
@@ -180,14 +180,29 @@
           <tr><td>GitHub Pages</td><td>本サイトの配信（ホスティング）</td><td>IPアドレス、ブラウザ情報などのアクセスログ</td></tr>
           <tr><td>cdnjs（Cloudflare）</td><td>図面表示・PDF処理に使うライブラリの配信</td><td>IPアドレス、ブラウザ情報</td></tr>
           <tr><td>Googleアナリティクス</td><td>アクセス解析</td><td>閲覧ページ、参照元、地域、端末情報（Cookie利用）</td></tr>
+          <tr><td>Stripe</td><td>有料版（MiseFits Pro）の決済処理</td><td>購入手続き時にご入力いただくカード情報・メールアドレス等（当方はカード情報を取得しません）</td></tr>
+          <tr><td>Firebase（Google Cloud）</td><td>ライセンスキーの発行・確認</td><td>購入時のメールアドレス、ライセンスキー、IPアドレス</td></tr>
         </tbody>
       </table>
     </div>
     <p style="margin-top:10px;">読み込んだ図面やレイアウトデータが、これらのサービスへ送信されることはありません。</p>
   </section>
 
+  <section id="pro">
+    <h2>4. 有料版（MiseFits Pro）と決済について</h2>
+    <p>本サービスの基本機能は無料でご利用いただけます。追加機能を利用できる買い切りの「MiseFits Pro」（有料）をご購入いただく場合、以下の情報を取り扱います。</p>
+    <ul>
+      <li><strong>決済</strong>：決済処理は<a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripe</a>の決済ページ上で行われます。クレジットカード番号などの決済情報はStripeが直接取り扱い、<strong>当方のサーバーがカード情報を受け取ることはありません</strong>。</li>
+      <li><strong>取得する情報</strong>：購入の確認とライセンスキーの発行のため、Stripeから通知される購入情報（メールアドレス、決済セッションのID）と、発行したライセンスキーを、Googleが提供するFirebase（Cloud Functions / Cloud Firestore）上で保管します。これらは購入の確認・サポート対応・不正利用の防止の目的にのみ利用します。</li>
+      <li><strong>ライセンスキーの確認</strong>：アプリ内でライセンスキーを入力した際、キーの有効性を確認するためにキーがFirebaseへ送信されます。<strong>図面やレイアウトの内容が送信されることはありません</strong>。</li>
+      <li><strong>解放状態の保存</strong>：機能の解放状態はお使いのブラウザ内（localStorage）に保存されます。ブラウザのサイトデータを削除すると解放状態も消えますが、同じライセンスキーを再入力すれば再度解放できます。</li>
+      <li><strong>返金等</strong>：デジタルコンテンツの性質上、購入後の返金は原則としてお受けしておりません。決済に関するトラブルは、<a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画のウェブサイト</a>よりお問い合わせください。</li>
+    </ul>
+    <p>今後、クラウド保存などの新しい機能を提供する場合は、その取り扱いについて本ページに追記します。</p>
+  </section>
+
   <section id="disclaimer">
-    <h2>4. 免責事項</h2>
+    <h2>5. 免責事項</h2>
     <p>本サービスは、レイアウトの<strong>概算検討を目的としたツール</strong>です。ご利用にあたっては、以下の点をご了承ください。</p>
     <ul>
       <li>表示される寸法・面積・席数・通路幅などの数値は、入力された縮尺にもとづく<strong>計算上の目安</strong>です。実測値や設計値としての正確性を保証するものではありません。</li>
@@ -204,7 +219,7 @@
   </section>
 
   <section id="rights">
-    <h2>5. 著作権について</h2>
+    <h2>6. 著作権について</h2>
     <ul>
       <li>本サービスおよび掲載内容（デザイン・文章・ロゴ等）の権利は、ここ企画に帰属します。</li>
       <li>利用者が読み込んだ図面や作成したレイアウトの権利は、<strong>利用者ご自身または正当な権利者に帰属します</strong>。当方がこれらを取得・利用することはありません。</li>
@@ -213,7 +228,7 @@
   </section>
 
   <section id="contact">
-    <h2>6. お問い合わせ・改定</h2>
+    <h2>7. お問い合わせ・改定</h2>
     <p>本サービスに関するお問い合わせは、提供元である<a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画のウェブサイト</a>よりお願いいたします。</p>
     <p>本ポリシーの内容は、法令の変更やサービス内容の変更に応じて、予告なく改定する場合があります。改定後の内容は本ページに掲載した時点から適用されます。</p>
   </section>
@@ -225,6 +240,7 @@
     <span class="sp"></span>
     <a href="./">アプリ</a>
     <a href="guide.html">使い方</a>
+    <a href="pro.html">Proガイド</a>
     <a href="privacy.html">プライバシー・免責</a>
     <span>Produced by ここ企画</span>
     <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>

@@ -118,6 +118,11 @@ const project = {
 
 ## ネイティブアプリ連携（Pro機能・iOSアプリ向け）
 
+> **【2026-08-28決定】iOSアプリはリリースしない。今後はWeb版のみで展開する。**
+> 以下のネイティブ連携の記述は歴史的経緯として残す。`window.MiseFitsNative` ブリッジと `mobile/` は
+> 無害なので残置するが、RevenueCat/Apple IAP・App Store申請関連の作業はすべて中止。
+> クラウド保存（サブスク）を実装する場合もWeb（Stripe Billing + Firebase Auth）で行う。
+
 - `index.html` 内、状態初期化部分（`const project = ...` の直前）に `window.MiseFitsNative` /
   `isPro()` / `handleNativeMessage()` / `requestProPurchase()` を定義。Web版はこのメッセージを
   一切受け取らないため常に `pro:false` のまま、従来通りの無料版として動作する（Web版の挙動に変更なし）。

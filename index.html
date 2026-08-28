@@ -801,9 +801,13 @@
     <div class="section" id="webProSection" style="display:none;">
       <h3>MiseFits Pro</h3>
       <div id="webProLocked">
-        <div class="muted" style="margin-bottom:8px;">自由形状エディタ・PDF/画像トレース・什器ライブラリ拡張・透かし無し高解像度出力・実寸スケール印刷・メモ機能を解放（買い切り・¥1,480）。</div>
+        <div class="muted" style="margin-bottom:8px;">自由形状エディタ・PDF/画像トレース・什器ライブラリ拡張・高解像度出力・実寸スケール印刷・メモ機能を解放（買い切り・¥1,480）。無料の機能はこれまでどおりお使いいただけます。</div>
         <div class="row" style="margin-bottom:6px;">
-          <input type="text" id="webLicenseInput" class="inp" placeholder="MFPRO-XXXX-XXXX-XXXX" style="flex:1;min-width:160px;">
+          <button class="btn sm pop" id="webProBuyBtn" onclick="requestProPurchase()" style="display:none;">¥1,480で購入する</button>
+          <a class="btn sm ghost" href="pro.html" target="_blank" rel="noopener">📘 使い方と購入の流れ</a>
+        </div>
+        <div class="row" style="margin-bottom:6px;">
+          <input type="text" id="webLicenseInput" class="inp" placeholder="MFPRO-XXXX-XXXX-XXXX-XXXX" style="flex:1;min-width:160px;">
           <button class="btn sm" onclick="submitWebLicense()">解放する</button>
         </div>
         <div class="muted" id="webLicenseMsg"></div>
@@ -1124,6 +1128,7 @@
       <b>MiseFits</b>
       <div class="foot-company">
         <a href="guide.html">使い方</a>
+        <a href="pro.html">Proガイド</a>
         <a href="privacy.html">プライバシー・免責</a>
         <a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画</a>
       </div>
@@ -1346,6 +1351,8 @@ function updateWebProUI(){
   section.style.display = isApp ? 'none' : '';
   const locked = document.getElementById('webProLocked');
   const unlocked = document.getElementById('webProUnlocked');
+  const buyBtn = document.getElementById('webProBuyBtn');
+  if(buyBtn) buyBtn.style.display = PRO_PURCHASE_URL ? '' : 'none';   // 本番Payment Link設定後に表示
   const on = hasWebLicense();
   if(locked) locked.style.display = on ? 'none' : '';
   if(unlocked) unlocked.style.display = on ? '' : 'none';
