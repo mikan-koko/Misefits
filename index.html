@@ -1129,6 +1129,8 @@
       <div class="foot-company">
         <a href="guide.html">使い方</a>
         <a href="pro.html">Proガイド</a>
+        <a href="faq.html">FAQ</a>
+        <a href="releases.html">リリースノート</a>
         <a href="privacy.html">プライバシー・免責</a>
         <a href="https://kokokikaku.com/" target="_blank" rel="noopener">ここ企画</a>
       </div>
@@ -1339,6 +1341,22 @@ function requestProPurchase(){
    検証はFirebase Functions（functions/index.js の verifyLicense）で行い、有効ならこのブラウザの
    localStorageに恒久解放フラグを保存する（アカウント不要という現状の設計を維持するため）。 */
 const WEB_LICENSE_STORAGE_KEY = 'misefitsWebLicense';
+// デバイス上限（1キー5台まで）の識別用。ブラウザごとにランダムIDを永続化して
+// verifyLicense に添える。サイトデータ削除で変わる＝別デバイス扱いになる点は
+// サーバー側（Firestoreのdevices配列を空にする）でリセット対応する。
+const WEB_DEVICE_STORAGE_KEY = 'misefitsDeviceId';
+function webDeviceId(){
+  try{
+    let id = localStorage.getItem(WEB_DEVICE_STORAGE_KEY);
+    if(!id){
+      const buf = new Uint8Array(16);
+      (window.crypto || {}).getRandomValues ? crypto.getRandomValues(buf) : buf.forEach((_,i)=>buf[i]=Math.floor(Math.random()*256));
+      id = 'dev-' + Array.from(buf, b=>b.toString(16).padStart(2,'0')).join('');
+      localStorage.setItem(WEB_DEVICE_STORAGE_KEY, id);
+    }
+    return id;
+  }catch(e){ return ''; }
+}
 // Firebaseプロジェクト作成後、実際のプロジェクトIDに差し替える（CSPのconnect-srcとも揃える）
 const FUNCTIONS_BASE = 'https://us-central1-misefits.cloudfunctions.net';
 function hasWebLicense(){
@@ -1367,7 +1385,7 @@ function submitWebLicense(){
   const key = (input && input.value || '').trim().toUpperCase();
   if(!key){ if(msg) msg.textContent = 'ライセンスキーを入力してください。'; return; }
   if(msg) msg.textContent = '確認中…';
-  fetch(FUNCTIONS_BASE + '/verifyLicense?key=' + encodeURIComponent(key))
+  fetch(FUNCTIONS_BASE + '/verifyLicense?key=' + encodeURIComponent(key) + '&device=' + encodeURIComponent(webDeviceId()))
     .then(r => r.json())
     .then(data => {
       if(data && data.valid){
@@ -1375,6 +1393,8 @@ function submitWebLicense(){
         if(msg) msg.textContent = '';
         updateWebProUI();
         showHint('MiseFits Proを解放しました', 3000);
+      }else if(data && data.reason === 'device_limit'){
+        if(msg) msg.textContent = 'このキーは上限の5台で使用中のため解放できません。端末の入れ替え（リセット）をご希望の場合はお問い合わせください。';
       }else{
         if(msg) msg.textContent = '無効なキーです。入力内容をご確認ください。';
       }

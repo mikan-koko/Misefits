@@ -181,6 +181,12 @@ Web版（misefits.kokokikaku.com）でも「MiseFits Pro」買い切り（¥1,48
   3. `verifyLicense`：`index.html`の「ライセンスキーを入力」欄から呼ばれる検証エンドポイント。
   4. `firestore.rules`はクライアントからの直接読み書きを全面拒否（`allow read, write: if false`）。発行・検証は必ずAdmin SDK経由のCloud Functionsを通す設計にすることで、ブラウザから偽のライセンスをFirestoreに書き込めないようにしている。
   5. シークレットは`STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`（`firebase-functions/params`の`defineSecret`、Secret Manager管理）。Price IDは秘匿情報ではないので`defineString('STRIPE_PRICE_ID')`（任意設定）。
+  6. **デバイス上限（2026-08-28追加）**：1キー最大5台（`MAX_DEVICES`）。クライアントは`localStorage`の
+     `misefitsDeviceId`にランダムIDを永続化し、`verifyLicense?key=...&device=...`で送る。サーバーは
+     `licenses/{key}`の`devices`配列に`arrayUnion`で登録し、未登録かつ5件到達済みなら
+     `{valid:false, reason:'device_limit'}`。`device`無しの呼び出し（旧クライアント）は存在チェックのみで
+     枠を消費しない。リセットはFirestoreコンソールで該当docの`devices`配列を空にするだけ
+     （サイトデータ削除→再入力は新しい1台と数えられる点はpro.html/faq.htmlに明記済み）。
 - **Web側の解放UI**：`index.html`サイドバー「操作」直後に`#webProSection`を追加（`isPro()`を
   `window.MiseFitsNative.pro || hasWebLicense()`に拡張、`hasWebLicense()`は`localStorage`の
   `misefitsWebLicense`キーを見るだけ）。iOSアプリ内（`window.MiseFitsNative.isApp`）では非表示

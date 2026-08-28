@@ -6,8 +6,9 @@ const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const Stripe = require('stripe');
 
 // Web版の買い切り「MiseFits Pro」（¥1,480）のライセンスキー発行・検証API。
-// Firestoreへの書き込みは stripeWebhook（Stripeの署名検証を通過した場合のみ）からしか行わない設計。
-// issueLicense / verifyLicense は読み取り専用で、クライアントから直接Firestoreを触らせない
+// キーの発行（licenses/sessions docの作成）は stripeWebhook（Stripeの署名検証を通過した場合のみ）。
+// verifyLicense は既存キーへのデバイス登録（devices配列へのarrayUnion）だけ書き込む。
+// issueLicense は読み取り専用。クライアントから直接Firestoreは触らせない
 // （firestore.rulesで全面拒否。Admin SDK経由のここだけがルールをバイパスして読み書きできる）。
 
 initializeApp();
@@ -20,6 +21,10 @@ const stripePriceId = defineString('STRIPE_PRICE_ID', { default: '' });
 
 const ALLOWED_ORIGIN = 'https://misefits.kokokikaku.com';
 const KEY_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 0/O/1/I/L等の紛らわしい文字を除いたbase32相当
+// 1キーあたりの解放上限（ブラウザ＝デバイス単位。localStorageのdeviceIdで数える）。
+// サイトデータ削除や機種変更で同じ端末が別カウントになり得るため、上限到達時は
+// Firestoreコンソールで licenses/{key} の devices 配列を空にすればリセットできる。
+const MAX_DEVICES = 5;
 
 function generateLicenseKey() {
   const bytes = crypto.randomBytes(16);
@@ -105,12 +110,36 @@ exports.issueLicense = onRequest({ cors: [ALLOWED_ORIGIN] }, async (req, res) =>
   res.status(200).json({ found: true, key: doc.data().licenseKey });
 });
 
+// キー検証＋デバイス登録。deviceは クライアントがlocalStorageに持つランダムID。
+// 未知のデバイスは空きがあれば devices 配列に登録（＝1枠消費）、上限超過なら
+// {valid:false, reason:'device_limit'} を返す。device無しの呼び出し（旧クライアント）は
+// 存在チェックのみ行い枠を消費しない（後方互換）。
 exports.verifyLicense = onRequest({ cors: [ALLOWED_ORIGIN] }, async (req, res) => {
   const key = String(req.query.key || '').trim().toUpperCase();
+  const device = String(req.query.device || '').slice(0, 64);
   if (!key) {
     res.status(400).json({ valid: false });
     return;
   }
-  const doc = await db.collection('licenses').doc(key).get();
-  res.status(200).json({ valid: doc.exists });
+  const ref = db.collection('licenses').doc(key);
+  const doc = await ref.get();
+  if (!doc.exists) {
+    res.status(200).json({ valid: false });
+    return;
+  }
+  if (!device) {
+    res.status(200).json({ valid: true });
+    return;
+  }
+  const devices = Array.isArray(doc.data().devices) ? doc.data().devices : [];
+  if (devices.includes(device)) {
+    res.status(200).json({ valid: true });
+    return;
+  }
+  if (devices.length >= MAX_DEVICES) {
+    res.status(200).json({ valid: false, reason: 'device_limit' });
+    return;
+  }
+  await ref.update({ devices: FieldValue.arrayUnion(device) });
+  res.status(200).json({ valid: true });
 });
