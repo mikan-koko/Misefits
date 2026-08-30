@@ -2,7 +2,7 @@
 
 `index.html`（単一ファイル・バニラJS）の内部構造メモ。行番号は目安（編集で前後する）。
 
-公開URLは `https://misefits.kokokikaku.com/`。GitHub Pages のカスタムドメインとして、リポジトリ直下に `CNAME`（`misefits.kokokikaku.com`）を置く。DNS側では `misefits` の CNAME を `mikan-koko.github.io` に向ける。
+公開URLは `https://misefits.kokokikaku.com/`。GitHub Pages のカスタムドメインとして、リポジトリ直下に `CNAME`（`misefits.kokokikaku.com`）を置く。DNS側では `misefits` の CNAME を `studio8080.github.io` に向ける。
 
 ## 全体構成
 

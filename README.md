@@ -22,7 +22,7 @@ GitHub Pages のカスタムドメインとして公開します。リポジト�
 
 - GitHub Pages: `main` ブランチ / `/` ルート
 - カスタムドメイン: `misefits.kokokikaku.com`
-- DNS側で `misefits` の CNAME を `mikan-koko.github.io` に向ける必要があります。
+- DNS側で `misefits` の CNAME を `studio8080.github.io` に向ける必要があります。
 
 ## 公開時の注意・免責
 

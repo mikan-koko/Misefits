@@ -135,7 +135,7 @@ const { chromium, devices } = require('playwright');
 ## 公開（デプロイ）
 
 GitHub Pages（`main` ブランチ / ルート）。`index.html` と `CNAME` を更新して `main` に push/commit すれば約1分で反映。
-カスタムドメインは `misefits.kokokikaku.com`。DNS側では `misefits` の CNAME を `mikan-koko.github.io` に向ける。
+カスタムドメインは `misefits.kokokikaku.com`。DNS側では `misefits` の CNAME を `studio8080.github.io` に向ける。
 Web UI からのアップロードで更新する場合: リポジトリの `Upload files` で `index.html` を上書きコミット → Pages が自動再ビルド。反映確認はキャッシュ回避で `?v=N` を付けて開く。
 
 ## 数値・単位の約束
