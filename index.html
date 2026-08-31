@@ -1689,7 +1689,7 @@ function goHome(){
   // project.sheets[i].objects を空配列で上書きしてしまう（実際に再現した不具合）。
   // 保留タイマーを止めたうえで、その場で1回だけ保存する。
   clearTimeout(saveTimer);
-  try{ localStorage.setItem('layoutSim', JSON.stringify(serializeProject())); }catch(e){}
+  persistProject();
 }
 
 /* ================= サンプル・アップロード ================= */
@@ -3410,20 +3410,24 @@ function autosave(){
   if(suppressAutosave) return;
   historyPush();                    // 変更のたびに編集履歴も更新
   clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    try{
-      localStorage.setItem('layoutSim', JSON.stringify(serializeProject()));
-      if(autosaveFailed){ autosaveFailed=false; updateWorkStatus(); }
-    }catch(e){
-      // 図面が大きいと localStorage の容量を超える。黙って失敗させず必ず知らせる
-      autosaveFailed=true;
-      updateWorkStatus();
-      if(!autosaveWarned){
-        autosaveWarned=true;
-        showHint('図面が大きいため自動保存できません。💾 保存(JSON) でファイルに保存してください', 7000);
-      }
+  saveTimer=setTimeout(persistProject,600);
+}
+// localStorage への実保存。成否の通知（⚠バッジとヒント）をここに集約する。
+// autosave の遅延保存と goHome の即時保存の両方から呼ぶこと。片方だけ素の
+// setItem を書くと、容量超過で失敗しても警告が出ず、⚠バッジも実態とずれる。
+function persistProject(){
+  try{
+    localStorage.setItem('layoutSim', JSON.stringify(serializeProject()));
+    if(autosaveFailed){ autosaveFailed=false; updateWorkStatus(); }
+  }catch(e){
+    // 図面が大きいと localStorage の容量を超える。黙って失敗させず必ず知らせる
+    autosaveFailed=true;
+    updateWorkStatus();
+    if(!autosaveWarned){
+      autosaveWarned=true;
+      showHint('図面が大きいため自動保存できません。💾 保存(JSON) でファイルに保存してください', 7000);
     }
-  },600);
+  }
 }
 // 保存用の素データ（_hist などの内部プロパティは保存しない）
 function serializeProject(){
