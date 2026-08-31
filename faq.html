@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>よくある質問（FAQ） | MiseFits かんたん店舗レイアウトシミュレーター</title>
-<meta name="description" content="MiseFitsのよくある質問。無料版とMiseFits Pro（買い切り¥1,480）の違いの比較表、購入・ライセンスキー・複数端末（5台まで）、図面・縮尺・保存・出力のQ&A、クラウド保存（準備中）の解約ルールまでまとめています。">
+<meta name="description" content="MiseFitsのよくある質問。無料版とMiseFits Pro（買い切り¥1,480）の違いの比較表、購入・ライセンスキー・複数端末（5台まで）、図面・縮尺・保存・出力のQ&Aまでまとめています。">
 <meta name="keywords" content="MiseFits,FAQ,よくある質問,無料,Pro,比較,ライセンスキー,解約,店舗レイアウト">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://misefits.kokokikaku.com/faq.html">
@@ -228,7 +228,6 @@
       <a href="#c-drawing">📐 図面・縮尺</a>
       <a href="#c-edit">🪑 配置・計測</a>
       <a href="#c-data">💾 保存・出力</a>
-      <a href="#c-cloud">☁️ クラウド保存・解約</a>
       <a href="#c-trouble">🛟 トラブル</a>
     </div>
   </div>
@@ -412,26 +411,6 @@
     </details>
   </section>
 
-  <section class="cat" id="c-cloud">
-    <h2><span class="ic">☁️</span>クラウド保存（準備中）・解約ルール</h2>
-    <p class="cat-note">複数端末でのデータ同期を実現する月額制のオプション機能を準備しています。以下は提供開始時のルールの予定です（内容は確定時に改めてご案内します）。</p>
-    <details>
-      <summary>クラウド保存とは何ですか？<span class="badge">準備中</span></summary>
-      <p>レイアウトデータをクラウドに保存し、PC・タブレット・スマホの間で同期できるようにするオプション機能です。サーバーの維持に継続的な費用がかかるため、この機能のみ月額制（<strong>月額¥480／年額¥4,800</strong>・年額は約2か月分お得）を予定しています。<strong>買い切りのProとは独立したオプション</strong>で、クラウド保存を契約しなくてもProと無料版の全機能はこれまでどおり使えます。</p>
-    </details>
-    <details>
-      <summary>解約はいつでもできますか？<span class="badge">準備中</span></summary>
-      <p>いつでも解約できる設計にします。解約手続きの後も、<strong>支払い済みの期間の終わりまで</strong>はクラウド保存を利用できます。期間途中の解約による日割り返金はありません。</p>
-    </details>
-    <details>
-      <summary>解約したらデータはどうなりますか？<span class="badge">準備中</span></summary>
-      <p>解約してもローカル（ブラウザ内）の作業データはそのまま残り、無料版・Proの機能も引き続き使えます。クラウド上のデータは、期間終了前に「保存(JSON)」でお手元にダウンロードしておけるようにします。一定の猶予期間の後、クラウド上のデータは削除される予定です。</p>
-    </details>
-    <details>
-      <summary>解約の手続き方法は？<span class="badge">準備中</span></summary>
-      <p>決済に使うStripeの管理ページ（カスタマーポータル）から、いつでもご自身で解約・支払い方法の変更ができるようにします。メールや電話での引き止めはありません。</p>
-    </details>
-  </section>
 
   <section class="cat" id="c-trouble">
     <h2><span class="ic">🛟</span>トラブルシューティング</h2>
@@ -511,7 +490,8 @@
       var visible = sec.querySelectorAll('details:not([style*="display: none"])').length;
       sec.style.display = visible ? '' : 'none';
     });
-    noRes.style.display = hits ? 'none' : '';
+    // CSS 側で .faq-nores{display:none} のため、'' に戻すと非表示のままになる（block を明示する）
+    noRes.style.display = hits ? 'none' : 'block';
   }
   var t = null;
   input.addEventListener('input', function(){ clearTimeout(t); t = setTimeout(apply, 120); });

@@ -46,8 +46,8 @@ firebase.json / firestore.rules / firestore.indexes.json … 上記Functionsの�
 - `index.html` はこれまで通り唯一の本番ソース。`mobile/scripts/build-webapp-bundle.js` がCDN依存の
   ローカル同梱・CSP調整だけを行った派生HTMLを自動生成する（ロジックはWeb版と完全に共有）。
 - `index.html` に手を入れたら `mobile/` 側で `npm run build:webapp` を実行して同梱HTMLを再生成すること。
-- 課金（RevenueCat）・クラウド保存（Firebase）・Pro限定機能は未実装（ロードマップは HANDOFF.md の
-  「ネイティブアプリ連携（Pro機能・iOSアプリ向け）」を参照）。
+- 課金（RevenueCat）・Pro限定機能は未実装。**クラウド保存（サブスク）は2026-08-31に提供取りやめを決定**
+  （経緯は HANDOFF.md の「課金設計」の決定ブロックを参照）。
 
 ### `functions/`（Web版の買い切り販売）について
 
