@@ -221,3 +221,7 @@ exports.verifyLicense = onRequest({ cors: [ALLOWED_ORIGIN] }, async (req, res) =
   await ref.update({ devices: FieldValue.arrayUnion(device) });
   res.status(200).json({ valid: true });
 });
+
+// MenuFits（menufits.kokokikaku.com）の買い切り販売。別売り・別コレクション・別Webhook。
+// 上の MiseFits 用3関数には影響しない（menufits.js 内で完結している）。
+Object.assign(exports, require("./menufits"));
