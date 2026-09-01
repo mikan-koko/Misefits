@@ -80,6 +80,10 @@
   s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);
   document.head.appendChild(s);
 })();
+/* GA4のイベント送信ヘルパー。解析が無効（ID未設定・オプトアウト・DNT）のときは何もしない。 */
+function trackEvent(name, params){
+  try{ if(typeof window.gtag==='function') window.gtag('event', name, params||{}); }catch(e){}
+}
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"
   integrity="sha384-sLpuECXYCB5TUyTbC06pftm/rgurDambREZmV4eRHwEqJzCQtU6lxI2Ve00z4XW5"
@@ -311,6 +315,23 @@
   .shape-note{font-size:11.5px;color:var(--sub);text-align:center;margin:0 0 14px;}
   .modal-actions{display:flex;gap:8px;}
   .modal-actions .btn{flex:1;}
+  .modal-actions a.btn{display:flex;align-items:center;justify-content:center;text-decoration:none;}
+
+  /* Pro: 購入前の説明モーダル */
+  .pro-modal-lead{font-size:13px;line-height:1.7;margin-bottom:12px;}
+  .pro-modal-price{display:flex;align-items:baseline;gap:8px;background:#f8fafc;border:1px solid var(--line);
+    border-radius:10px;padding:10px 13px;margin-bottom:13px;}
+  .pro-modal-price b{font-size:23px;letter-spacing:.01em;}
+  .pro-modal-price span{font-size:11.5px;color:var(--sub);font-weight:700;}
+  .pro-modal-list{list-style:none;margin:0 0 14px;padding:0;}
+  .pro-modal-list li{position:relative;padding:5px 0 5px 20px;font-size:12.5px;line-height:1.6;color:var(--sub);}
+  .pro-modal-list li::before{content:"✓";position:absolute;left:2px;color:var(--accent);font-weight:900;}
+  .pro-modal-list li.hit{color:var(--ink);font-weight:700;}
+  .pro-modal-note{font-size:11.5px;color:var(--sub);line-height:1.65;margin-top:11px;}
+  .linklike{border:none;background:none;padding:0;color:var(--accent);font-family:inherit;font-size:inherit;
+    cursor:pointer;text-decoration:underline;}
+  .lockbtn{border:none;background:none;padding:0;color:var(--sub);font-family:inherit;font-size:11.5px;
+    font-weight:700;cursor:pointer;text-decoration:underline;white-space:nowrap;}
 
   /* Pro: 什器ライブラリのPRO表示 */
   .pro-badge{display:inline-block;margin-left:4px;padding:0 4px;border-radius:5px;font-size:9px;
@@ -821,7 +842,7 @@
       <div id="webProLocked">
         <div class="muted" style="margin-bottom:8px;">自由形状エディタ・PDF/画像トレース・什器ライブラリ拡張・高解像度出力・実寸スケール印刷・メモ機能を解放（買い切り・¥1,480）。無料の機能はこれまでどおりお使いいただけます。</div>
         <div class="row" style="margin-bottom:6px;">
-          <button class="btn sm pop" id="webProBuyBtn" onclick="requestProPurchase()" style="display:none;">¥1,480で購入する</button>
+          <button class="btn sm pop" id="webProBuyBtn" onclick="requestProPurchase('sidebar')" style="display:none;">¥1,480で購入する</button>
           <a class="btn sm ghost" href="pro.html" target="_blank" rel="noopener">📘 使い方と購入の流れ</a>
         </div>
         <div class="row" style="margin-bottom:6px;">
@@ -875,7 +896,7 @@
           <option value="100">1:100</option>
           <option value="200">1:200</option>
         </select>
-        <span class="muted" id="exportScaleLock">🔒 Pro</span>
+        <button type="button" class="lockbtn" id="exportScaleLock" onclick="requestProPurchase('export_scale')" title="MiseFits Proについて">🔒 Pro</button>
       </div>
       <div class="muted" id="exportScaleNote" style="margin-bottom:8px;"></div>
       <div class="row">
@@ -1141,6 +1162,30 @@
   </div>
 </div>
 
+<!-- Pro: 購入前の説明モーダル。何が解放されるか・買い切りである点を見せてから決済ページへ送る。 -->
+<div class="modal-backdrop" id="proModalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><b>MiseFits Pro</b>
+      <button class="phbtn" onclick="closeProModal()" aria-label="閉じる">✕</button>
+    </div>
+    <p class="pro-modal-lead" id="proModalLead">MiseFits Pro で次の機能が解放されます。</p>
+    <div class="pro-modal-price"><b>¥1,480</b><span>買い切り／サブスクではありません・登録不要</span></div>
+    <ul class="pro-modal-list" id="proModalList">
+      <li data-f="free_shape">自由形状エディタ（斜め壁・変形物件を頂点単位で作成）</li>
+      <li data-f="area_trace">面積トレース（囲んだ範囲の実寸面積を自動計算）</li>
+      <li data-f="memo_add memo_edit">メモ機能（キャンバスに付箋を貼って残す）</li>
+      <li data-f="export_scale">高解像度出力（PNG/PDFが4倍精細）</li>
+      <li data-f="export_scale">実寸スケール印刷（1:20〜1:200で出力）</li>
+      <li data-f="fixture">什器ライブラリ拡張（建築要素・設備など60点以上）</li>
+    </ul>
+    <div class="modal-actions">
+      <a class="btn ghost" href="pro.html" target="_blank" rel="noopener" onclick="trackEvent('pro_detail_click',{feature:proModalFeature})">詳しく見る</a>
+      <button class="btn pop" onclick="proceedToProPurchase()">¥1,480で購入する</button>
+    </div>
+    <p class="pro-modal-note">購入後に表示されるライセンスキーで、そのまま解放できます（同じキーで最大5台まで）。<button type="button" class="linklike" onclick="closeProModal(); focusLicenseInput();">すでにキーをお持ちの方</button></p>
+  </div>
+</div>
+
 <footer class="page-foot">
   <div class="foot-main">
     <div class="foot-logo">MF</div>
@@ -1390,14 +1435,34 @@ document.addEventListener('message', handleNativeMessage); // WebView実装差�
 // 本番のStripe決済リンク。本番モードのPayment Linkを作成したらここに入れる
 // （テストモードのリンクは公開版に置かないこと）。空のあいだはキー入力欄へ誘導する。
 const PRO_PURCHASE_URL = 'https://buy.stripe.com/cNi7sEb0eg2g7HtcOv9R600';
-function requestProPurchase(){
+let proModalFeature = 'unknown';
+const PRO_FEATURE_LABELS = {
+  free_shape:'自由形状エディタ', area_trace:'面積トレース',
+  memo_add:'メモ機能', memo_edit:'メモ機能',
+  export_scale:'実寸スケール印刷・高解像度出力'
+};
+function proFeatureLabel(feature){
+  if(feature && feature.indexOf('fixture:')===0){
+    const it = ITEM_INDEX[feature.slice(8)];
+    return it ? it.name : 'Pro什器';
+  }
+  return PRO_FEATURE_LABELS[feature] || '';
+}
+function requestProPurchase(feature){
+  const from = feature || 'unknown';
+  proModalFeature = from;
+  trackEvent('pro_lock_hit', { feature: from });
   // iOSアプリ内は必ずApple IAP経由（規約上、外部決済へ誘導しない）
   if(window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage==='function'){
     window.ReactNativeWebView.postMessage(JSON.stringify({ type:'requestPurchase' }));
     return;
   }
-  if(PRO_PURCHASE_URL){ window.open(PRO_PURCHASE_URL, '_blank', 'noopener'); return; }
-  // Web版はサイト上で購入できる。キー入力欄まで案内する
+  // いきなり決済ページを開かず、内容と価格を見せてから送る
+  if(PRO_PURCHASE_URL){ openProModal(from); return; }
+  focusLicenseInput();   // 決済リンク未設定のあいだはキー入力欄へ案内する
+}
+// Web版はサイト上で購入できる。キー入力欄まで案内する
+function focusLicenseInput(){
   const sec=document.getElementById('webProSection');
   if(sec && getComputedStyle(sec).display!=='none'){
     if(isMobile()) openDrawer();
@@ -1408,6 +1473,25 @@ function requestProPurchase(){
   }else{
     showHint('この機能は MiseFits Pro でご利用いただけます', 3500);
   }
+}
+function openProModal(feature){
+  const label = proFeatureLabel(feature);
+  const lead = document.getElementById('proModalLead');
+  if(lead) lead.textContent = label
+    ? `「${label}」は MiseFits Pro の機能です。買い切りで次のすべてが解放されます。`
+    : 'MiseFits Pro で次の機能が解放されます。';
+  // 触った機能の行だけ目立たせる（什器はキー付きで来るのでまとめる）
+  const hit = feature && feature.indexOf('fixture:')===0 ? 'fixture' : feature;
+  document.querySelectorAll('#proModalList li').forEach(li=>{
+    li.classList.toggle('hit', (li.dataset.f||'').split(' ').indexOf(hit) >= 0);
+  });
+  document.getElementById('proModalBackdrop').classList.add('show');
+}
+function closeProModal(){ document.getElementById('proModalBackdrop').classList.remove('show'); }
+function proceedToProPurchase(){
+  trackEvent('pro_buy_click', { feature: proModalFeature, location: 'app_modal' });
+  closeProModal();
+  window.open(PRO_PURCHASE_URL, '_blank', 'noopener');
 }
 
 /* ================= Web版の買い切りライセンス（MiseFits Pro・¥1,480） =================
@@ -1466,14 +1550,20 @@ function submitWebLicense(){
         try{ localStorage.setItem(WEB_LICENSE_STORAGE_KEY, key); }catch(e){}
         if(msg) msg.textContent = '';
         updateWebProUI();
+        trackEvent('license_unlock_success', { location: 'app' });
         showHint('MiseFits Proを解放しました', 3000);
       }else if(data && data.reason === 'device_limit'){
+        trackEvent('license_unlock_fail', { reason: 'device_limit', location: 'app' });
         if(msg) msg.textContent = 'このキーは上限の5台で使用中のため解放できません。端末の入れ替え（リセット）をご希望の場合はお問い合わせください。';
       }else{
+        trackEvent('license_unlock_fail', { reason: 'invalid', location: 'app' });
         if(msg) msg.textContent = '無効なキーです。入力内容をご確認ください。';
       }
     })
-    .catch(() => { if(msg) msg.textContent = '確認に失敗しました。通信環境をご確認のうえ再度お試しください。'; });
+    .catch(() => {
+      trackEvent('license_unlock_fail', { reason: 'network', location: 'app' });
+      if(msg) msg.textContent = '確認に失敗しました。通信環境をご確認のうえ再度お試しください。';
+    });
 }
 updateWebProUI();
 
@@ -1947,8 +2037,7 @@ function closeShapeModal(){
 }
 function pickShape(type){
   if(type==='free' && !isPro()){
-    showHint('自由形状エディタは Pro 機能です', 3000);
-    requestProPurchase();
+    requestProPurchase('free_shape');
     return;
   }
   if(type==='free'){
@@ -2139,14 +2228,14 @@ function makeMemo(text, color){
 }
 
 function addMemo(){
-  if(!isPro()){ requestProPurchase(); return; }
+  if(!isPro()){ requestProPurchase('memo_add'); return; }
   if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
   memoEditTarget=null;                 // null = 新規
   memoEditColor=MEMO_COLORS[0];
   openMemoEditor('');
 }
 function editMemo(o){
-  if(!isPro()){ requestProPurchase(); return; }
+  if(!isPro()){ requestProPurchase('memo_edit'); return; }
   memoEditTarget=o;
   memoEditColor=(o.data&&o.data.color)||MEMO_COLORS[0];
   openMemoEditor((o.data&&o.data.text)||'');
@@ -2237,8 +2326,7 @@ function renderMemoList(){
 function addFixture(key, pos){
   const item=ITEM_INDEX[key]; if(!item) return;
   if(item.pro && !isPro()){
-    showHint(`「${item.name}」は Pro の什器です`, 3000);
-    requestProPurchase();
+    requestProPurchase('fixture:' + key);
     return;
   }
   if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
@@ -2623,7 +2711,7 @@ function isAnnotation(o){ return isMemo(o) || isTrace(o); }
 
 function toggleTrace(){ traceMode ? endTrace(true) : startTrace(); }
 function startTrace(){
-  if(!isPro()){ showHint('面積トレースは Pro 機能です', 3000); requestProPurchase(); return; }
+  if(!isPro()){ requestProPurchase('area_trace'); return; }
   if(project.active<0){ showHint('先に図面シートを読み込んでください'); if(isMobile())closeDrawer(); return; }
   const s=activeSheet();
   if(!s.calibrated){ showHint('先に「縮尺を設定」してください。未校正のままでは面積が正しく出ません', 5000); return; }
@@ -3527,6 +3615,7 @@ function bindEvents(){
     if(e.key==='Escape'&&calMode){ endCalibration(); return; }
     if(e.key==='Escape'&&measMode){ endMeasure(); return; }
     if(e.key==='Escape'&&traceMode){ endTrace(); return; }
+    if(e.key==='Escape'&&document.getElementById('proModalBackdrop').classList.contains('show')){ closeProModal(); return; }
     if(e.key==='Escape'&&document.getElementById('memoModalBackdrop').classList.contains('show')){ closeMemoEditor(); return; }
     if(e.key==='Escape'&&shapeModalOpen){ closeShapeModal(); return; }
     // トレース中は Enter で確定できると手数が減る

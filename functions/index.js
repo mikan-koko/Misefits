@@ -4,6 +4,7 @@ const { defineSecret, defineString } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const Stripe = require('stripe');
+const nodemailer = require('nodemailer');
 
 // Web版の買い切り「MiseFits Pro」（¥1,480）のライセンスキー発行・検証API。
 // キーの発行（licenses/sessions docの作成）は stripeWebhook（Stripeの署名検証を通過した場合のみ）。
@@ -18,6 +19,15 @@ const stripeSecretKey = defineSecret('STRIPE_SECRET_KEY');
 const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
 // Price IDは秘匿情報ではないので通常のパラメータとして扱う（誤発行防止用・任意）
 const stripePriceId = defineString('STRIPE_PRICE_ID', { default: '' });
+
+// ライセンスキーの控えメール。購入完了ページを閉じてしまった人がキーを失わないようにする。
+// SMTPの接続情報は秘匿情報ではないので通常のパラメータ（functions/.env）、パスワードだけSecret。
+// SMTP_HOST / SMTP_USER / MAIL_FROM のどれかが空なら送信自体をスキップする（＝任意機能）。
+const smtpHost = defineString('SMTP_HOST', { default: '' });
+const smtpPort = defineString('SMTP_PORT', { default: '465' });
+const smtpUser = defineString('SMTP_USER', { default: '' });
+const mailFrom = defineString('MAIL_FROM', { default: '' });
+const smtpPass = defineSecret('SMTP_PASS');
 
 const ALLOWED_ORIGIN = 'https://misefits.kokokikaku.com';
 const KEY_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 0/O/1/I/L等の紛らわしい文字を除いたbase32相当
@@ -34,8 +44,56 @@ function generateLicenseKey() {
   return 'MFPRO-' + groups.join('-');
 }
 
+function licenseMailBody(key) {
+  return [
+    'MiseFits Pro をご購入いただきありがとうございます。',
+    '',
+    '■ ライセンスキー',
+    '    ' + key,
+    '',
+    '■ 解放のしかた',
+    '  1. MiseFits を開く … https://misefits.kokokikaku.com/',
+    '  2. 左サイドバーを下にスクロールして「MiseFits Pro」欄へ',
+    '  3. 上のキーを貼り付けて「解放する」を押す',
+    '',
+    '同じキーで最大5台（ブラウザ単位）まで解放できます。',
+    'このメールはキーの控えです。大切に保管してください。',
+    '',
+    '・各機能の使い方と購入ガイド … https://misefits.kokokikaku.com/pro.html',
+    '・よくある質問 … https://misefits.kokokikaku.com/faq.html',
+    '・お問い合わせ … https://kokokikaku.com/',
+    '',
+    'MiseFits（提供：ここ企画）',
+  ].join('\n');
+}
+
+// 送信できなくてもキー発行自体は成功しているので、ここで例外を投げない。
+// 結果は licenses/{key} に記録して、問い合わせ時に追えるようにする。
+async function sendLicenseMail(to, key) {
+  const host = smtpHost.value();
+  const user = smtpUser.value();
+  const from = mailFrom.value();
+  const pass = smtpPass.value();
+  if (!to || !host || !user || !from || !pass) return { sent: false, reason: 'not configured' };
+
+  const port = Number(smtpPort.value()) || 465;
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465, // 587はSTARTTLSなのでsecure:false
+    auth: { user, pass },
+  });
+  await transporter.sendMail({
+    from,
+    to,
+    subject: 'MiseFits Pro ライセンスキーのご案内',
+    text: licenseMailBody(key),
+  });
+  return { sent: true };
+}
+
 exports.stripeWebhook = onRequest(
-  { secrets: [stripeSecretKey, stripeWebhookSecret] },
+  { secrets: [stripeSecretKey, stripeWebhookSecret, smtpPass] },
   async (req, res) => {
     const stripe = new Stripe(stripeSecretKey.value());
 
@@ -82,8 +140,9 @@ exports.stripeWebhook = onRequest(
     }
 
     const key = generateLicenseKey();
+    const email = session.customer_details?.email ?? null;
     await db.collection('licenses').doc(key).set({
-      email: session.customer_details?.email ?? null,
+      email,
       sessionId: session.id,
       createdAt: FieldValue.serverTimestamp(),
     });
@@ -91,6 +150,23 @@ exports.stripeWebhook = onRequest(
       licenseKey: key,
       createdAt: FieldValue.serverTimestamp(),
     });
+
+    // キーの控えをメールで送る。失敗してもwebhookは成功扱いにする
+    // （ここで500を返すとStripeが再送し、sessionRefの重複ガードで二度と送れなくなる）。
+    try {
+      const result = await sendLicenseMail(email, key);
+      await db.collection('licenses').doc(key).update(
+        result.sent
+          ? { mailSentAt: FieldValue.serverTimestamp() }
+          : { mailSkipped: result.reason }
+      );
+    } catch (err) {
+      console.error('license mail failed', err);
+      // 記録に失敗しても200を返しきる（再送されると重複ガードで永久に送れなくなるため）
+      await db.collection('licenses').doc(key)
+        .update({ mailError: String((err && err.message) || err) })
+        .catch(() => {});
+    }
 
     res.status(200).send('ok');
   }

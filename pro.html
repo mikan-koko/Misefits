@@ -33,13 +33,31 @@
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "Product",
+      "name": "MiseFits Pro",
+      "url": "https://misefits.kokokikaku.com/pro.html",
+      "image": "https://misefits.kokokikaku.com/assets/misefits-ogp.jpg",
+      "description": "かんたん店舗レイアウトシミュレーター MiseFits に、自由形状エディタ・面積トレース・メモ機能・高解像度出力・実寸スケール印刷・什器ライブラリ拡張を追加する買い切りライセンスです。",
+      "category": "BusinessApplication",
+      "brand": { "@type": "Brand", "name": "MiseFits" },
+      "isRelatedTo": { "@type": "WebApplication", "name": "MiseFits", "url": "https://misefits.kokokikaku.com/" },
+      "offers": {
+        "@type": "Offer",
+        "price": "1480",
+        "priceCurrency": "JPY",
+        "availability": "https://schema.org/InStock",
+        "url": "https://misefits.kokokikaku.com/pro.html",
+        "seller": { "@type": "Organization", "name": "ここ企画", "url": "https://kokokikaku.com/" }
+      }
+    },
+    {
       "@type": "HowTo",
       "name": "MiseFits Proを購入して解放する手順",
       "description": "買い切り¥1,480のMiseFits Proを購入し、ライセンスキーで機能を解放するまでの手順です。",
       "inLanguage": "ja",
       "totalTime": "PT5M",
       "step": [
-        { "@type": "HowToStep", "name": "購入手続きへ進む", "text": "アプリのサイドバー「MiseFits Pro」欄から購入ページへ進みます。", "url": "https://misefits.kokokikaku.com/pro.html#buy" },
+        { "@type": "HowToStep", "name": "購入手続きへ進む", "text": "このページ、またはアプリのサイドバー「MiseFits Pro」欄の購入ボタンから、Stripeの決済ページへ進みます。", "url": "https://misefits.kokokikaku.com/pro.html#buy" },
         { "@type": "HowToStep", "name": "決済する", "text": "Stripeの安全な決済ページで、メールアドレスとカード情報を入力して支払います。", "url": "https://misefits.kokokikaku.com/pro.html#buy" },
         { "@type": "HowToStep", "name": "ライセンスキーを受け取る", "text": "決済完了後のページにライセンスキーが表示されます。コピーして大切に保管してください。", "url": "https://misefits.kokokikaku.com/pro.html#buy" },
         { "@type": "HowToStep", "name": "アプリで解放する", "text": "アプリの「MiseFits Pro」欄にキーを貼り付けて「解放する」を押すと、Pro機能が使えるようになります。", "url": "https://misefits.kokokikaku.com/pro.html#unlock" }
@@ -109,6 +127,8 @@
     border-radius:12px;padding:10px 16px;box-shadow:0 4px 12px rgba(25,33,46,.06);}
   .price-tag b{font-size:26px;letter-spacing:.01em;}
   .price-tag span{font-size:12px;color:var(--sub);font-weight:700;}
+  .buy-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px;}
+  .buy-note{font-size:12px;color:var(--sub);margin-top:9px;line-height:1.7;}
 
   .toc{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
   .toc h2{font-size:12px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
@@ -230,6 +250,14 @@
   s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);
   document.head.appendChild(s);
 })();
+/* GA4のイベント送信ヘルパー。解析が無効（ID未設定・オプトアウト・DNT）のときは何もしない。 */
+function trackEvent(name, params){
+  try{ if(typeof window.gtag==='function') window.gtag('event', name, params||{}); }catch(e){}
+}
+/* 購入ボタンのクリックを計測する。JSが動かなくてもリンク自体は機能する。 */
+function trackBuy(where){
+  trackEvent('pro_buy_click', { feature: 'pro_page', location: where || 'pro_page' });
+}
 </script>
 </head>
 <body>
@@ -254,6 +282,12 @@
     <h1>買い切り¥1,480で、検討をもう一歩「本気」に。</h1>
     <p class="lead">MiseFitsの基本機能は、これからも<strong>無料のまま</strong>使えます。MiseFits Proは、その上に<strong>自由形状エディタ・面積トレース・メモ・高解像度出力・実寸スケール印刷・什器ライブラリ拡張</strong>を追加する買い切りライセンスです。このページでは、購入からPro機能の使い方までを画面イメージ付きでまとめています。</p>
     <div class="price-tag"><b>¥1,480</b><span>買い切り・サブスクではありません／登録・ログイン不要</span></div>
+    <!-- 決済リンクは index.html の PRO_PURCHASE_URL と同じもの。変更するときは両方そろえること。 -->
+    <div class="buy-row">
+      <a class="btn" href="https://buy.stripe.com/cNi7sEb0eg2g7HtcOv9R600" onclick="trackBuy('hero')">¥1,480で購入する</a>
+      <a class="btn outline" href="#features">Proでできることを見る</a>
+    </div>
+    <p class="buy-note">決済はStripeの安全なページで行われ、カード情報が当サイトに送られることはありません。支払いが終わると、その場でライセンスキーが表示されます。</p>
   </div>
 
   <nav class="toc" aria-label="目次">
@@ -287,8 +321,11 @@
     <h2><span class="no">2</span>購入の流れ</h2>
     <p>購入はブラウザだけで完結します。アカウント登録は不要です。決済は<strong>Stripe</strong>（世界中で使われている決済サービス）の安全なページで行われ、カード情報が当サイトに送られることはありません。</p>
 
-    <h3>STEP 1　アプリの「MiseFits Pro」欄から購入ページへ</h3>
-    <p>アプリを開き、左サイドバーを下にスクロールすると「MiseFits Pro」欄があります。購入ボタンを押すと決済ページが開きます。</p>
+    <h3>STEP 1　購入ページへ進む</h3>
+    <p>このページの購入ボタンから、そのまま決済ページへ進めます。アプリ側から進むこともできます（左サイドバーを下にスクロールすると「MiseFits Pro」欄があり、同じ決済ページが開きます）。</p>
+    <div class="buy-row">
+      <a class="btn" href="https://buy.stripe.com/cNi7sEb0eg2g7HtcOv9R600" onclick="trackBuy('step1')">¥1,480で購入する</a>
+    </div>
     <div class="shot" aria-label="画面イメージ：サイドバーのMiseFits Pro欄">
       <div class="ui-panel">
         <div class="ui-h">MiseFits Pro</div>
@@ -514,7 +551,10 @@
   <div class="cta">
     <h2>まずは無料版から。必要になったらProへ。</h2>
     <p>基本機能は無料・登録不要のまま。図面の読み込みから配置・出力まで、まずはお試しください。</p>
-    <a class="btn" href="./">MiseFitsを開く</a>
+    <div class="buy-row" style="justify-content:center;">
+      <a class="btn outline" href="./">MiseFitsを開く</a>
+      <a class="btn" href="https://buy.stripe.com/cNi7sEb0eg2g7HtcOv9R600" onclick="trackBuy('footer')">¥1,480で購入する</a>
+    </div>
   </div>
 </main>
 
