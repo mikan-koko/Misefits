@@ -115,6 +115,12 @@ const project = {
 8. MiseFits としてリリース準備（ブランド・カスタムドメイン・OGP/構造化データ・ヒーロースライダー・フッター）。
 9. Undo/Redo、什器・壁への吸着ガイド、通路幅の計測ツール、席数・面積の自動集計、モバイルのクイックパーツバーを追加。
 10. iOSアプリ化（`mobile/` に Expo + WebView ラッパーを追加）に向けて、ネイティブ連携フックを追加。
+11. 課金ファネルの計測と導線整備（2026-09-01）。GA4にイベントを追加（`pro_lock_hit` / `pro_buy_click` /
+    `pro_detail_click` / `license_unlock_success` / `license_unlock_fail` / `purchase`）、`pro.html` に実購入
+    ボタンを設置、ロック機能から決済ページへ直行させず購入前モーダルを挟む形に変更、購入完了ページに
+    ワンクリック解放を追加、`stripeWebhook` からライセンスキーの控えメールを送信。
+12. 集客用の静的ページを追加（2026-09-01）：`layout-restaurant.html` / `layout-salon.html` /
+    `layout-classroom.html` / `aisle-width.html`。`guide.html` の `#bytype` から相互にリンク。
 
 ## ネイティブアプリ連携（Pro機能・iOSアプリ向け）
 
@@ -375,7 +381,11 @@ MiseFitsは公開以来ずっと透かし無しで出力できていたため、
 ## 静的ページとアクセス解析
 
 - `guide.html`（使い方）・`privacy.html`（プライバシー/免責）・`404.html` は、それぞれ単体で完結した静的HTML。CSSはインライン、外部スクリプトはGAローダーのみ。
-- GAローダーは4ファイルに同一のものを配置。`GA_ID` が空なら何も読み込まない。`misefitsAnalyticsOptOut`（localStorage）と Do Not Track を尊重し、`privacy.html` に切り替えUIがある。CSPは `www.googletagmanager.com` / `*.google-analytics.com` を許可済み（テスト用IDで読み込み・collect ともに違反ゼロを確認済み）。
+- 2026-09-01 に集客用の静的ページを追加：`layout-restaurant.html` / `layout-salon.html` /
+  `layout-classroom.html`（業種別）と `aisle-width.html`（寸法）。同じ作りで、構造化データは
+  `Article` + `FAQPage` + `BreadcrumbList`。**寸法表の数値は `index.html` の `LIBRARY` の実データが出典**
+  なので、什器を増やしたり寸法を変えたら該当ページの表も直す。詳しい方針は AGENTS.md を参照。
+- GAローダーは公開している全HTMLに同一のものを配置（`pro-unlock.html` を含む。購入完了の計測に必要）。`GA_ID` が空なら何も読み込まない。`misefitsAnalyticsOptOut`（localStorage）と Do Not Track を尊重し、`privacy.html` に切り替えUIがある。CSPは `www.googletagmanager.com` / `*.google-analytics.com` を許可済み（テスト用IDで読み込み・collect ともに違反ゼロを確認済み）。
 - アプリのフッターはシェルの一部として常時表示。スマホでは1行（約45px）に圧縮し、説明文と免責文は `privacy.html` に集約している。
 
 ## 白紙シートの形状（矩形／L字／コの字）
