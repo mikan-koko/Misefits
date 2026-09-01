@@ -62,16 +62,19 @@ firebase.json / firestore.rules / firestore.indexes.json … 上記Functionsの�
   ハードコードしている：`https://us-central1-misefits.cloudfunctions.net`（Firebaseプロジェクト
   `misefits`、2026-08-26作成・Blazeプラン・Firestore作成済み）。詳細は HANDOFF.md「Web版での買い切り販売」を参照。
 - **ライセンスキーの控えメール**：`stripeWebhook` がキー発行後に `sendLicenseMail()` で購入者へ送る。
-  設定は `functions/.env`（`SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `MAIL_FROM`）＋ Secret Manager の
-  `SMTP_PASS`。雛形は `functions/.env.example`。**どれかが空のあいだは送信をスキップする**ので、
+  設定は `functions/.env`（`SMTP_HOST` / `SMTP_PORT` のみ）＋ Secret Manager の
+  `SMTP_USER` / `MAIL_FROM` / `SMTP_PASS`。**このリポジトリは公開なので、メールアドレスを `.env` に
+  書かないこと**（差出人アドレスもSecret側に置いている理由）。**どれかが空のあいだは送信をスキップする**ので、
   未設定でもキー発行は通常どおり動く。送信失敗でwebhookを落とすとStripeが再送し、
   `sessions/{id}` の重複ガードで二度と送れなくなるため、**メールの例外は握りつぶして200を返す**設計。
   結果は `licenses/{key}` の `mailSentAt` / `mailSkipped` / `mailError` に残るので問い合わせ時に追える。
   設定手順：
 
   ```bash
-  cp functions/.env.example functions/.env   # 値を埋める（パスワードは書かない）
-  firebase functions:secrets:set SMTP_PASS   # Googleアプリパスワード等
+  # functions/.env はリポジトリに存在する（STRIPE_PRICE_ID が入っている）。上書きせず追記すること。
+  firebase functions:secrets:set SMTP_USER   # 例: studio@kokokikaku.com
+  firebase functions:secrets:set MAIL_FROM   # 例: MiseFits <studio@kokokikaku.com>
+  firebase functions:secrets:set SMTP_PASS   # Googleアプリパスワード
   firebase deploy --only functions
   ```
 

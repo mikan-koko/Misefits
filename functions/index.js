@@ -21,12 +21,14 @@ const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
 const stripePriceId = defineString('STRIPE_PRICE_ID', { default: '' });
 
 // ライセンスキーの控えメール。購入完了ページを閉じてしまった人がキーを失わないようにする。
-// SMTPの接続情報は秘匿情報ではないので通常のパラメータ（functions/.env）、パスワードだけSecret。
-// SMTP_HOST / SMTP_USER / MAIL_FROM のどれかが空なら送信自体をスキップする（＝任意機能）。
+// ホスト名とポートは非個人情報なので通常のパラメータ（functions/.env）。
+// 差出人アドレスとパスワードはSecret Manager に置く（このリポジトリは公開なので、
+// メールアドレスを .env に書くとスパム収集の対象になる）。
+// SMTP_HOST / SMTP_USER / MAIL_FROM / SMTP_PASS のどれかが空なら送信自体をスキップする（＝任意機能）。
 const smtpHost = defineString('SMTP_HOST', { default: '' });
 const smtpPort = defineString('SMTP_PORT', { default: '465' });
-const smtpUser = defineString('SMTP_USER', { default: '' });
-const mailFrom = defineString('MAIL_FROM', { default: '' });
+const smtpUser = defineSecret('SMTP_USER');
+const mailFrom = defineSecret('MAIL_FROM');
 const smtpPass = defineSecret('SMTP_PASS');
 
 const ALLOWED_ORIGIN = 'https://misefits.kokokikaku.com';
@@ -93,7 +95,7 @@ async function sendLicenseMail(to, key) {
 }
 
 exports.stripeWebhook = onRequest(
-  { secrets: [stripeSecretKey, stripeWebhookSecret, smtpPass] },
+  { secrets: [stripeSecretKey, stripeWebhookSecret, smtpUser, mailFrom, smtpPass] },
   async (req, res) => {
     const stripe = new Stripe(stripeSecretKey.value());
 
