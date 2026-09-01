@@ -28,7 +28,10 @@ const stripeSecretKey = defineSecret('STRIPE_SECRET_KEY_MENUFITS');
 const menufitsWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET_MENUFITS'); // 署名シークレットは別物
 const menufitsPriceId = defineString('STRIPE_PRICE_ID_MENUFITS', { default: '' });
 
-// メール送信は MiseFits と同じSMTP設定を使う（差出人も同じ「ここ企画」）
+// メール送信は MiseFits と同じSMTP設定を使う。ただし **差出人の表示名は差し替える**。
+// MAIL_FROM は `MiseFits <studio@kokokikaku.com>` のように MiseFits 名義で入っているので、
+// そのまま使うと MenuFits の購入者に「MiseFits」から届いてしまう。
+// アドレスだけ取り出して MenuFits 名義に組み直す（シークレットは増やさない）。
 const smtpHost = defineString('SMTP_HOST', { default: '' });
 const smtpPort = defineString('SMTP_PORT', { default: '465' });
 const smtpUser = defineSecret('SMTP_USER');
@@ -75,6 +78,14 @@ function licenseMailBody(key) {
   ].join('\n');
 }
 
+// MAIL_FROM からメールアドレスだけを取り出し、MenuFits 名義に組み直す。
+// `Name <addr@example.com>` でも `addr@example.com` でも動く。
+function menufitsFrom(raw) {
+  const m = String(raw || '').match(/<([^>]+)>/);
+  const addr = (m ? m[1] : String(raw || '')).trim();
+  return addr ? 'MenuFits <' + addr + '>' : raw;
+}
+
 // 送信できなくてもキーの発行自体は成功しているので、ここで例外を投げない。
 // 結果は licenses ドキュメントに残して、問い合わせ時に追えるようにする。
 async function sendLicenseMail(to, key) {
@@ -92,7 +103,7 @@ async function sendLicenseMail(to, key) {
     auth: { user, pass },
   });
   await transporter.sendMail({
-    from,
+    from: menufitsFrom(from),
     to,
     subject: 'MenuFits Pro ライセンスキーのご案内',
     text: licenseMailBody(key),
