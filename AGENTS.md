@@ -24,6 +24,11 @@
 ```
 index.html      … 本番アプリ（公開版・単一ファイル）。ここを編集する。
 guide.html      … 使い方ガイド（静的ページ。HowTo/FAQPage の構造化データ入り）。
+                  末尾の「業種別・寸法別のガイド」から下記の集客ページへ送っている。
+layout-restaurant.html … 業種別ガイド：飲食店・カフェ。
+layout-salon.html      … 業種別ガイド：美容室・サロン。
+layout-classroom.html  … 業種別ガイド：学習塾・教室・オフィス。
+aisle-width.html       … 寸法ガイド：通路幅と什器のすき間。
 privacy.html    … プライバシーポリシー・免責事項（解析のオプトアウトUIを含む）。
 pro-unlock.html … 買い切りStripe決済後のリダイレクト先（ライセンスキー表示）。
 404.html        … カスタム404（GitHub Pages が自動で使用）。
@@ -56,13 +61,78 @@ firebase.json / firestore.rules / firestore.indexes.json … 上記Functionsの�
 - `index.html`・`pro-unlock.html` はこのFunctionsのURLを`FUNCTIONS_BASE`定数とCSPの`connect-src`に
   ハードコードしている：`https://us-central1-misefits.cloudfunctions.net`（Firebaseプロジェクト
   `misefits`、2026-08-26作成・Blazeプラン・Firestore作成済み）。詳細は HANDOFF.md「Web版での買い切り販売」を参照。
+- **ライセンスキーの控えメール**：`stripeWebhook` がキー発行後に `sendLicenseMail()` で購入者へ送る。
+  設定は `functions/.env`（`SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `MAIL_FROM`）＋ Secret Manager の
+  `SMTP_PASS`。雛形は `functions/.env.example`。**どれかが空のあいだは送信をスキップする**ので、
+  未設定でもキー発行は通常どおり動く。送信失敗でwebhookを落とすとStripeが再送し、
+  `sessions/{id}` の重複ガードで二度と送れなくなるため、**メールの例外は握りつぶして200を返す**設計。
+  結果は `licenses/{key}` の `mailSentAt` / `mailSkipped` / `mailError` に残るので問い合わせ時に追える。
+  設定手順：
+
+  ```bash
+  cp functions/.env.example functions/.env   # 値を埋める（パスワードは書かない）
+  firebase functions:secrets:set SMTP_PASS   # Googleアプリパスワード等
+  firebase deploy --only functions
+  ```
 
 ### アクセス解析（GA4）
 
-`index.html` / `guide.html` / `privacy.html` / `404.html` の `<head>` に同じローダーが入っている。
-`var GA_ID = '';` に測定ID（`G-XXXXXXXXXX`）を入れると有効になる。**4ファイルすべてを同じIDに揃えること。**
+公開している全HTML（`index.html` / `guide.html` / `pro.html` / `pro-unlock.html` / `faq.html` /
+`releases.html` / `privacy.html` / `tokushoho.html` / `404.html`）の `<head>` に同じローダーが入っている。
+`var GA_ID = '';` に測定ID（`G-XXXXXXXXXX`）を入れると有効になる。**全ファイルを同じIDに揃えること。**
 IDが空のあいだは外部への通信は一切発生しない。オプトアウト（localStorage の `misefitsAnalyticsOptOut`）と
 Do Not Track を尊重する実装で、`privacy.html` に切り替えUIがある。CSPは既にGAのドメインを許可済み。
+
+#### 集客ページ（業種別ガイド・寸法ガイド）
+
+`layout-*.html` と `aisle-width.html` は、検索から入ってきた人を `/` へ送るための入口。
+アプリ本体（`/`）は索引対象のテキストが少ないので、**検索の受け皿はこちら側で作る**という分担。
+
+- **構成は4ページとも共通**：ヒーロー → 目次 → 考え方 → 什器の寸法表 → MiseFitsでの手順 →
+  つまずきやすいところ → FAQ → 関連ページ → CTA。構造化データは `Article` + `FAQPage` + `BreadcrumbList`。
+- **寸法は必ず `index.html` の `LIBRARY` の実データから引く。** 数字を創作しない。
+  什器を足したり寸法を変えたら、該当ページの表も直すこと。
+- **法令の断定を書かない。** 通路幅・避難経路・保健所の基準は業態と物件で変わる。
+  「目安」「検討の出発点」と明示し、最終判断は建築士・施工会社・所轄の窓口へ、と必ず添える
+  （各ページのフッター `legalnote` に共通の免責を置いてある）。
+- ページを増やすときは、**`guide.html` の `#bytype` にカードを追加し、`sitemap.xml` にも登録する。**
+  既存ページの「関連ページ」ブロックにも相互リンクを足す。
+- 中身の薄い業種ページを量産しない。1ページあたり本文2,500〜3,500字程度（空白除く）を目安に、
+  その業種でしか書けないこと（決める順番・つまずき方）を必ず入れる。
+
+#### 課金導線（Pro）の作り
+
+- **ロック機能に当たったら、決済ページへ直行させない。** `requestProPurchase(feature)` は
+  購入前モーダル（`#proModalBackdrop`）を開く。触った機能名・¥1,480・買い切りである点・解放される
+  6機能を見せてから `proceedToProPurchase()` でStripeへ送る。iOSアプリ内（`ReactNativeWebView`）は
+  従来どおりApple IAPへのpostMessageで、モーダルは出さない。
+- Pro機能を増やしたら、**ロック地点から `requestProPurchase('<feature名>')` を呼び、
+  モーダルの `#proModalList` に `data-f="<feature名>"` の行を足す**（触った行が太字になる）。
+  `PRO_FEATURE_LABELS` にも表示名を足すとモーダル冒頭の文が具体的になる。
+- 決済リンク `PRO_PURCHASE_URL` は `index.html` と `pro.html`（購入ボタン3か所のhref）に
+  ハードコードされている。**変更時は両方そろえること。**
+- `pro.html` は検索・SNSからの着地点でもあるので、**必ずそのページ単体で購入まで完結できる状態を保つ**
+  （ヒーロー・購入の流れ・最下部の3か所に購入ボタン）。
+
+#### 課金ファネルのイベント
+
+`index.html` / `pro.html` / `pro-unlock.html` はローダー直後に `trackEvent(name, params)` を定義している。
+解析が無効（ID未設定・オプトアウト・DNT）なら何もしない安全なラッパーなので、計測を足すときはこれを使う。
+現在送っているイベントは次の5つ。**GA4の管理画面側でキーイベント（コンバージョン）に指定するのは `purchase`。**
+
+| イベント | 送る場所 | 主なパラメータ |
+|---|---|---|
+| `pro_lock_hit` | `requestProPurchase()`（Pro機能に当たった瞬間） | `feature`（`free_shape` / `area_trace` / `memo_add` / `memo_edit` / `export_scale` / `fixture:<key>` / `sidebar`） |
+| `pro_buy_click` | 決済リンクを開く直前 | `feature`, `location`（`app_modal` / `hero` / `step1` / `footer`） |
+| `pro_detail_click` | 購入モーダルの「詳しく見る」 | `feature` |
+| `license_unlock_success` / `license_unlock_fail` | キー検証の成否（アプリのサイドバーと購入完了ページ） | `location`（`app` / `pro_unlock`）, `reason`（`invalid` / `device_limit` / `network`） |
+| `purchase` | `pro-unlock.html` でキーを表示できたとき | `transaction_id`（Stripeのsession_id）, `value:1480`, `currency:'JPY'`, `items` |
+
+`pro_lock_hit` と `pro_buy_click` の差が「モーダルまで来たが買わなかった数」になる。
+`feature` を見ればどのPro機能が購入意欲を生んでいるかが分かるので、機能追加時は必ず `feature` を渡すこと。
+
+`purchase` はリロードでの二重計上を防ぐため、`localStorage` の `misefitsPurchaseTracked:<session_id>` で
+1回だけ送るようにしている。
 
 ### 「サンプル入り版」について（重要・混同注意）
 - 開発とは別に、内蔵サンプル図面（1〜3階の平面図PNGをbase64で埋め込んだ）版が存在するが、**それはクライアントの図面のため公開リポジトリには含めない**。
