@@ -29,6 +29,7 @@ layout-restaurant.html … 業種別ガイド：飲食店・カフェ。
 layout-salon.html      … 業種別ガイド：美容室・サロン。
 layout-classroom.html  … 業種別ガイド：学習塾・教室・オフィス。
 aisle-width.html       … 寸法ガイド：通路幅と什器のすき間。
+fixture-sizes.html     … 什器・設備の寸法一覧（LIBRARY から自動生成。手で数値を書かない）。
 privacy.html    … プライバシーポリシー・免責事項（解析のオプトアウトUIを含む）。
 pro-unlock.html … 買い切りStripe決済後のリダイレクト先（ライセンスキー表示）。
 404.html        … カスタム404（GitHub Pages が自動で使用）。
@@ -95,6 +96,9 @@ Do Not Track を尊重する実装で、`privacy.html` に切り替えUIがあ�
   つまずきやすいところ → FAQ → 関連ページ → CTA。構造化データは `Article` + `FAQPage` + `BreadcrumbList`。
 - **寸法は必ず `index.html` の `LIBRARY` の実データから引く。** 数字を創作しない。
   什器を足したり寸法を変えたら、該当ページの表も直すこと。
+  `fixture-sizes.html` は **`LIBRARY` から機械的に生成した全138点の一覧**で、他社が持っていない
+  独自データがそのまま資産になる。什器を増減したらこのページを作り直すこと（手編集しない）。
+  カテゴリごとの解説文だけは人が書いている。
 - **法令の断定を書かない。** 通路幅・避難経路・保健所の基準は業態と物件で変わる。
   「目安」「検討の出発点」と明示し、最終判断は建築士・施工会社・所轄の窓口へ、と必ず添える
   （各ページのフッター `legalnote` に共通の免責を置いてある）。
