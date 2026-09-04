@@ -104,7 +104,29 @@ MiseFits とは別売りだが**同じStripeアカウント・同じFunctions**�
   firebase functions:secrets:get STRIPE_WEBHOOK_SECRET_MENUFITS
   ```
 
-  更新日時が Price ID の切替日より古ければ、まだサンドボックスの鍵の可能性が高い。
+  ただし**このコマンドは作成日時を出さない**（バージョン番号と状態だけ）。日時が要るなら
+  Secret Manager のコンソールを見る。
+
+**`secrets:set` だけでは反映されない。必ずデプロイする。** Firebase はデプロイ時に
+「その時点の最新バージョン」を解決して関数に固定するため、`set` で新しいバージョンを作っても
+デプロイしない限り古いバージョンが使われ続ける。
+
+```bash
+firebase functions:secrets:set STRIPE_SECRET_KEY_MENUFITS --project misefits
+firebase deploy --only functions:menufitsStripeWebhook --project misefits   # ← これを忘れない
+```
+
+反映確認は監査ログで見る。`secretEnvironmentVariables` にデプロイ時点のバージョン番号が残る。
+
+```bash
+firebase functions:log --only menufitsStripeWebhook --project misefits
+```
+
+**2026-09-04 時点の実測**：`STRIPE_SECRET_KEY_MENUFITS` はバージョンが3つあるのに、
+動いている関数は **v2** に固定されていた（最後のデプロイが 2026-09-01 11:42 UTC で、v3 はその後に作られた）。
+`STRIPE_WEBHOOK_SECRET_MENUFITS` は同日に v2→v3→v4 と7分間で3回差し替えられており、
+署名検証で難儀した形跡がある。MenuFits はまだ販売実績ゼロなので実害は出ていないが、
+**最初の購入が来る前に、Stripeのライブ画面から鍵を取り直して set→deploy し、テスト購入で通すこと。**
 
 ### アクセス解析（GA4）
 
