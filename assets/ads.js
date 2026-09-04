@@ -1,35 +1,63 @@
-/* MiseFits 広告スロット（もしもアフィリエイト / A8.net 兼用）
+/* MiseFits 広告スロット（A8.net / もしもアフィリエイト 兼用）
  *
- * 使い方は3ステップ。ASPを決めていないあいだは AD_TAGS が空なので、
- * 広告枠は DOM ごと消える（外部への通信もラベル表示も一切発生しない）。
+ * ASPのタグを貼るまでは AD_TAGS が空なので、広告枠は DOM ごと消える
+ * （外部への通信もラベル表示も一切発生しない）。残りの作業は2つだけ。
  *
  *  1. 下の AD_TAGS に、ASPの管理画面からコピーしたタグをそのまま貼る。
- *  2. 貼ったタグが読む外部ドメインを、掲載ページの CSP に追記する（下の表を参照）。
- *  3. 反映後、実際に広告が出ているページで DevTools の Console に
+ *  2. 実際に広告が出ているページで DevTools の Console に
  *     CSP 違反が出ていないことを確認する。
  *
- * CSP に足す必要があるドメイン（ASPごと）:
- *   A8.net          img-src  https://www2*.a8.net https://www.a8.net https://px.a8.net
- *                            ※バナーは <a>+<img> だけなので img-src の追記で足りる
- *   もしもアフィリエイト  script-src https://af.moshimo.com
- *                            img-src  https://image.moshimo.com https://i.moshimo.com
- *                                     https://m.media-amazon.com https://thumbnail.image.rakuten.co.jp
- *                            ※「かんたんリンク」は JS で商品画像を差し込むので許可範囲が広くなる
+ * CSP は A8.net 向け（img-src https://*.a8.net）を掲載8ページに追記済み。
+ * もしもアフィリエイトの「かんたんリンク」を使う場合は、JS で商品画像を差し込むため
+ * 追加で script-src https://af.moshimo.com と
+ * img-src https://image.moshimo.com https://i.moshimo.com https://m.media-amazon.com
+ *         https://thumbnail.image.rakuten.co.jp が必要になる。
  *
  * 掲載面のルール（AGENTS.md にも記載）:
- *   - 出すのは集客ページ（layout-* / aisle-width / fixture-sizes / guide / faq）だけ。
+ *   - 出すのは集客ページ（madori-2d / layout-* / aisle-width / fixture-sizes / guide / faq）だけ。
  *     アプリ本体（/）と課金導線（pro.html / pro-unlock.html）には出さない。
  *   - Proライセンスを持っている人には出さない（下の isProUser）。
- *   - 「広告」ラベルを必ず併記する（景品表示法のステマ規制対応）。ラベルはこのファイルが自動で付ける。
+ *   - 「広告」ラベルを必ず併記する（景品表示法のステマ規制対応、およびA8の広告表示義務）。
+ *     ラベルはこのファイルが自動で付けるので、ページ側に書く必要はない。
  */
 (function(){
   'use strict';
 
-  /* ===== ここにASPのタグを貼る（貼るまでは広告枠は出ない） ===== */
+  /* ===== ここにASPのタグを貼る（貼るまでは広告枠は出ない） =====
+     キーは「どの広告主か」。A8の広告リンク生成で、掲載サイトに MiseFits を
+     選んでから出力したタグを、そのまま文字列として貼ること。 */
   var AD_TAGS = {
-    /* 記事末尾（関連ページの手前）。全集客ページ共通。 */
-    'article-bottom': ''
+    /* 家具350（株式会社イーナ／提携済み）… 住まい寄りの madori-2d 用 */
+    'kagu350': '',
+    /* オフィスコム（オフィス家具通販）… 店舗・オフィス什器の文脈が近い集客ページ用 */
+    'officecom': ''
   };
+
+  /* どのページのどの枠に、どの広告主を出すか。
+     キーはページのファイル名、'default' は指定のないページ。
+     ページ側は <div data-ad="article-bottom"></div> のままでよく、
+     出し分けはここだけで変えられる。 */
+  var SLOTS = {
+    'article-bottom': {
+      'madori-2d.html': 'kagu350',
+      'default': 'officecom'
+    }
+  };
+
+  function pageKey(){
+    try{
+      var last = location.pathname.split('/').pop();
+      return last || 'index.html';
+    }catch(e){ return 'index.html'; }
+  }
+
+  /* 枠名 → 実際に差し込むタグHTML（該当なしなら空文字） */
+  function tagForSlot(slot){
+    var plan = SLOTS[slot];
+    if(!plan) return '';
+    var key = plan[pageKey()] || plan['default'];
+    return (key && AD_TAGS[key]) || '';
+  }
 
   /* 広告を出すときだけ privacy.html に差し込む説明文。
      タグが空のあいだは「広告は出していない」が事実なので、何も表示しない。 */
@@ -83,7 +111,7 @@
 
     for(var i = slots.length - 1; i >= 0; i--){
       var el = slots[i];
-      var html = AD_TAGS[el.getAttribute('data-ad')] || '';
+      var html = tagForSlot(el.getAttribute('data-ad'));
       if(!live || !html){ drop(el); continue; }
       el.className = (el.className ? el.className + ' ' : '') + 'ad-slot';
       var label = document.createElement('span');
