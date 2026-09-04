@@ -81,6 +81,31 @@ firebase.json / firestore.rules / firestore.indexes.json … 上記Functionsの�
   firebase deploy --only functions
   ```
 
+#### MenuFits の販売（`functions/menufits.js`）— サンドボックス混入に注意
+
+MiseFits とは別売りだが**同じStripeアカウント・同じFunctions**に同居している。そのため
+`STRIPE_PRICE_ID_MENUFITS` による Price ID の一致判定が「念のため」ではなく**必須の切り分け**になる。
+
+**ここが無音で壊れる。** webhook は Price ID が一致しない決済を
+`res.status(200).send('ignored (unrelated price)')` で捨てる。200を返すので
+**Stripeは成功扱いにして再送しない**。つまりサンドボックスのPrice IDが載ったままライブ販売を始めると、
+購入は成立するのにライセンスが発行されず、エラーもアラートも出ない。
+
+- `STRIPE_PRICE_ID_MENUFITS` は `defineString` で、**デプロイ時に `functions/.env` から読まれる**。
+  `.env` の変更をコミットし忘れると、クリーンなチェックアウトからのデプロイで
+  サンドボックスのIDに戻る（2026-09-01の切替が2026-09-04まで未コミットで残っていた）。
+- Price ID を**空**にすると素通しになる（`if (priceId)` を通らない）。誤ったIDより空のほうがまだマシ、
+  という非直感的な挙動なので、切り替え時は必ず値を確認すること。
+- 鍵2件（`STRIPE_SECRET_KEY_MENUFITS` / `STRIPE_WEBHOOK_SECRET_MENUFITS`）は Secret Manager 側なので
+  `.env` を直しても連動しない。**別々に差し替える**。サンドボックスの鍵ではライブのセッションを読めない。
+
+  ```bash
+  firebase functions:secrets:get STRIPE_SECRET_KEY_MENUFITS      # メタ情報のみ（値は出ない）
+  firebase functions:secrets:get STRIPE_WEBHOOK_SECRET_MENUFITS
+  ```
+
+  更新日時が Price ID の切替日より古ければ、まだサンドボックスの鍵の可能性が高い。
+
 ### アクセス解析（GA4）
 
 公開している全HTML（`index.html` / `guide.html` / `pro.html` / `pro-unlock.html` / `faq.html` /
