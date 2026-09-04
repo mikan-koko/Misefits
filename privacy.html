@@ -111,6 +111,7 @@
   document.head.appendChild(s);
 })();
 </script>
+<script src="assets/ads.js" defer></script>
 </head>
 <body>
 <header class="page-top">
@@ -186,6 +187,8 @@
       </table>
     </div>
     <p style="margin-top:10px;">読み込んだ図面やレイアウトデータが、これらのサービスへ送信されることはありません。</p>
+    <!-- 広告を掲載しているあいだだけ、assets/ads.js が説明文を差し込む。掲載していない間は枠ごと消える。 -->
+    <div data-ad-disclosure></div>
   </section>
 
   <section id="pro">

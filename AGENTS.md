@@ -29,11 +29,13 @@ layout-restaurant.html … 業種別ガイド：飲食店・カフェ。
 layout-salon.html      … 業種別ガイド：美容室・サロン。
 layout-classroom.html  … 業種別ガイド：学習塾・教室・オフィス。
 aisle-width.html       … 寸法ガイド：通路幅と什器のすき間。
+madori-2d.html         … 集客ページ：2Dの間取りシミュレーション（幅×奥行きだけで検討する層向け）。
 fixture-sizes.html     … 什器・設備の寸法一覧（LIBRARY から自動生成。手で数値を書かない）。
 privacy.html    … プライバシーポリシー・免責事項（解析のオプトアウトUIを含む）。
 pro-unlock.html … 買い切りStripe決済後のリダイレクト先（ライセンスキー表示）。
 404.html        … カスタム404（GitHub Pages が自動で使用）。
 assets/         … ブランド画像（WebP/PNG）とOGP画像。
+assets/ads.js   … アフィリエイト広告枠（もしも/A8兼用）。タグ未設定のあいだは枠ごと消える。
 manifest.webmanifest / robots.txt / sitemap.xml / CNAME
 README.md       … 利用者向けの使い方・公開手順。
 AGENTS.md       … 本ファイル。
@@ -89,8 +91,19 @@ Do Not Track を尊重する実装で、`privacy.html` に切り替えUIがあ�
 
 #### 集客ページ（業種別ガイド・寸法ガイド）
 
-`layout-*.html` と `aisle-width.html` は、検索から入ってきた人を `/` へ送るための入口。
+`layout-*.html` / `aisle-width.html` / `madori-2d.html` は、検索から入ってきた人を `/` へ送るための入口。
 アプリ本体（`/`）は索引対象のテキストが少ないので、**検索の受け皿はこちら側で作る**という分担。
+
+**狙っている検索意図は2系統ある。混ぜないこと。**
+
+| 系統 | 受け皿 | 主なワード |
+|---|---|---|
+| 店舗・施設をつくる人 | `layout-*` / `aisle-width` / `fixture-sizes` | 店舗レイアウト、通路幅、什器 寸法 |
+| 部屋の配置を考えたい人 | `madori-2d.html` | 間取り シミュレーション、2D 間取り、家具配置、幅 奥行き |
+
+`madori-2d.html` は「3Dも図面ソフトも要らない」を軸に、**畳数→mmの換算**と**家具の実寸**で受ける。
+トップ（`/`）の `title` / `description` / JSON-LD にも2D・間取り・無料・登録不要を入れてあるが、
+**店舗レイアウトの看板は外さない**（既存の順位を落とさないため、トップは両取りの位置づけ）。
 
 - **構成は4ページとも共通**：ヒーロー → 目次 → 考え方 → 什器の寸法表 → MiseFitsでの手順 →
   つまずきやすいところ → FAQ → 関連ページ → CTA。構造化データは `Article` + `FAQPage` + `BreadcrumbList`。
@@ -106,6 +119,30 @@ Do Not Track を尊重する実装で、`privacy.html` に切り替えUIがあ�
   既存ページの「関連ページ」ブロックにも相互リンクを足す。
 - 中身の薄い業種ページを量産しない。1ページあたり本文2,500〜3,500字程度（空白除く）を目安に、
   その業種でしか書けないこと（決める順番・つまずき方）を必ず入れる。
+
+#### アフィリエイト広告（assets/ads.js）
+
+**2026-09-04時点では未稼働。** `assets/ads.js` の `AD_TAGS` が空なので、広告枠は DOM ごと削除され、
+外部への通信もラベル表示も発生しない。ASP（もしもアフィリエイト／A8.net）を決めたら次の3つを行う。
+
+1. `AD_TAGS['article-bottom']` に、ASPの管理画面からコピーしたタグをそのまま貼る。
+2. そのタグが読む外部ドメインを、**掲載している全ページの CSP に追記する**
+   （A8は `img-src` だけで足りる／もしものかんたんリンクは `script-src` も要る。詳細は `ads.js` 冒頭のコメント）。
+3. 実際に広告が出ているページで、DevTools の Console に CSP 違反が出ていないことを確認する。
+
+**掲載のルール。**
+
+- 出すのは**集客ページだけ**（`layout-*` / `aisle-width` / `fixture-sizes` / `madori-2d` / `guide` / `faq`）。
+  **アプリ本体（`/`）と課金導線（`pro.html` / `pro-unlock.html`）には出さない。**
+  ツールの信頼と ¥1,480 の買い切りの価値を下げないため。
+- **Proライセンスを持っている人には出さない。** 判定は `index.html` の `isPro()` と同じで、
+  `window.MiseFitsNative.pro` と localStorage の `misefitsWebLicense` を見る。
+- **「広告」ラベルを必ず併記する**（景品表示法のステマ規制対応）。`ads.js` が自動で付けるので、
+  ページ側に書く必要はない。逆に、`ads.js` を通さずに素のタグを直書きしないこと。
+- `privacy.html` の「3. 外部サービスの利用」に `<div data-ad-disclosure></div>` を置いてある。
+  タグを設定した瞬間に説明文が入り、外すと消える。**掲載状況と記載が自動で一致する**ので、
+  ここを手で書き換えないこと。
+- 枠を増やすときは `AD_TAGS` にキーを足し、ページ側に `<div data-ad="<キー>"></div>` を置く。
 
 #### 課金導線（Pro）の作り
 

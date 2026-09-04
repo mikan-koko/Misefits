@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>間取りシミュレーションを2Dで。幅と奥行きを入れるだけの無料ツール | MiseFits</title>
+<meta name="description" content="3Dも図面ソフトも使わず、部屋の幅と奥行き(mm)を入れるだけで間取りとレイアウトを検討する方法。畳数からmmへの換算表、家具の実寸一覧、ブラウザだけで完結する無料・登録不要の2D間取りシミュレーターの使い方をまとめました。">
+<meta name="keywords" content="間取り シミュレーション,2D 間取り,間取り 作成 無料,レイアウト シミュレーション,家具配置 シミュレーション,部屋 レイアウト,幅 奥行き,登録不要,インストール不要,MiseFits">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://misefits.kokokikaku.com/madori-2d.html">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com; font-src 'self' data:; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="MiseFits">
+<meta property="og:title" content="間取りシミュレーションを2Dで。幅と奥行きを入れるだけ | MiseFits">
+<meta property="og:description" content="3Dは使わない。部屋の幅と奥行きをmmで入れて、家具を実寸で置いて、通れるかを測る。無料・登録不要でブラウザだけで完結します。">
+<meta property="og:url" content="https://misefits.kokokikaku.com/madori-2d.html">
+<meta property="og:image" content="https://misefits.kokokikaku.com/assets/misefits-ogp.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="間取りシミュレーションを2Dで。幅と奥行きを入れるだけ | MiseFits">
+<meta name="twitter:description" content="3Dは使わない。幅と奥行きをmmで入れて、家具を実寸で置いて、通れるかを測る。無料・登録不要。">
+<meta name="twitter:image" content="https://misefits.kokokikaku.com/assets/misefits-ogp.jpg">
+<meta name="theme-color" content="#0066cc">
+<link rel="icon" href="assets/misefits-favicon.png">
+<link rel="apple-touch-icon" href="assets/misefits-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "間取りシミュレーションを2Dで。幅と奥行きを入れるだけ",
+      "description": "3Dも図面ソフトも使わず、部屋の幅と奥行き(mm)を入れるだけで間取りとレイアウトを検討する方法。畳数からmmへの換算表、家具の実寸一覧、ブラウザだけで完結する無料・登録不要の2D間取りシミュレーターの使い方。",
+      "inLanguage": "ja",
+      "mainEntityOfPage": "https://misefits.kokokikaku.com/madori-2d.html",
+      "image": "https://misefits.kokokikaku.com/assets/misefits-ogp.jpg",
+      "author": {
+        "@type": "Organization",
+        "name": "ここ企画",
+        "url": "https://kokokikaku.com/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "ここ企画",
+        "url": "https://kokokikaku.com/"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "間取りのシミュレーションに3Dは必要ですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "「置けるか」「通れるか」を確かめたいだけなら不要です。家具が入るかどうかは、真上から見た幅と奥行きの取り合いでほぼ決まります。3Dが効くのは、吊り棚の下を人が通れるか、梁でベッドの頭側が下がらないか、といった高さが絡む場面です。まず2Dで平面を決めて、高さが気になる箇所だけ実測で確認するほうが早く終わります。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "図面がなくても間取りを検討できますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "できます。MiseFitsの「白紙から」を選び、部屋の横幅W(mm)と奥行D(mm)を入れると、そのサイズのシートが作られます。矩形のほかにL字・コの字も選べるので、出っ張りのある部屋もそのまま作れます。図面が手に入ったら、後からPDFや画像を読み込んで縮尺を合わせ直すこともできます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "6畳は何ミリですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "畳のサイズは地域と物件で異なるため、一つの答えはありません。目安として、江戸間(1760×880mm)の6畳なら約2640×3520mm、中京間(1820×910mm)なら約2730×3640mmです。実際の部屋は柱や壁の厚みで削られるので、メジャーで内寸を測った値を入れるのが確実です。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "家具の寸法が分からないときはどうしますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "MiseFitsの什器ライブラリに、ソファ・ベッド・デスク・収納棚などの一般的な寸法が初期値として入っているので、まずそれで並べてみてください。候補の商品が決まったら、その商品の外寸に置き換えます。このとき、取っ手・脚・背もたれの張り出しを含めた最大寸法で入れるのがコツです。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "スマートフォンでも使えますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "使えます。ブラウザで開くだけで、インストールも会員登録も不要です。ただし細かい位置合わせは画面が広いほうが楽なので、寸法入力と大まかな配置をスマートフォンで済ませ、仕上げをパソコンで行う使い方もできます。作業内容は端末内に自動保存されます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "作った間取り図は保存・印刷できますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PNG画像とPDFで出力できます。家族や施工会社に見せるならPDFが扱いやすく、そのまま印刷もできます。作業中の内容はブラウザの保存領域に自動保存され、外部のサーバーへは送信されません。"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "MiseFits", "item": "https://misefits.kokokikaku.com/" },
+        { "@type": "ListItem", "position": 2, "name": "使い方", "item": "https://misefits.kokokikaku.com/guide.html" },
+        { "@type": "ListItem", "position": 3, "name": "2Dの間取りシミュレーション", "item": "https://misefits.kokokikaku.com/madori-2d.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  :root{
+    --bg:#eef1f5; --panel:#ffffff; --line:#dfe4ec; --ink:#242933; --sub:#667085;
+    --accent:#0066cc; --accent2:#004f9f; --accent-soft:#e8f2ff; --sun:#ffb545; --mint:#2a9d8f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;scroll-padding-top:86px;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;background:var(--bg);color:var(--ink);
+    line-height:1.85;-webkit-text-size-adjust:100%;}
+  a{color:var(--accent);}
+
+  .page-top{position:sticky;top:0;z-index:20;height:72px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:0 18px;box-shadow:0 1px 14px rgba(25,33,46,.07);}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;}
+  .brand-icon{width:46px;height:46px;border-radius:14px;object-fit:contain;flex:0 0 auto;
+    filter:drop-shadow(0 9px 18px rgba(0,80,160,.19));}
+  .brand-name{font-family:Arial Rounded MT Bold,Arial,"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;
+    font-weight:900;font-size:25px;letter-spacing:.015em;color:#102033;line-height:1;}
+  .brand-name .fit{color:var(--accent);font-style:italic;letter-spacing:-.01em;}
+  .brand-name .dot{display:inline-block;width:8px;height:8px;margin-left:5px;border-radius:999px;background:var(--sun);
+    vertical-align:top;transform:translateY(4px);}
+  .brand small{display:block;color:var(--sub);font-weight:700;font-size:11.5px;line-height:1.35;margin-top:3px;}
+  .top-sp{flex:1;}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:1px solid var(--accent);
+    border-radius:9px;padding:10px 16px;font-size:13px;font-weight:800;text-decoration:none;white-space:nowrap;}
+  .btn:hover{background:var(--accent2);border-color:var(--accent2);}
+  .btn.outline{background:#fff;color:var(--accent);}
+  .btn.outline:hover{background:var(--accent-soft);}
+
+  main{max-width:900px;margin:0 auto;padding:26px 18px 60px;}
+  .crumb{font-size:11.5px;color:var(--sub);margin-bottom:16px;}
+  .crumb a{text-decoration:none;font-weight:700;}
+  .hero{background:linear-gradient(145deg,#ffffff,#f6faff 60%,#fff8ec);border:1px solid var(--line);border-radius:18px;
+    padding:28px 26px;box-shadow:0 12px 30px rgba(25,33,46,.07);}
+  .kicker{display:inline-flex;align-items:center;gap:7px;color:var(--accent);background:var(--accent-soft);
+    border:1px solid #cfe4ff;border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:800;margin-bottom:13px;}
+  h1{font-size:28px;line-height:1.4;margin-bottom:12px;}
+  .lead{font-size:14px;color:#3d4654;}
+  .hero .btn{margin-top:18px;}
+
+  .toc{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .toc h2{font-size:12px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+  .toc ol{margin:0;padding-left:19px;font-size:13px;}
+  .toc li{margin-bottom:5px;}
+  .toc a{text-decoration:none;font-weight:700;}
+
+  section.blk{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 26px 22px;
+    box-shadow:0 6px 18px rgba(25,33,46,.05);}
+  section.blk > h2{font-size:19px;line-height:1.45;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line);}
+  section.blk h3{font-size:15px;margin:20px 0 8px;}
+  section.blk p{font-size:13.5px;color:#3d4654;margin-bottom:11px;}
+  section.blk ul,section.blk ol{font-size:13.5px;color:#3d4654;margin:0 0 12px 20px;}
+  section.blk li{margin-bottom:6px;}
+  section.blk strong{color:var(--ink);}
+
+  /* 寸法表 */
+  .dim-wrap{overflow-x:auto;margin:14px 0 6px;border:1px solid var(--line);border-radius:12px;}
+  table.dim{border-collapse:separate;border-spacing:0;width:100%;min-width:520px;font-size:13px;background:#fff;}
+  .dim th,.dim td{padding:9px 13px;border-bottom:1px solid var(--line);text-align:left;}
+  .dim th{background:#f4f7fb;font-size:12px;color:var(--sub);white-space:nowrap;}
+  .dim td.num{font-family:ui-monospace,Consolas,monospace;white-space:nowrap;}
+  .dim tr:last-child td{border-bottom:0;}
+  .dim .grp td{background:#f8fafc;color:var(--sub);font-size:11.5px;font-weight:900;letter-spacing:.05em;}
+  .pro-tag{display:inline-block;background:#fff6e6;color:#8a5200;border:1px solid #ffe0b0;border-radius:5px;
+    padding:0 5px;font-size:10px;font-weight:900;vertical-align:1px;margin-left:5px;}
+  .dim-note{font-size:11.5px;color:var(--sub);line-height:1.7;}
+
+  /* 手順 */
+  ol.steps{list-style:none;margin:0;padding:0;counter-reset:st;}
+  ol.steps li{position:relative;padding:0 0 14px 38px;counter-increment:st;font-size:13.5px;color:#3d4654;}
+  ol.steps li::before{content:counter(st);position:absolute;left:0;top:1px;width:25px;height:25px;border-radius:8px;
+    background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900;}
+  ol.steps li b{color:var(--ink);}
+
+  .note{margin-top:14px;background:#f7f9fc;border:1px solid var(--line);border-left:3px solid var(--sun);
+    border-radius:0 10px 10px 0;padding:12px 14px;font-size:12.5px;color:#3d4654;}
+  .note b{color:var(--ink);}
+
+  details.qa{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#fbfcfe;padding:0 15px;}
+  details.qa[open]{padding-bottom:13px;background:#fff;}
+  details.qa summary{cursor:pointer;padding:12px 0;font-size:13.5px;font-weight:800;list-style:none;line-height:1.55;}
+  details.qa summary::-webkit-details-marker{display:none;}
+  details.qa summary::before{content:"Q";display:inline-grid;place-items:center;width:20px;height:20px;margin-right:9px;
+    border-radius:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:900;vertical-align:1px;}
+  details.qa p{font-size:13.5px;color:#3d4654;margin:4px 0 0;}
+
+  .rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:6px;}
+  .rel a{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:12px;
+    padding:13px 15px;background:#fbfcfe;font-size:13px;font-weight:800;line-height:1.5;}
+  .rel a:hover{border-color:#9fcbff;background:#f4f9ff;}
+  .rel a span{display:block;font-size:11.5px;color:var(--sub);font-weight:600;margin-top:4px;}
+
+  .cta{margin-top:30px;background:linear-gradient(145deg,#e9f3ff,#ffffff 65%,#fff6e6);border:1px solid #cfe4ff;
+    border-radius:18px;padding:26px 24px;text-align:center;}
+  .cta h2{font-size:20px;margin-bottom:8px;}
+  .cta p{font-size:13.5px;color:#3d4654;margin-bottom:16px;}
+  .cta .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+  footer{background:#fbfcfe;border-top:1px solid var(--line);padding:20px 18px 28px;}
+  .foot-in{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;
+    font-size:11.5px;color:var(--sub);}
+  .foot-in b{color:var(--ink);font-size:13px;}
+  .foot-in a{font-weight:800;text-decoration:none;}
+  .foot-in .sp{flex:1;}
+  .legalnote{max-width:900px;margin:10px auto 0;font-size:10.5px;color:#7a8494;line-height:1.6;}
+
+  @media (max-width:720px){
+    .page-top{height:60px;padding:0 12px;gap:9px;}
+    .brand-icon{width:36px;height:36px;border-radius:11px;}
+    .brand-name{font-size:20px;}
+    .brand small{display:none;}
+    .btn{padding:9px 12px;font-size:12.5px;}
+    main{padding:18px 12px 44px;}
+    .hero{padding:20px 17px;border-radius:15px;}
+    h1{font-size:21px;}
+    section.blk{padding:18px 15px;border-radius:14px;}
+    .cta{padding:20px 16px;}
+  }
+
+</style>
+<script>
+/* アクセス解析（GA4）。測定IDが未設定のあいだは、外部への通信は一切発生しません。
+   オプトアウト設定（privacy.html）と Do Not Track を尊重します。 */
+(function(){
+  var GA_ID = 'G-W0Y7GMPVRK';   /* MiseFits プロパティの測定ID */
+  if(!GA_ID) return;
+  try{ if(localStorage.getItem('misefitsAnalyticsOptOut')==='1'){ window['ga-disable-'+GA_ID]=true; return; } }catch(e){}
+  if(navigator.doNotTrack==='1'||window.doNotTrack==='1') return;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){window.dataLayer.push(arguments);};
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID, {anonymize_ip:true});
+  var s=document.createElement('script');
+  s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);
+  document.head.appendChild(s);
+})();
+</script>
+<script src="assets/ads.js" defer></script>
+</head>
+<body>
+<header class="page-top">
+  <a class="brand" href="./" aria-label="MiseFits トップへ">
+    <img class="brand-icon" src="assets/misefits-icon.png" alt="" width="46" height="46">
+    <span>
+      <span class="brand-name"><span class="mise">Mise</span><span class="fit">Fits</span><span class="dot"></span></span>
+      <small>かんたん店舗レイアウトシミュレーター</small>
+    </span>
+  </a>
+  <span class="top-sp"></span>
+  <a class="btn outline" href="guide.html">使い方</a>
+  <a class="btn" href="./">アプリを開く</a>
+</header>
+
+<main>
+  <nav class="crumb" aria-label="パンくず"><a href="./">MiseFits</a> ／ <a href="guide.html">使い方</a> ／ 2Dの間取りシミュレーション</nav>
+
+  <div class="hero">
+    <div class="kicker">はじめての方へ ／ 2Dで幅と奥行きだけ</div>
+    <h1>間取りシミュレーションを2Dで。幅と奥行きを入れるだけ</h1>
+    <p class="lead">間取りを考えたいだけなのに、3Dのモデリングや図面ソフトの操作を覚えるところで止まってしまう。そこを飛ばすための方法をまとめました。部屋の<strong>横幅と奥行きをミリで入れる</strong>、家具を<strong>実寸で置く</strong>、すき間を<strong>測る</strong>。この3つだけで、置けるか・通れるかはほとんど判断できます。インストールも会員登録も要りません。</p>
+    <a class="btn" href="./">MiseFitsを開いて試す（無料・登録不要）</a>
+  </div>
+
+  <nav class="toc">
+    <h2>このページの内容</h2>
+    <ol>
+      <li><a href="#why">なぜ2Dで足りるのか</a></li>
+      <li><a href="#size">部屋のサイズを幅×奥行きで決める（畳数の換算）</a></li>
+      <li><a href="#dim">家具・設備の実寸一覧</a></li>
+      <li><a href="#howto">MiseFitsでの手順（5ステップ）</a></li>
+      <li><a href="#points">つまずきやすい6か所</a></li>
+      <li><a href="#faq">よくある質問</a></li>
+    </ol>
+  </nav>
+
+  <section class="blk" id="why">
+    <h2>なぜ2Dで足りるのか</h2>
+    <p>間取りシミュレーターを探すと、多くは3Dで部屋を作るタイプです。完成イメージを眺めるには向いていますが、覚えることが多く、視点の操作や壁の高さ設定に時間を取られます。そして、たいていの人が知りたいのはそこではありません。</p>
+    <p><strong>「このソファは置けるのか」「置いたあと、横を人が通れるのか」</strong>。この2つは、真上から見た<strong>幅と奥行きの取り合い</strong>でほぼ決まります。高さは関係しません。だから平面、つまり2Dだけで答えが出ます。</p>
+    <h3>高さが効くのは、この3つくらい</h3>
+    <ul>
+      <li><strong>吊り棚・カウンターの下</strong>を人やイスが通るか</li>
+      <li><strong>梁や下がり天井</strong>の下に、背の高い家具が入るか</li>
+      <li><strong>窓・コンセント</strong>を家具の背でふさいでしまわないか</li>
+    </ul>
+    <p>これらは箇所が限られているので、平面を先に決めてから、その3か所だけメジャーで実測して確認するほうが早く終わります。<strong>3Dは、決めるための道具ではなく、決まったものを見せるための道具</strong>だと考えると迷いません。</p>
+    <p>もうひとつ、2Dには実務上の利点があります。<strong>寸法がそのまま数字で出る</strong>ことです。3Dの見た目で「なんとなく狭そう」と感じるより、「壁からソファまで520mm」と出たほうが判断できます。520mmなら大人1人がやっと通れる幅で、荷物を持っていたら厳しい。そういう会話に持ち込めます。</p>
+  </section>
+
+  <section class="blk" id="size">
+    <h2>部屋のサイズを幅×奥行きで決める（畳数の換算）</h2>
+    <p>MiseFitsは<strong>白紙のシートを、横幅W(mm)と奥行D(mm)を入れて作る</strong>ところから始められます。図面がなくても、部屋の寸法さえ分かれば検討に入れます。</p>
+    <h3>いちばん確実なのは、メジャーで測ること</h3>
+    <p>壁から壁までの内寸を、床に近いところで測ります。<strong>幅と奥行きの2辺だけ</strong>で構いません。巾木（壁の下端の細い板）の外側で測ると、実際に家具が入る寸法より少し大きく出るので、家具を置く高さのあたりで測ると安全です。</p>
+    <h3>畳数からのおおまかな換算</h3>
+    <p>「6畳」と言われても、畳のサイズは地域や物件で違います。下の表は出発点としての目安です。<strong>数字が決まったら必ず実測で確かめてください。</strong></p>
+    <div class="dim-wrap">
+      <table class="dim">
+        <thead><tr><th>広さ</th><th>江戸間（1760×880mm）の目安</th><th>中京間（1820×910mm）の目安</th><th>面積の目安</th></tr></thead>
+        <tbody>
+          <tr><td>4.5畳</td><td class="num">2640 × 2640 mm</td><td class="num">2730 × 2730 mm</td><td class="num">約7.0〜7.5 m²</td></tr>
+          <tr><td>6畳</td><td class="num">2640 × 3520 mm</td><td class="num">2730 × 3640 mm</td><td class="num">約9.3〜9.9 m²</td></tr>
+          <tr><td>8畳</td><td class="num">3520 × 3520 mm</td><td class="num">3640 × 3640 mm</td><td class="num">約12.4〜13.2 m²</td></tr>
+          <tr><td>10畳</td><td class="num">3520 × 4400 mm</td><td class="num">3640 × 4550 mm</td><td class="num">約15.5〜16.6 m²</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dim-note">畳の規格は他にも団地間（約1700×850mm）・京間（約1910×955mm）などがあり、同じ「6畳」でも1m²近く差が出ます。また不動産の広告表示では1帖を1.62m²以上として計算するため、畳の枚数と一致しないことがあります。1坪は約3.31m²（畳およそ2枚分）です。</p>
+    <h3>四角くない部屋は、L字・コの字で作る</h3>
+    <p>実際の部屋は、柱の出っ張りやクローゼットの張り出しで四角くないことがよくあります。MiseFitsの白紙シートは<strong>矩形・L字・コの字</strong>から選べて、L字なら「全体の横幅・奥行」に加えて「欠けの幅・奥行」と、欠ける角（左上・右上・左下・右下）を指定できます。これでたいていの部屋はそのまま作れます。もっと複雑な形は、Proの自由形状エディタで辺ごとに寸法を入れて描けます。</p>
+  </section>
+
+  <section class="blk" id="dim">
+    <h2>家具・設備の実寸一覧</h2>
+    <p>MiseFitsの什器ライブラリに初期値として入っている寸法のうち、住まいや小規模なスペースの間取り検討でよく使うものを抜き出しました。<strong>幅（W）× 奥行（D）</strong>のミリ表記です。買う商品が決まっていない段階では、まずこの数字で並べてみてください。</p>
+    <div class="dim-wrap">
+      <table class="dim">
+        <thead><tr><th>家具・設備</th><th>幅 W</th><th>奥行 D</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="3">座る・くつろぐ</td></tr>
+          <tr><td>ソファ</td><td class="num">1400</td><td class="num">700</td></tr>
+          <tr><td>ベンチ</td><td class="num">1500</td><td class="num">500</td></tr>
+          <tr><td>丸イス</td><td class="num">φ450</td><td class="num">—</td></tr>
+          <tr><td>角イス</td><td class="num">450</td><td class="num">450</td></tr>
+          <tr><td>2人テーブル</td><td class="num">600</td><td class="num">700</td></tr>
+          <tr><td>4人テーブル</td><td class="num">1200</td><td class="num">700</td></tr>
+          <tr><td>丸テーブル（4人）</td><td class="num">φ900</td><td class="num">—</td></tr>
+          <tr class="grp"><td colspan="3">寝る</td></tr>
+          <tr><td>シングルベッド</td><td class="num">1000</td><td class="num">2000</td></tr>
+          <tr><td>ダブルベッド</td><td class="num">1400</td><td class="num">1950</td></tr>
+          <tr><td>2段ベッド</td><td class="num">1050</td><td class="num">2000</td></tr>
+          <tr class="grp"><td colspan="3">机・収納</td></tr>
+          <tr><td>デスク（1人）</td><td class="num">1000</td><td class="num">600</td></tr>
+          <tr><td>学習机<span class="pro-tag">PRO</span></td><td class="num">650</td><td class="num">450</td></tr>
+          <tr><td>収納棚</td><td class="num">900</td><td class="num">450</td></tr>
+          <tr><td>書庫・キャビネット<span class="pro-tag">PRO</span></td><td class="num">900</td><td class="num">450</td></tr>
+          <tr><td>ロッカー</td><td class="num">900</td><td class="num">500</td></tr>
+          <tr><td>荷物置き</td><td class="num">600</td><td class="num">450</td></tr>
+          <tr class="grp"><td colspan="3">水回り・家電</td></tr>
+          <tr><td>冷蔵庫</td><td class="num">700</td><td class="num">700</td></tr>
+          <tr><td>洗濯機</td><td class="num">650</td><td class="num">650</td></tr>
+          <tr><td>乾燥機</td><td class="num">650</td><td class="num">650</td></tr>
+          <tr><td>シンク</td><td class="num">600</td><td class="num">600</td></tr>
+          <tr><td>コンロ台</td><td class="num">600</td><td class="num">600</td></tr>
+          <tr><td>作業台</td><td class="num">900</td><td class="num">600</td></tr>
+          <tr><td>トイレ</td><td class="num">500</td><td class="num">800</td></tr>
+          <tr><td>手洗い器</td><td class="num">400</td><td class="num">350</td></tr>
+          <tr><td>シャワーユニット<span class="pro-tag">PRO</span></td><td class="num">900</td><td class="num">900</td></tr>
+          <tr><td>ユニットバス<span class="pro-tag">PRO</span></td><td class="num">1600</td><td class="num">1600</td></tr>
+          <tr class="grp"><td colspan="3">建築要素・確認用</td></tr>
+          <tr><td>片開きドア<span class="pro-tag">PRO</span></td><td class="num">800</td><td class="num">100</td></tr>
+          <tr><td>引戸<span class="pro-tag">PRO</span></td><td class="num">1600</td><td class="num">80</td></tr>
+          <tr><td>柱（角）<span class="pro-tag">PRO</span></td><td class="num">500</td><td class="num">500</td></tr>
+          <tr><td>車椅子転回スペース<span class="pro-tag">PRO</span></td><td class="num">φ1500</td><td class="num">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dim-note">これらはMiseFitsのライブラリに入っている初期値で、検討の出発点としての一般的な寸法です。置いたあとに数値入力で自由に変更できます。実際の商品寸法はメーカー・型番によって異なります。全138点の一覧は<a href="fixture-sizes.html">什器・設備の寸法一覧</a>にまとめてあります。<span class="pro-tag">PRO</span>の付いた項目は買い切りのMiseFits Proで使えるものです。</p>
+  </section>
+
+  <section class="blk" id="howto">
+    <h2>MiseFitsでの手順（5ステップ）</h2>
+    <ol class="steps">
+      <li><b>白紙シートを作る。</b>トップの「白紙から」を押すと形状の選択が出ます。矩形を選び、<b>横幅W(mm)</b>と<b>奥行D(mm)</b>に測った内寸を入れて作成します。四角くない部屋はL字かコの字を選び、欠けの寸法と位置を指定します。この時点で縮尺は実寸に合っているので、あとの操作はすべてミリで通ります。</li>
+      <li><b>家具を置く。</b>左のライブラリから家具を選んでシートに置きます。置いたものは選択して<b>幅・奥行を数値で入力</b>できるので、商品が決まっていれば実際の外寸に直します。グリッドと吸着をONにすると、壁にぴったり寄せるのが楽になります。</li>
+      <li><b>すき間を測る。</b>計測モードで2点をクリックすると、その間の実寸が出ます。壁と家具、家具と家具のあいだを測って、通れる幅が残っているかを確認します。狭ければ家具を動かして測り直す。この往復が、間取り検討そのものです。</li>
+      <li><b>面積を確かめる。</b>集計に延べ床面積が出ます。部屋のm²と、家具が占めている面積を見比べると「詰め込みすぎ」が数字で分かります。</li>
+      <li><b>出力する。</b>PNGかPDFで書き出せます。家族や施工会社、家具店に見せるならPDFが扱いやすく、そのまま印刷もできます。Proなら実寸スケールでの印刷にも対応します。</li>
+    </ol>
+    <div class="note"><b>図面が手に入ったら。</b>PDFや画像の図面を読み込み、図面上で寸法が分かっている2点（たとえば壁の長さ）を指定すると、縮尺が実寸に合います。以降は白紙シートと同じ操作です。図面はブラウザの中だけで処理され、外部のサーバーへは送信されません。</div>
+  </section>
+
+  <section class="blk" id="points">
+    <h2>つまずきやすい6か所</h2>
+    <h3>1. 壁芯と内法（うちのり）を混ぜてしまう</h3>
+    <p>不動産の図面に書かれた寸法は<strong>壁の中心から中心まで（壁芯）</strong>のことが多く、実際に家具が入るのは<strong>壁の内側から内側まで（内法）</strong>です。壁の厚みぶん、片側で50〜100mm程度小さくなります。図面の数字をそのまま入れると、実際より広い部屋を検討してしまいます。</p>
+    <h3>2. 家具の寸法を「見た目のサイズ」で入れている</h3>
+    <p>取っ手、脚の張り出し、背もたれの傾き、ソファのクッションのはみ出し。これらを含めた<strong>最大寸法</strong>で入れてください。カタログに「幅1400mm」とあっても、肘掛けを含めて1450mmということがあります。</p>
+    <h3>3. 扉の開き代を忘れる</h3>
+    <p>片開きドアは、幅800mmなら手前に約800mmの円弧を描いて開きます。ここに家具を置くと開きません。開き代のぶんの四角を置いてしまうのが確実です。クローゼットの折れ戸、引き出し、冷蔵庫の扉、洗濯機の蓋も同じです。</p>
+    <h3>4. 「通れる幅」を1人ぶんで考えている</h3>
+    <p>大人1人が正面を向いて通るには600mm前後、荷物を持ったりすれ違ったりするなら900mm以上ほしくなります。イスを引いた後ろを通るなら、引いたぶん（400〜600mm程度）を足して考えます。詳しくは<a href="aisle-width.html">通路幅と什器のすき間を図面上で測る</a>にまとめています。</p>
+    <h3>5. 縮尺を合わせずに置き始める</h3>
+    <p>読み込んだ図面で縮尺を設定する前に家具を置くと、あとで全部やり直しになります。<strong>読み込む → 縮尺を合わせる → 置く</strong>の順を崩さないでください。白紙シートから始めた場合は最初から実寸なので、この心配はありません。</p>
+    <h3>6. 動く人のことが図に入っていない</h3>
+    <p>家具だけを並べると、たいてい入ってしまいます。実際に窮屈になるのは、人が動く場所です。よく立つ位置や、必ず通る導線に自由図形の四角を置いておくと、あとで「ここにモノを置けない」が見えるようになります。</p>
+  </section>
+
+  <div data-ad="article-bottom"></div>
+
+  <section class="blk" id="faq">
+    <h2>よくある質問</h2>
+    <details class="qa"><summary>間取りのシミュレーションに3Dは必要ですか？</summary>
+      <p>「置けるか」「通れるか」を確かめたいだけなら不要です。家具が入るかどうかは、真上から見た幅と奥行きの取り合いでほぼ決まります。3Dが効くのは、吊り棚の下を人が通れるか、梁でベッドの頭側が下がらないか、といった高さが絡む場面です。まず2Dで平面を決めて、高さが気になる箇所だけ実測で確認するほうが早く終わります。</p>
+    </details>
+    <details class="qa"><summary>図面がなくても間取りを検討できますか？</summary>
+      <p>できます。「白紙から」を選び、部屋の横幅W(mm)と奥行D(mm)を入れると、そのサイズのシートが作られます。矩形のほかにL字・コの字も選べるので、出っ張りのある部屋もそのまま作れます。図面が手に入ったら、後からPDFや画像を読み込んで縮尺を合わせ直すこともできます。</p>
+    </details>
+    <details class="qa"><summary>6畳は何ミリですか？</summary>
+      <p>畳のサイズは地域と物件で異なるため、一つの答えはありません。目安として、江戸間（1760×880mm）の6畳なら約2640×3520mm、中京間（1820×910mm）なら約2730×3640mmです。実際の部屋は柱や壁の厚みで削られるので、メジャーで内寸を測った値を入れるのが確実です。</p>
+    </details>
+    <details class="qa"><summary>家具の寸法が分からないときはどうしますか？</summary>
+      <p>什器ライブラリに、ソファ・ベッド・デスク・収納棚などの一般的な寸法が初期値として入っているので、まずそれで並べてみてください。候補の商品が決まったら、その商品の外寸に置き換えます。このとき、取っ手・脚・背もたれの張り出しを含めた最大寸法で入れるのがコツです。</p>
+    </details>
+    <details class="qa"><summary>スマートフォンでも使えますか？</summary>
+      <p>使えます。ブラウザで開くだけで、インストールも会員登録も不要です。ただし細かい位置合わせは画面が広いほうが楽なので、寸法入力と大まかな配置をスマートフォンで済ませ、仕上げをパソコンで行う使い方もできます。作業内容は端末内に自動保存されます。</p>
+    </details>
+    <details class="qa"><summary>作った間取り図は保存・印刷できますか？</summary>
+      <p>PNG画像とPDFで出力できます。家族や施工会社に見せるならPDFが扱いやすく、そのまま印刷もできます。作業中の内容はブラウザの保存領域に自動保存され、外部のサーバーへは送信されません。</p>
+    </details>
+    <details class="qa"><summary>お店の内装にも使えますか？</summary>
+      <p>もともと店舗・施設のレイアウト検討のために作られたツールなので、そちらが本来の用途です。飲食店・美容室・教室など業種別の考え方は<a href="guide.html#bytype">業種別のガイド</a>にまとめています。</p>
+    </details>
+  </section>
+
+  <section class="blk">
+    <h2>関連ページ</h2>
+    <div class="rel">
+      <a href="fixture-sizes.html">什器・設備の寸法一覧<span>業種別138点の幅×奥行をmmで</span></a>
+      <a href="aisle-width.html">通路幅と什器のすき間<span>「通れるか」を図面上で測る方法</span></a>
+      <a href="layout-restaurant.html">飲食店・カフェのレイアウト<span>席数と通路、厨房との配分から考える</span></a>
+      <a href="layout-salon.html">美容室・サロンのレイアウト<span>セット面とシャンプー台の動線から考える</span></a>
+      <a href="layout-classroom.html">学習塾・教室・オフィスのレイアウト<span>机の並べ方で収容数を比べる</span></a>
+      <a href="guide.html">MiseFitsの使い方<span>図面の読み込みから出力までの基本操作</span></a>
+    </div>
+  </section>
+
+  <div class="cta">
+    <h2>まずは無料で試してみる</h2>
+    <p>「白紙から」を押して、部屋の幅と奥行きを入れるだけ。インストールも会員登録も不要で、そのまま家具を置いて測れます。</p>
+    <div class="row">
+      <a class="btn" href="./">MiseFitsを開く</a>
+      <a class="btn outline" href="guide.html">使い方を見る</a>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="foot-in">
+    <b>MiseFits</b>
+    <span>店舗・施設の図面データはブラウザ内だけで処理されます</span>
+    <span class="sp"></span>
+    <a href="./">アプリ</a>
+    <a href="guide.html">使い方</a>
+    <a href="pro.html">Proガイド</a>
+    <a href="faq.html">FAQ</a>
+    <a href="releases.html">リリースノート</a>
+    <a href="privacy.html">プライバシー・免責</a>
+    <a href="tokushoho.html">特定商取引法に基づく表記</a>
+    <span>Produced by ここ企画</span>
+    <a href="https://kokokikaku.com/" target="_blank" rel="noopener">kokokikaku.com</a>
+  </div>
+  <p class="legalnote"><strong>注意・免責</strong> このページに掲載している寸法・畳数の換算は、MiseFitsの什器ライブラリの初期値と、検討の出発点としての一般的な目安です。実際の部屋の寸法、製品の外寸、必要な通路幅は、物件・メーカー・用途によって異なります。MiseFitsは概算検討用のツールであり、表示される寸法・面積の計算値は施工や法令適合を保証するものではありません。建築基準法・消防法・保健所の基準、避難経路、バリアフリー、設備容量などの最終判断は、必ず建築士や施工会社、所轄の窓口にご確認ください。</p>
+</footer>
+
+</body>
+</html>
