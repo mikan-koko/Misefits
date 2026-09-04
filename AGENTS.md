@@ -231,6 +231,14 @@ https://pr-manage-pub.a8.net/media/program-detail?programId=<プログラムID>
 
   次点は Kagg.jp（EPC 250 / 3%）、イトーキ公式（確定率100% / 3.7%）、
   会議室・貸会場系ページなら Regus（問い合わせ7,500円）や三井ワークスタイリング（10,000円）。
+- **枠は集客ページ1枚あたり2つ**（`article-mid` / `article-bottom`）。
+  `article-mid` は**寸法表の直後**に置いている（文脈が一致する位置）。
+  `fixture-sizes` は表が17本続くので、ちょうど中ほどの「教室・オフィス」の直前。
+  **`guide` と `faq` は案内役のページなので、意図的に `article-bottom` の1枠だけ**にしてある。
+- `AD_TAGS` の `heading` / `lead` は**こちらで書いた紹介文**で、`tag` はA8が生成したもの。
+  **`tag` の中（URL・rel・アンカーテキスト）は絶対に書き換えない**（A8の規約違反）。
+  見せ方を変えるときは `heading` / `lead` / CSS だけを触る。
+  紹介文は**広告主のPR文の範囲を超えないこと**（誇大表示は景表法の問題になる）。
 - 枠を増やすときは `SLOTS` に枠名を足し、ページ側に `<div data-ad="<枠名>"></div>` を置く。
   広告主を足すときは `AD_TAGS` にキーを足して `SLOTS` から参照する。
 
